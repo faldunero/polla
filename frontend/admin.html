@@ -4,614 +4,579 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin · La Polla 2026</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;0,900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <style>
-:root {
-  --bg: #0a0e1a;
-  --bg2: #0f1525;
-  --card: #141b2d;
-  --card2: #1a2238;
-  --border: rgba(255,255,255,0.07);
-  --gold: #f5c842;
-  --gold2: #e8a800;
-  --blue: #3b82f6;
-  --green: #22c55e;
-  --red: #ef4444;
-  --text: #e8eaf0;
-  --muted: #6b7a99;
-  --radius: 16px;
+:root{
+  --bg:#0a0e1a; --bg2:#0f1525; --card:#141b2d; --card2:#1a2238;
+  --border:rgba(255,255,255,0.07); --gold:#f5c842; --gold2:#e8a800;
+  --green:#22c55e; --red:#ef4444; --brand-red:#DA0015;
+  --text:#e8eaf0; --muted:#6b7a99;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+a{text-decoration:none;color:inherit;}
 
-nav {
-  background: rgba(10,14,26,0.95);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border);
-  padding: 0 28px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-.nav-brand { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: var(--gold); }
-.admin-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(239,68,68,0.15);
-  color: var(--red);
-  border: 1px solid rgba(239,68,68,0.3);
-  border-radius: 999px;
-  padding: 4px 12px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
+/* ── TOPBAR ── */
+.topbar{background:var(--brand-red);position:sticky;top:0;z-index:200;border-bottom:3px solid var(--gold);}
+.topbar-inner{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:60px;gap:14px;}
+.topbar-brand{display:flex;align-items:center;gap:10px;}
+.topbar-logo{width:36px;height:36px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;}
+.topbar-brand-text small{display:block;font-size:0.56rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.6);}
+.topbar-brand-text strong{display:block;font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:800;color:white;letter-spacing:0.04em;line-height:1;}
+.topbar-nav{display:flex;align-items:center;gap:6px;}
+.nav-link{font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.8);padding:6px 12px;border-radius:4px;transition:all 0.2s;}
+.nav-link:hover{color:white;background:rgba(255,255,255,0.1);}
+.admin-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(239,68,68,0.3);color:#fca5a5;border:1px solid rgba(239,68,68,0.4);border-radius:999px;padding:3px 10px;font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;}
+.btn-salir{font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;background:transparent;border:1px solid rgba(255,255,255,0.25);color:rgba(255,255,255,0.8);padding:6px 14px;border-radius:4px;cursor:pointer;transition:all 0.2s;}
+.btn-salir:hover{border-color:white;color:white;}
 
-.main { padding: 28px; max-width: 1000px; margin: 0 auto; }
+/* ── DISCLAIMER ── */
+.disclaimer{background:#1a1a2e;color:rgba(255,255,255,0.45);text-align:center;padding:7px 20px;font-size:0.68rem;border-bottom:1px solid rgba(255,255,255,0.06);}
+.disclaimer strong{color:var(--gold);}
 
-.section { margin-bottom: 40px; }
-.section-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.6rem;
-  color: var(--gold);
-  letter-spacing: 0.04em;
-  margin-bottom: 18px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border);
-}
+/* ── TABS ── */
+.tabs-bar{background:rgba(10,14,26,0.95);border-bottom:1px solid var(--border);padding:0 28px;display:flex;gap:4px;overflow-x:auto;}
+.tab-btn{font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:14px 18px;border:none;background:transparent;color:var(--muted);cursor:pointer;position:relative;transition:color 0.2s;white-space:nowrap;}
+.tab-btn.active{color:var(--gold);}
+.tab-btn.active::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--gold);}
+.tab-btn .notif-dot{display:inline-flex;align-items:center;justify-content:center;background:var(--red);color:white;border-radius:999px;font-size:0.6rem;font-weight:700;min-width:16px;height:16px;padding:0 4px;margin-left:5px;}
 
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-  margin-bottom: 14px;
-}
+/* ── MAIN ── */
+.main{flex:1;padding:28px;max-width:1100px;margin:0 auto;width:100%;}
+.page{display:none;}
+.page.active{display:block;}
 
-.form-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-.form-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 180px; }
-.form-group label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
-.form-input {
-  background: var(--card2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 14px;
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.92rem;
-  transition: border-color 0.2s;
-}
-.form-input:focus { outline: none; border-color: var(--gold); }
-.form-input option { background: var(--card2); }
+/* ── LOGIN ── */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at top,rgba(218,0,21,0.08) 0%,transparent 55%),var(--bg);}
+.login-card{text-align:center;padding:44px 38px;background:var(--card);border:1px solid var(--border);border-radius:16px;max-width:380px;width:100%;}
+.login-card h1{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:2.2rem;color:var(--red);margin:10px 0 8px;}
+.login-card p{color:var(--muted);margin-bottom:26px;font-size:0.88rem;line-height:1.6;}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px;background:white;color:#1f2937;border:none;border-radius:10px;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:'Barlow',sans-serif;transition:all 0.2s;}
+.btn-google:hover{background:#f3f4f6;}
+.btn-google img{width:18px;}
 
-.btn {
-  padding: 10px 22px;
-  border-radius: 10px;
-  border: none;
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 600;
-  font-size: 0.88rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-.btn-gold { background: var(--gold); color: #0a0e1a; }
-.btn-gold:hover { background: var(--gold2); }
-.btn-danger { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
-.btn-danger:hover { background: rgba(239,68,68,0.25); }
-.btn-sm { padding: 6px 14px; font-size: 0.8rem; }
-.btn-blue { background: rgba(59,130,246,0.2); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
-.btn-blue:hover { background: rgba(59,130,246,0.3); }
-.btn-green { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
-.btn-green:hover { background: rgba(34,197,94,0.25); }
-.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--muted); }
-.btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+/* ── SECTION ── */
+.sec-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.5rem;letter-spacing:0.04em;color:var(--gold);margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.sec-title .count{font-size:0.88rem;background:var(--card2);padding:2px 9px;border-radius:999px;color:var(--muted);}
 
-/* Grupos list */
-.grupo-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
-  background: var(--card2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  margin-bottom: 10px;
-}
-.grupo-item-info h4 { font-size: 1rem; margin-bottom: 3px; }
-.grupo-item-info p { font-size: 0.8rem; color: var(--muted); }
+/* ── FORMS ── */
+.form-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+.form-group{display:flex;flex-direction:column;gap:5px;flex:1;min-width:160px;}
+.form-group label{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);}
+.form-input{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:9px 13px;color:var(--text);font-family:'Barlow',sans-serif;font-size:0.9rem;transition:border-color 0.2s;}
+.form-input:focus{outline:none;border-color:var(--gold);}
+.form-input option{background:var(--card2);}
 
-/* Partidos */
-.partido-admin {
-  background: var(--card2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px 20px;
-  margin-bottom: 10px;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr auto;
-  align-items: center;
-  gap: 14px;
-}
-.team-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  font-size: 0.92rem;
-}
-.team-label.right { flex-direction: row-reverse; justify-content: flex-start; }
-.resultado-inputs { display: flex; align-items: center; gap: 8px; }
-.result-input {
-  width: 44px; height: 44px;
-  text-align: center;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--text);
-  font-size: 1.1rem;
-  font-weight: 700;
-  font-family: 'DM Sans', sans-serif;
-}
-.result-input:focus { outline: none; border-color: var(--green); }
-.result-sep { color: var(--muted); font-weight: 700; }
+/* ── BTNS ── */
+.btn{padding:9px 20px;border-radius:8px;border:none;font-family:'Barlow',sans-serif;font-weight:600;font-size:0.86rem;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:7px;}
+.btn-gold{background:var(--gold);color:#0a0e1a;}
+.btn-gold:hover{background:var(--gold2);}
+.btn-green{background:rgba(34,197,94,0.15);color:var(--green);border:1px solid rgba(34,197,94,0.3);}
+.btn-green:hover{background:rgba(34,197,94,0.25);}
+.btn-red{background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3);}
+.btn-red:hover{background:rgba(239,68,68,0.25);}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted);}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold);}
+.btn-sm{padding:5px 12px;font-size:0.78rem;}
 
-/* Tabs */
-.tabs { display: flex; gap: 4px; margin-bottom: 24px; }
-.tab {
-  padding: 9px 18px;
-  border-radius: 999px;
-  font-weight: 600;
-  font-size: 0.85rem;
-  cursor: pointer;
-  color: var(--muted);
-  border: 1px solid transparent;
-  background: transparent;
-  transition: all 0.2s;
-}
-.tab.active { background: var(--card); border-color: var(--border); color: var(--gold); }
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:12px;}
 
-.page { display: none; }
-.page.active { display: block; }
+/* ── LIST ITEMS ── */
+.list-item{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 18px;background:var(--card2);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;flex-wrap:wrap;}
+.list-item-info h4{font-size:0.95rem;font-weight:600;margin-bottom:3px;}
+.list-item-info p{font-size:0.78rem;color:var(--muted);}
+.list-item-actions{display:flex;gap:7px;flex-shrink:0;flex-wrap:wrap;}
 
-/* Login */
-#login-screen {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(ellipse at top, rgba(239,68,68,0.08) 0%, transparent 55%), var(--bg);
-}
-.login-card {
-  text-align: center;
-  padding: 48px 40px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  max-width: 400px;
-  width: 100%;
-}
-.login-card h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; color: var(--red); margin-bottom: 8px; }
-.login-card p { color: var(--muted); margin-bottom: 28px; }
-.btn-google {
-  display: flex; align-items: center; justify-content: center; gap: 12px;
-  width: 100%; padding: 13px;
-  background: white; color: #1f2937;
-  border: none; border-radius: 12px;
-  font-size: 0.92rem; font-weight: 600; cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
-  transition: all 0.2s;
-}
-.btn-google:hover { background: #f3f4f6; }
-.btn-google img { width: 20px; }
+/* ── SOLICITUDES ── */
+.sol-card{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:10px;}
+.sol-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.sol-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--border);}
+.sol-info h4{font-size:0.95rem;font-weight:600;}
+.sol-info p{font-size:0.78rem;color:var(--muted);}
+.sol-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.estado-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;}
+.estado-pendiente{background:rgba(245,200,66,0.12);color:var(--gold);}
+.estado-aprobado{background:rgba(34,197,94,0.12);color:var(--green);}
+.estado-rechazado{background:rgba(239,68,68,0.12);color:var(--red);}
 
-.alert { padding: 12px 18px; border-radius: 10px; font-size: 0.88rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-.alert-warn { background: rgba(245,200,66,0.08); border: 1px solid rgba(245,200,66,0.2); color: var(--gold); }
-.alert-success { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); color: var(--green); }
-.alert-error { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: var(--red); }
+/* ── PARTIDOS ── */
+.partido-admin{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto 1fr auto;align-items:center;gap:12px;}
+.team-label{display:flex;align-items:center;gap:7px;font-weight:600;font-size:0.88rem;}
+.team-label.right{flex-direction:row-reverse;}
+.result-inputs{display:flex;align-items:center;gap:6px;}
+.result-input{width:42px;height:42px;text-align:center;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:1.05rem;font-weight:700;font-family:'Barlow',sans-serif;}
+.result-input:focus{outline:none;border-color:var(--green);}
 
-.stat-row { display: flex; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
-.stat-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 18px 22px;
-  flex: 1; min-width: 140px;
-  text-align: center;
-}
-.stat-card strong { display: block; font-size: 1.8rem; font-family: 'Bebas Neue', sans-serif; color: var(--gold); letter-spacing: 0.04em; }
-.stat-card span { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+/* ── RANKING TABLE ── */
+.ranking-table{width:100%;border-collapse:collapse;}
+.ranking-table th{text-align:left;padding:9px 14px;font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);border-bottom:1px solid var(--border);}
+.ranking-table td{padding:11px 14px;border-bottom:1px solid var(--border);font-size:0.88rem;}
+.ranking-table tr:last-child td{border-bottom:none;}
+.pos-badge{width:26px;height:26px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:0.78rem;}
+.pos-1{background:rgba(245,200,66,0.2);color:var(--gold);}
+.pos-2{background:rgba(148,163,184,0.2);color:#94a3b8;}
+.pos-3{background:rgba(205,127,50,0.2);color:#cd7f32;}
+.pos-n{background:var(--card2);color:var(--muted);}
 
-.filter-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+/* ── ALERT ── */
+.alert{padding:10px 15px;border-radius:8px;font-size:0.84rem;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.alert-warn{background:rgba(245,200,66,0.08);border:1px solid rgba(245,200,66,0.2);color:var(--gold);}
+.alert-info{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);color:#93c5fd;}
 
-#toast {
-  position: fixed; bottom: 28px; right: 28px;
-  background: var(--card2); border: 1px solid var(--border);
-  border-radius: 12px; padding: 14px 20px; font-size: 0.88rem;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.4);
-  z-index: 9999; opacity: 0; transform: translateY(10px);
-  transition: all 0.3s; max-width: 340px; pointer-events: none;
-}
-#toast.show { opacity: 1; transform: translateY(0); }
+.empty{text-align:center;padding:40px 20px;color:var(--muted);}
+.empty i{font-size:2rem;margin-bottom:10px;display:block;}
 
-.badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
-.badge-green { background: rgba(34,197,94,0.15); color: var(--green); }
-.badge-muted { background: var(--card2); color: var(--muted); }
+/* ── TOAST ── */
+#toast{position:fixed;bottom:26px;right:26px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:0.86rem;box-shadow:0 14px 36px rgba(0,0,0,0.4);z-index:9999;opacity:0;transform:translateY(8px);transition:all 0.3s;max-width:320px;pointer-events:none;}
+#toast.show{opacity:1;transform:translateY(0);}
 
-.ranking-table { width: 100%; border-collapse: collapse; }
-.ranking-table th { text-align: left; padding: 10px 16px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); border-bottom: 1px solid var(--border); }
-.ranking-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-.ranking-table tr:last-child td { border-bottom: none; }
-.pos-badge { width: 28px; height: 28px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; }
-.pos-1 { background: rgba(245,200,66,0.2); color: var(--gold); }
-.pos-2 { background: rgba(148,163,184,0.2); color: #94a3b8; }
-.pos-3 { background: rgba(205,127,50,0.2); color: #cd7f32; }
-.pos-n { background: var(--card2); color: var(--muted); }
+/* ── FOOTER ── */
+footer{background:var(--bg2);border-top:1px solid var(--border);padding:18px 28px;text-align:center;}
+.footer-text{font-size:0.7rem;color:var(--muted);}
+.footer-text a{color:var(--gold);}
+
+/* FILTER ROW */
+.filter-row{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
+.filter-select{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'Barlow',sans-serif;font-size:0.84rem;cursor:pointer;}
+.filter-select:focus{outline:none;border-color:var(--gold);}
+.check-label{display:flex;align-items:center;gap:7px;font-size:0.82rem;color:var(--muted);cursor:pointer;}
 </style>
 </head>
 <body>
 
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
-    <h1>🔐 Admin</h1>
-    <p>Solo el administrador puede acceder a este panel.</p>
+    <span style="font-size:2.5rem;">🔐</span>
+    <h1>Panel Admin</h1>
+    <p>Solo el administrador puede acceder. Inicia sesión con tu cuenta autorizada.</p>
     <button class="btn-google" onclick="loginGoogle()">
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
       Ingresar con Google
     </button>
+    <p id="login-error" style="color:var(--red);margin-top:14px;font-size:0.82rem;"></p>
   </div>
 </div>
 
-<div id="app" style="display:none;">
-  <nav>
-    <div style="display:flex;align-items:center;gap:14px;">
-      <div class="nav-brand">⚽ La Polla 2026</div>
-      <span class="admin-badge"><i class="fas fa-shield-halved"></i> Admin</span>
-    </div>
-    <div style="display:flex;gap:10px;align-items:center;">
-      <span id="admin-email" style="font-size:0.82rem;color:var(--muted);"></span>
-      <button class="btn btn-outline btn-sm" onclick="logout()">Salir</button>
-    </div>
-  </nav>
-
-  <div class="main">
-    <div class="tabs">
-      <button class="tab active" onclick="showTab('grupos')"><i class="fas fa-users"></i> Grupos</button>
-      <button class="tab" onclick="showTab('resultados')"><i class="fas fa-futbol"></i> Resultados</button>
-      <button class="tab" onclick="showTab('ranking')"><i class="fas fa-trophy"></i> Ranking global</button>
-    </div>
-
-    <!-- TAB GRUPOS -->
-    <div id="tab-grupos" class="page active">
-      <div class="section">
-        <div class="section-title"><i class="fas fa-plus-circle"></i> Crear grupo</div>
-        <div class="card">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Nombre del grupo</label>
-              <input type="text" id="nuevo-nombre" class="form-input" placeholder="Ej: Los cracks del barrio">
-            </div>
-            <div class="form-group">
-              <label>Descripción (opcional)</label>
-              <input type="text" id="nueva-desc" class="form-input" placeholder="Ej: Grupo del trabajo">
-            </div>
-          </div>
-          <button class="btn btn-gold" onclick="crearGrupo()"><i class="fas fa-plus"></i> Crear grupo</button>
-        </div>
+<!-- APP -->
+<div id="app" style="display:none;flex-direction:column;min-height:100vh;">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a href="index.html" class="topbar-brand">
+        <div class="topbar-logo">⚽</div>
+        <div class="topbar-brand-text"><small>Volver al</small><strong>Dashboard</strong></div>
+      </a>
+      <div class="topbar-nav">
+        <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Inicio</a>
+        <a href="polla.html" class="nav-link"><i class="fas fa-trophy"></i> La Polla</a>
+        <span class="admin-badge"><i class="fas fa-shield-halved"></i> Admin</span>
+        <span id="admin-email" style="font-size:0.78rem;color:rgba(255,255,255,0.55);"></span>
+        <button class="btn-salir" onclick="logout()">Salir</button>
       </div>
-
-      <div class="section">
-        <div class="section-title"><i class="fas fa-list"></i> Grupos existentes</div>
-        <div id="grupos-list"></div>
-      </div>
-    </div>
-
-    <!-- TAB RESULTADOS -->
-    <div id="tab-resultados" class="page">
-      <div class="section-title"><i class="fas fa-futbol"></i> Ingresar resultados reales</div>
-      <div class="alert alert-warn">
-        <i class="fas fa-triangle-exclamation"></i>
-        Al guardar un resultado, los puntajes de todos los participantes se recalculan automáticamente.
-      </div>
-      <div class="filter-row">
-        <select id="filtro-grupo" class="form-input" style="max-width:200px;" onchange="renderPartidos()">
-          <option value="">Todos los grupos</option>
-        </select>
-        <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;color:var(--muted);">
-          <input type="checkbox" id="solo-pendientes" onchange="renderPartidos()"> Solo pendientes
-        </label>
-      </div>
-      <div id="partidos-list"></div>
-    </div>
-
-    <!-- TAB RANKING -->
-    <div id="tab-ranking" class="page">
-      <div class="section-title"><i class="fas fa-trophy"></i> Ranking global</div>
-      <div id="ranking-global"></div>
     </div>
   </div>
+
+  <!-- Disclaimer -->
+  <div class="disclaimer">
+    <strong>⚠️ Panel de administración</strong> · Sitio no oficial, proyecto independiente ·
+    <a href="https://ludolab.cl" target="_blank" style="color:var(--gold);">Ludolab.cl</a>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-bar">
+    <button class="tab-btn active" data-tab="solicitudes"><i class="fas fa-user-check"></i> Solicitudes <span id="dot-sol" class="notif-dot" style="display:none;"></span></button>
+    <button class="tab-btn" data-tab="grupos"><i class="fas fa-users"></i> Grupos</button>
+    <button class="tab-btn" data-tab="participantes"><i class="fas fa-id-card"></i> Participantes</button>
+    <button class="tab-btn" data-tab="resultados"><i class="fas fa-futbol"></i> Resultados</button>
+    <button class="tab-btn" data-tab="ranking"><i class="fas fa-trophy"></i> Ranking</button>
+  </div>
+
+  <div class="main">
+    <div id="tab-solicitudes" class="page active"></div>
+    <div id="tab-grupos" class="page"></div>
+    <div id="tab-participantes" class="page"></div>
+    <div id="tab-resultados" class="page"></div>
+    <div id="tab-ranking" class="page"></div>
+  </div>
+
+  <footer>
+    <p class="footer-text">
+      Diseñado y desarrollado por <a href="https://ludolab.cl" target="_blank">Ludolab.cl</a> ·
+      Felipe Aldunate · <a href="mailto:felipe@ludolab.cl">felipe@ludolab.cl</a> ·
+      © 2026 Todos los derechos reservados
+    </p>
+  </footer>
 </div>
 
 <div id="toast"></div>
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
-  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAqrYCFQN8epqx9HZrd7t1Ywz9wVf2Fx5Y",
-  authDomain: "polla-495421-ab029.firebaseapp.com",
-  projectId: "polla-495421-ab029",
-  storageBucket: "polla-495421-ab029.firebasestorage.app",
-  messagingSenderId: "366484877682",
-  appId: "1:366484877682:web:a7c21e72c012d4b709adeb"
+const FB={
+  apiKey:"AIzaSyAqrYCFQN8epqx9HZrd7t1Ywz9wVf2Fx5Y",
+  authDomain:"polla-495421-ab029.firebaseapp.com",
+  projectId:"polla-495421-ab029",
+  storageBucket:"polla-495421-ab029.firebasestorage.app",
+  messagingSenderId:"366484877682",
+  appId:"1:366484877682:web:a7c21e72c012d4b709adeb"
+};
+const ADMIN_EMAIL='faldunate@gmail.com';
+const API='http://localhost:3000';
+
+const fbApp=initializeApp(FB);
+const auth=getAuth(fbApp);
+const provider=new GoogleAuthProvider();
+
+let currentUser=null, globalPartidos=[];
+
+const FLAGS={
+  'QATAR':'🇶🇦','CATAR':'🇶🇦','ECUADOR':'🇪🇨','SENEGAL':'🇸🇳','PAISES BAJOS':'🇳🇱',
+  'HOLANDA':'🇳🇱','INGLATERRA':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','IRAN':'🇮🇷','ESTADOS UNIDOS':'🇺🇸','USA':'🇺🇸',
+  'GALES':'🏴󠁧󠁢󠁷󠁬󠁳󠁿','ARGENTINA':'🇦🇷','ARABIA SAUDITA':'🇸🇦','ARABIA SAUDI':'🇸🇦',
+  'MEXICO':'🇲🇽','POLONIA':'🇵🇱','FRANCIA':'🇫🇷','AUSTRALIA':'🇦🇺','DINAMARCA':'🇩🇰',
+  'TUNEZ':'🇹🇳','ESPANA':'🇪🇸','ESPAÑA':'🇪🇸','COSTA RICA':'🇨🇷','ALEMANIA':'🇩🇪',
+  'JAPON':'🇯🇵','BELGICA':'🇧🇪','CANADA':'🇨🇦','MARRUECOS':'🇲🇦','CROACIA':'🇭🇷',
+  'BRASIL':'🇧🇷','SERBIA':'🇷🇸','SUIZA':'🇨🇭','CAMERUN':'🇨🇲','PORTUGAL':'🇵🇹',
+  'GHANA':'🇬🇭','URUGUAY':'🇺🇾','COREA DEL SUR':'🇰🇷','CHILE':'🇨🇱','PERU':'🇵🇪',
+  'VENEZUELA':'🇻🇪','BOLIVIA':'🇧🇴','COLOMBIA':'🇨🇴','ITALIA':'🇮🇹','NIGERIA':'🇳🇬',
+  'TURQUIA':'🇹🇷','NORUEGA':'🇳🇴','SUECIA':'🇸🇪','AUSTRIA':'🇦🇹','UCRANIA':'🇺🇦',
+  'GRECIA':'🇬🇷','RUMANIA':'🇷🇴','HUNGRIA':'🇭🇺','PANAMA':'🇵🇦','HONDURAS':'🇭🇳',
+  'EL SALVADOR':'🇸🇻','JAMAICA':'🇯🇲','PARAGUAY':'🇵🇾','INDONESIA':'🇮🇩','IRAK':'🇮🇶',
+  'ARGELIA':'🇩🇿','EGIPTO':'🇪🇬','SUDAFRICA':'🇿🇦','COSTA DE MARFIL':'🇨🇮','MALI':'🇲🇱',
+  'GEORGIA':'🇬🇪','NUEVA ZELANDA':'🇳🇿','ESCOCIA':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','ALBANIA':'🇦🇱',
+  'ESLOVAQUIA':'🇸🇰','ESLOVENIA':'🇸🇮','REPUBLICA CHECA':'🇨🇿','CHEQUIA':'🇨🇿',
+  'IRLANDA':'🇮🇪','ISLANDIA':'🇮🇸','FINLANDIA':'🇫🇮','TRINIDAD Y TOBAGO':'🇹🇹',
+  'CUBA':'🇨🇺','GUATEMALA':'🇬🇹','HAITI':'🇭🇹','REPUBLICA DOMINICANA':'🇩🇴','CURAZAO':'🇨🇼',
+  'BOSNIA':'🇧🇦','BOSNIA Y HERZEGOVINA':'🇧🇦','CABO VERDE':'🇨🇻','JORDANIA':'🇯🇴','UZBEKISTAN':'🇺🇿'
 };
 
-const ADMIN_EMAIL = 'faldunate@gmail.com';
-const API = 'http://localhost:3000';
+function norm(t){ return (t||'').toString().trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[''`´]/g,''); }
+function getFlag(n){
+  const k=norm(n);
+  if(FLAGS[k]) return FLAGS[k];
+  for(const [key,val] of Object.entries(FLAGS)){ if(k.includes(key)||key.includes(k)) return val; }
+  return '🏳️';
+}
 
-const fbApp = initializeApp(firebaseConfig);
-const auth = getAuth(fbApp);
-const provider = new GoogleAuthProvider();
+window.loginGoogle=async()=>{ try{ await signInWithPopup(auth,provider); } catch(e){ document.getElementById('login-error').textContent=e.message; } };
+window.logout=async()=>{ await signOut(auth); window.location.href='index.html'; };
 
-let currentUser = null;
-let globalPartidos = [];
-
-window.loginGoogle = async () => {
-  try { await signInWithPopup(auth, provider); }
-  catch (e) { toast(e.message, 'error'); }
-};
-
-window.logout = async () => { await signOut(auth); };
-
-onAuthStateChanged(auth, async user => {
-  if (user) {
-    if (user.email !== ADMIN_EMAIL) {
+onAuthStateChanged(auth,async user=>{
+  if(user){
+    if(user.email!==ADMIN_EMAIL){
       await signOut(auth);
-      document.getElementById('login-screen').innerHTML +=
-        '<p style="color:var(--red);margin-top:16px;">❌ No tienes permisos de administrador.</p>';
+      document.getElementById('login-error').textContent='❌ No tienes permisos de administrador.';
       return;
     }
-    currentUser = user;
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    document.getElementById('admin-email').textContent = user.email;
+    currentUser=user;
+    document.getElementById('login-screen').style.display='none';
+    const appEl=document.getElementById('app'); appEl.style.display='flex';
+    document.getElementById('admin-email').textContent=user.email;
     await initAdmin();
+    await initFCM();
   } else {
-    currentUser = null;
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
+    currentUser=null;
+    document.getElementById('login-screen').style.display='flex';
+    document.getElementById('app').style.display='none';
   }
 });
 
-async function getToken() {
-  return await currentUser.getIdToken(true);
-}
-
-async function apiFetch(path, options = {}) {
-  const token = await getToken();
-  const res = await fetch(API + path, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + token,
-      ...(options.headers || {})
-    }
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error(err.error || res.statusText);
-  }
+async function getToken_(){ return await currentUser.getIdToken(true); }
+async function apiFetch(path,opts={}){
+  const token=await getToken_();
+  const res=await fetch(API+path,{...opts,headers:{'Content-Type':'application/json','Authorization':'Bearer '+token,...(opts.headers||{})}});
+  if(!res.ok){ const e=await res.json().catch(()=>({error:res.statusText})); throw new Error(e.error||res.statusText); }
   return res.json();
 }
 
-async function initAdmin() {
-  const data = await fetch(API + '/api/data').then(r => r.json());
-  globalPartidos = data.partidos || [];
+async function initFCM(){
+  try{
+    const messaging=getMessaging(fbApp);
+    const tok=await getToken(messaging,{vapidKey:'YOUR_VAPID_KEY'});
+    if(tok) await apiFetch('/api/fcm-token',{method:'POST',body:JSON.stringify({token:tok})});
+    onMessage(messaging,payload=>{
+      toast(payload.notification?.body||'Nueva notificación','info');
+      renderSolicitudes(); // refrescar si llega push
+    });
+  } catch(e){ console.log('FCM:',e.message); }
+}
 
-  // Popular filtro de grupos de partidos
-  const gruposUnicos = [...new Set(globalPartidos.map(p => p.grupo).filter(Boolean))].sort();
-  const sel = document.getElementById('filtro-grupo');
-  gruposUnicos.forEach(g => {
-    const opt = document.createElement('option');
-    opt.value = g;
-    opt.textContent = 'Grupo ' + g;
-    sel.appendChild(opt);
+async function initAdmin(){
+  const data=await fetch(API+'/api/data').then(r=>r.json());
+  globalPartidos=data.partidos||[];
+
+  // Llenar selector de grupos en resultados
+  const gs=[...new Set(globalPartidos.map(p=>p.grupo).filter(Boolean))].sort();
+  const sel=document.getElementById('filtro-grupo');
+  if(sel){ gs.forEach(g=>{ const o=document.createElement('option'); o.value=g; o.textContent='Grupo '+g; sel.appendChild(o); }); }
+
+  await renderSolicitudes();
+  await renderSolicitudesCount();
+}
+
+// ── TABS ──
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',async()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    const tab=btn.dataset.tab;
+    document.getElementById('tab-'+tab).classList.add('active');
+    if(tab==='solicitudes') await renderSolicitudes();
+    if(tab==='grupos') await renderGrupos();
+    if(tab==='participantes') await renderParticipantes();
+    if(tab==='resultados') renderResultados();
+    if(tab==='ranking') await renderRanking();
+  });
+});
+
+// ── SOLICITUDES ──
+async function renderSolicitudesCount(){
+  try{
+    const sols=await apiFetch('/api/solicitudes');
+    const pendientes=sols.filter(s=>s.estado==='pendiente').length;
+    const dot=document.getElementById('dot-sol');
+    if(pendientes>0){ dot.textContent=pendientes; dot.style.display='inline-flex'; }
+    else { dot.style.display='none'; }
+  } catch{}
+}
+
+async function renderSolicitudes(){
+  const c=document.getElementById('tab-solicitudes');
+  c.innerHTML=`<div class="sec-title"><i class="fas fa-user-check"></i> Solicitudes de ingreso</div><div class="alert alert-info"><i class="fas fa-info-circle"></i> Aquí aparecen las solicitudes de los usuarios para unirse a grupos. Aprueba o rechaza cada una.</div><div id="sols-list"><div class="empty"><i class="fas fa-spinner fa-spin"></i></div></div>`;
+  try{
+    const sols=await apiFetch('/api/solicitudes');
+    const list=document.getElementById('sols-list');
+    const pendientes=sols.filter(s=>s.estado==='pendiente');
+    const resto=sols.filter(s=>s.estado!=='pendiente');
+    const all=[...pendientes,...resto];
+    if(!all.length){ list.innerHTML='<div class="empty"><i class="fas fa-inbox"></i><p>No hay solicitudes aún.</p></div>'; return; }
+
+    list.innerHTML='';
+    all.forEach(s=>{
+      const card=document.createElement('div'); card.className='sol-card'; card.id='sol_'+s.id;
+      const estadoClass={pendiente:'estado-pendiente',aprobado:'estado-aprobado',rechazado:'estado-rechazado'}[s.estado]||'';
+      const estadoLabel={pendiente:'⏳ Pendiente',aprobado:'✅ Aprobado',rechazado:'❌ Rechazado'}[s.estado]||s.estado;
+      card.innerHTML=`
+        <div class="sol-header">
+          ${s.photoURL?`<img src="${s.photoURL}" class="sol-avatar" alt="">`:
+          `<div class="sol-avatar" style="background:var(--card);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">👤</div>`}
+          <div class="sol-info">
+            <h4>${s.nombre}</h4>
+            <p>${s.email} · Grupo: <strong>${s.grupoNombre}</strong></p>
+          </div>
+          <span class="estado-pill ${estadoClass}">${estadoLabel}</span>
+        </div>
+        ${s.estado==='pendiente'?`
+        <div class="sol-actions">
+          <button class="btn btn-green btn-sm aprobar-btn" data-id="${s.id}"><i class="fas fa-check"></i> Aprobar</button>
+          <button class="btn btn-red btn-sm rechazar-btn" data-id="${s.id}"><i class="fas fa-times"></i> Rechazar</button>
+        </div>`:''}`;
+      list.appendChild(card);
+    });
+
+    list.querySelectorAll('.aprobar-btn').forEach(btn=>{
+      btn.addEventListener('click',async()=>{
+        btn.disabled=true; btn.textContent='...';
+        try{
+          await apiFetch(`/api/solicitudes/${btn.dataset.id}/aprobar`,{method:'POST'});
+          toast('Usuario aprobado ✓','success');
+          await renderSolicitudes(); await renderSolicitudesCount();
+        } catch(e){ toast(e.message,'error'); btn.disabled=false; btn.textContent='Aprobar'; }
+      });
+    });
+    list.querySelectorAll('.rechazar-btn').forEach(btn=>{
+      btn.addEventListener('click',async()=>{
+        const motivo=prompt('Motivo del rechazo (opcional):');
+        btn.disabled=true; btn.textContent='...';
+        try{
+          await apiFetch(`/api/solicitudes/${btn.dataset.id}/rechazar`,{method:'POST',body:JSON.stringify({motivo:motivo||''})});
+          toast('Solicitud rechazada','success');
+          await renderSolicitudes(); await renderSolicitudesCount();
+        } catch(e){ toast(e.message,'error'); btn.disabled=false; btn.textContent='Rechazar'; }
+      });
+    });
+  } catch(e){ document.getElementById('sols-list').innerHTML=`<div class="empty"><p>${e.message}</p></div>`; }
+}
+
+// ── GRUPOS ──
+async function renderGrupos(){
+  const c=document.getElementById('tab-grupos');
+  c.innerHTML=`
+    <div class="sec-title"><i class="fas fa-plus-circle"></i> Crear grupo</div>
+    <div class="card">
+      <div class="form-row">
+        <div class="form-group"><label>Nombre del grupo</label><input type="text" id="g-nombre" class="form-input" placeholder="Ej: Los cracks del barrio"></div>
+        <div class="form-group"><label>Descripción (opcional)</label><input type="text" id="g-desc" class="form-input" placeholder="Ej: Grupo del trabajo"></div>
+      </div>
+      <button class="btn btn-gold" id="crear-grupo-btn"><i class="fas fa-plus"></i> Crear grupo</button>
+    </div>
+    <div class="sec-title" style="margin-top:28px;"><i class="fas fa-list"></i> Grupos existentes</div>
+    <div id="grupos-list"><div class="empty"><i class="fas fa-spinner fa-spin"></i></div></div>`;
+
+  document.getElementById('crear-grupo-btn').addEventListener('click',async()=>{
+    const nombre=document.getElementById('g-nombre').value.trim();
+    const desc=document.getElementById('g-desc').value.trim();
+    if(!nombre) return toast('Ingresa un nombre','warn');
+    try{
+      await apiFetch('/api/grupos',{method:'POST',body:JSON.stringify({nombre,descripcion:desc})});
+      document.getElementById('g-nombre').value=''; document.getElementById('g-desc').value='';
+      toast('Grupo creado ✓','success'); await loadGruposList();
+    } catch(e){ toast(e.message,'error'); }
   });
 
-  await renderGruposAdmin();
-  renderPartidos();
+  await loadGruposList();
 }
 
-// ── TABS ─────────────────────────────────────────────────────────────────
-window.showTab = async (tab) => {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('tab-' + tab).classList.add('active');
-  if (tab === 'ranking') await renderRankingGlobal();
-};
+async function loadGruposList(){
+  const list=document.getElementById('grupos-list');
+  if(!list) return;
+  const grupos=await fetch(API+'/api/grupos').then(r=>r.json());
+  if(!grupos.length){ list.innerHTML='<div class="empty"><i class="fas fa-layer-group"></i><p>No hay grupos aún.</p></div>'; return; }
+  list.innerHTML='';
+  grupos.forEach(g=>{
+    const item=document.createElement('div'); item.className='list-item';
+    item.innerHTML=`
+      <div class="list-item-info"><h4>${g.nombre}</h4><p>${g.descripcion||'Sin descripción'}</p></div>
+      <div class="list-item-actions">
+        <button class="btn btn-red btn-sm elim-btn"><i class="fas fa-trash"></i> Eliminar</button>
+      </div>`;
+    item.querySelector('.elim-btn').addEventListener('click',async()=>{
+      if(!confirm(`¿Eliminar "${g.nombre}"?`)) return;
+      try{ await apiFetch(`/api/grupos/${g.id}`,{method:'DELETE'}); toast('Grupo eliminado','success'); await loadGruposList(); }
+      catch(e){ toast(e.message,'error'); }
+    });
+    list.appendChild(item);
+  });
+}
 
-// ── GRUPOS ────────────────────────────────────────────────────────────────
-async function renderGruposAdmin() {
-  const grupos = await fetch(API + '/api/grupos').then(r => r.json());
-  const list = document.getElementById('grupos-list');
-  if (!grupos.length) {
-    list.innerHTML = '<p style="color:var(--muted);">Aún no hay grupos.</p>';
-    return;
-  }
-  list.innerHTML = grupos.map(g => `
-    <div class="grupo-item">
-      <div class="grupo-item-info">
-        <h4>${g.nombre}</h4>
-        <p>${g.descripcion || 'Sin descripción'}</p>
-      </div>
-      <button class="btn btn-danger btn-sm" onclick="eliminarGrupo('${g.id}','${g.nombre.replace(/'/g,"\\'")}')">
-        <i class="fas fa-trash"></i> Eliminar
-      </button>
+// ── PARTICIPANTES ──
+async function renderParticipantes(){
+  const c=document.getElementById('tab-participantes');
+  c.innerHTML=`<div class="sec-title"><i class="fas fa-id-card"></i> Participantes inscritos <span class="count" id="part-count">0</span></div><div id="parts-list"><div class="empty"><i class="fas fa-spinner fa-spin"></i></div></div>`;
+  try{
+    const parts=await apiFetch('/api/participantes');
+    document.getElementById('part-count').textContent=parts.length;
+    const list=document.getElementById('parts-list');
+    if(!parts.length){ list.innerHTML='<div class="empty"><i class="fas fa-users"></i><p>No hay participantes aún.</p></div>'; return; }
+    list.innerHTML='';
+    parts.forEach(p=>{
+      const item=document.createElement('div'); item.className='list-item';
+      item.innerHTML=`
+        <div style="display:flex;align-items:center;gap:12px;">
+          ${p.photoURL?`<img src="${p.photoURL}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;" alt="">`:
+          `<div style="width:36px;height:36px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;">👤</div>`}
+          <div class="list-item-info"><h4>${p.nombre}</h4><p>${p.email} · Grupo: <strong>${p.grupoNombre}</strong></p></div>
+        </div>
+        <div class="list-item-actions">
+          <button class="btn btn-red btn-sm elim-btn" data-uid="${p.uid}"><i class="fas fa-user-minus"></i> Remover</button>
+        </div>`;
+      item.querySelector('.elim-btn').addEventListener('click',async()=>{
+        if(!confirm(`¿Remover a ${p.nombre}? Se eliminarán también sus apuestas.`)) return;
+        try{ await apiFetch(`/api/participantes/${p.uid}`,{method:'DELETE'}); toast('Participante removido','success'); await renderParticipantes(); }
+        catch(e){ toast(e.message,'error'); }
+      });
+      list.appendChild(item);
+    });
+  } catch(e){ document.getElementById('parts-list').innerHTML=`<div class="empty"><p>${e.message}</p></div>`; }
+}
+
+// ── RESULTADOS ──
+function renderResultados(){
+  const c=document.getElementById('tab-resultados');
+  c.innerHTML=`
+    <div class="sec-title"><i class="fas fa-futbol"></i> Ingresar resultados reales</div>
+    <div class="alert alert-warn"><i class="fas fa-triangle-exclamation"></i> Al guardar, los puntajes de todos los participantes se recalculan automáticamente.</div>
+    <div class="filter-row">
+      <select id="filtro-grupo" class="filter-select" onchange="filtrarPartidos()"><option value="">Todos los grupos</option></select>
+      <label class="check-label"><input type="checkbox" id="solo-pend" onchange="filtrarPartidos()"> Solo pendientes</label>
     </div>
-  `).join('');
+    <div id="partidos-list"></div>`;
+
+  // Re-popular selector
+  const gs=[...new Set(globalPartidos.map(p=>p.grupo).filter(Boolean))].sort();
+  const sel=document.getElementById('filtro-grupo');
+  gs.forEach(g=>{ const o=document.createElement('option'); o.value=g; o.textContent='Grupo '+g; sel.appendChild(o); });
+
+  filtrarPartidos();
 }
 
-window.crearGrupo = async () => {
-  const nombre = document.getElementById('nuevo-nombre').value.trim();
-  const desc = document.getElementById('nueva-desc').value.trim();
-  if (!nombre) return toast('Ingresa un nombre', 'warn');
-  try {
-    await apiFetch('/api/grupos', {
-      method: 'POST',
-      body: JSON.stringify({ nombre, descripcion: desc })
+window.filtrarPartidos=()=>{
+  const filtro=document.getElementById('filtro-grupo')?.value;
+  const soloPend=document.getElementById('solo-pend')?.checked;
+  let partidos=globalPartidos;
+  if(filtro) partidos=partidos.filter(p=>p.grupo===filtro);
+  if(soloPend) partidos=partidos.filter(p=>p.resultado_local==null);
+  const list=document.getElementById('partidos-list');
+  if(!list) return;
+  if(!partidos.length){ list.innerHTML='<div class="empty"><p>Sin partidos para mostrar.</p></div>'; return; }
+  list.innerHTML='';
+  partidos.forEach(p=>{
+    const row=document.createElement('div'); row.className='partido-admin'; row.id='prow_'+p.id;
+    row.innerHTML=`
+      <div class="team-label"><span>${getFlag(p.local)}</span>${p.local}</div>
+      <div class="result-inputs">
+        <input type="number" min="0" max="20" class="result-input" id="rl_${p.id}" value="${p.resultado_local??''}" placeholder="–">
+        <span style="color:var(--muted);font-weight:800;">:</span>
+        <input type="number" min="0" max="20" class="result-input" id="rv_${p.id}" value="${p.resultado_visita??''}" placeholder="–">
+      </div>
+      <div class="team-label right">${p.visita}<span>${getFlag(p.visita)}</span></div>
+      <div style="display:flex;gap:7px;align-items:center;flex-shrink:0;">
+        ${p.resultado_local!=null?`<span style="font-size:0.7rem;color:var(--green);">✓ Guardado</span>`:''}
+        <button class="btn btn-green btn-sm guardar-btn" data-id="${p.id}"><i class="fas fa-save"></i> Guardar</button>
+      </div>`;
+    row.querySelector('.guardar-btn').addEventListener('click',async(e)=>{
+      const pid=e.currentTarget.dataset.id;
+      const l=document.getElementById('rl_'+pid)?.value;
+      const v=document.getElementById('rv_'+pid)?.value;
+      if(l===''||v==='') return toast('Ingresa ambos goles','warn');
+      e.currentTarget.disabled=true; e.currentTarget.textContent='...';
+      try{
+        const r=await apiFetch('/api/resultados',{method:'POST',body:JSON.stringify({partidoId:pid,golesLocal:Number(l),golesVisita:Number(v)})});
+        const idx=globalPartidos.findIndex(p=>p.id===pid);
+        if(idx!==-1){ globalPartidos[idx].resultado_local=Number(l); globalPartidos[idx].resultado_visita=Number(v); }
+        toast(`Guardado · ${r.apuestasActualizadas} apuestas actualizadas`,'success');
+        filtrarPartidos();
+      } catch(e){ toast(e.message,'error'); e.currentTarget.disabled=false; e.currentTarget.textContent='Guardar'; }
     });
-    document.getElementById('nuevo-nombre').value = '';
-    document.getElementById('nueva-desc').value = '';
-    toast('Grupo creado ✓', 'success');
-    await renderGruposAdmin();
-  } catch (e) { toast(e.message, 'error'); }
+    list.appendChild(row);
+  });
 };
 
-window.eliminarGrupo = async (id, nombre) => {
-  if (!confirm(`¿Eliminar el grupo "${nombre}"? Esta acción no se puede deshacer.`)) return;
-  try {
-    await apiFetch(`/api/grupos/${id}`, { method: 'DELETE' });
-    toast('Grupo eliminado', 'success');
-    await renderGruposAdmin();
-  } catch (e) { toast(e.message, 'error'); }
-};
-
-// ── RESULTADOS ────────────────────────────────────────────────────────────
-window.renderPartidos = () => {
-  const filtroGrupo = document.getElementById('filtro-grupo').value;
-  const soloPendientes = document.getElementById('solo-pendientes').checked;
-
-  let partidos = globalPartidos;
-  if (filtroGrupo) partidos = partidos.filter(p => p.grupo === filtroGrupo);
-  if (soloPendientes) partidos = partidos.filter(p => p.resultado_local == null);
-
-  const list = document.getElementById('partidos-list');
-  if (!partidos.length) {
-    list.innerHTML = '<p style="color:var(--muted);padding:20px 0;">Sin partidos para mostrar.</p>';
-    return;
-  }
-
-  list.innerHTML = partidos.map(p => {
-    const tieneResultado = p.resultado_local != null;
-    return `
-    <div class="partido-admin" id="prow_${p.id}">
-      <div class="team-label">
-        <span style="font-size:1.2rem;">${getFlag(p.local)}</span> ${p.local}
-      </div>
-      <div class="resultado-inputs">
-        <input type="number" min="0" max="20" class="result-input" id="rl_${p.id}"
-          value="${tieneResultado ? p.resultado_local : ''}" placeholder="–">
-        <span class="result-sep">:</span>
-        <input type="number" min="0" max="20" class="result-input" id="rv_${p.id}"
-          value="${tieneResultado ? p.resultado_visita : ''}" placeholder="–">
-      </div>
-      <div class="team-label right">
-        ${p.visita} <span style="font-size:1.2rem;">${getFlag(p.visita)}</span>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
-        ${tieneResultado ? `<span class="badge badge-green"><i class="fas fa-check"></i> Guardado</span>` : ''}
-        <button class="btn btn-green btn-sm" onclick="guardarResultado('${p.id}')">
-          <i class="fas fa-save"></i> Guardar
-        </button>
-      </div>
-    </div>`;
-  }).join('');
-};
-
-window.guardarResultado = async (partidoId) => {
-  const l = document.getElementById('rl_' + partidoId).value;
-  const v = document.getElementById('rv_' + partidoId).value;
-  if (l === '' || v === '') return toast('Ingresa ambos goles', 'warn');
-
-  try {
-    const res = await apiFetch('/api/resultados', {
-      method: 'POST',
-      body: JSON.stringify({ partidoId, golesLocal: Number(l), golesVisita: Number(v) })
-    });
-
-    // Actualizar en memoria
-    const idx = globalPartidos.findIndex(p => p.id === partidoId);
-    if (idx !== -1) {
-      globalPartidos[idx].resultado_local = Number(l);
-      globalPartidos[idx].resultado_visita = Number(v);
-    }
-
-    toast(`Resultado guardado · ${res.apuestasActualizadas} apuestas actualizadas`, 'success');
-    renderPartidos();
-  } catch (e) { toast(e.message, 'error'); }
-};
-
-// ── RANKING GLOBAL ────────────────────────────────────────────────────────
-async function renderRankingGlobal() {
-  const container = document.getElementById('ranking-global');
-  container.innerHTML = '<p style="color:var(--muted);">Cargando...</p>';
-  try {
-    const ranking = await apiFetch('/api/ranking');
-    if (!ranking.length) {
-      container.innerHTML = '<p style="color:var(--muted);">Aún no hay apuestas registradas.</p>';
-      return;
-    }
-    const maxPts = ranking[0]?.total || 1;
-    let html = `<table class="ranking-table"><thead><tr>
-      <th>#</th><th>Jugador</th><th>Grupo</th><th>Email</th><th>Puntos</th>
-    </tr></thead><tbody>`;
-    ranking.forEach((r, i) => {
-      const pos = i + 1;
-      const posClass = pos <= 3 ? `pos-${pos}` : 'pos-n';
-      html += `<tr>
-        <td><span class="pos-badge ${posClass}">${pos}</span></td>
+// ── RANKING ──
+async function renderRanking(){
+  const c=document.getElementById('tab-ranking');
+  c.innerHTML=`<div class="sec-title"><i class="fas fa-trophy"></i> Ranking global</div><div class="empty"><i class="fas fa-spinner fa-spin"></i></div>`;
+  try{
+    const ranking=await apiFetch('/api/ranking');
+    if(!ranking.length){ c.innerHTML+='<div class="empty"><i class="fas fa-chart-bar"></i><p>Aún no hay apuestas.</p></div>'; return; }
+    let html=`<div class="sec-title"><i class="fas fa-trophy"></i> Ranking global <span class="count">${ranking.length} jugadores</span></div>
+    <table class="ranking-table"><thead><tr><th>#</th><th>Jugador</th><th>Grupo</th><th>Email</th><th>Puntos</th></tr></thead><tbody>`;
+    ranking.forEach((r,i)=>{
+      const pos=i+1, pc=pos<=3?`pos-${pos}`:'pos-n';
+      html+=`<tr><td><span class="pos-badge ${pc}">${pos}</span></td>
         <td style="font-weight:600;">${r.nombre}</td>
-        <td style="color:var(--muted);font-size:0.85rem;">${r.grupoNombre || '–'}</td>
-        <td style="color:var(--muted);font-size:0.82rem;">${r.email}</td>
-        <td style="font-weight:700;font-size:1.05rem;">${r.total}</td>
-      </tr>`;
+        <td style="color:var(--muted);font-size:0.82rem;">${r.grupoNombre||'–'}</td>
+        <td style="color:var(--muted);font-size:0.78rem;">${r.email}</td>
+        <td style="font-weight:700;font-size:1rem;">${r.total}</td></tr>`;
     });
-    html += '</tbody></table>';
-    container.innerHTML = html;
-  } catch (e) { container.innerHTML = `<p style="color:var(--red);">${e.message}</p>`; }
+    html+='</tbody></table>';
+    c.innerHTML=html;
+  } catch(e){ c.innerHTML=`<div class="empty"><p>${e.message}</p></div>`; }
 }
 
-// ── UTILS ─────────────────────────────────────────────────────────────────
-const FLAGS = {
-  'ARGENTINA':'🇦🇷','BRASIL':'🇧🇷','FRANCE':'🇫🇷','FRANCIA':'🇫🇷','ESPAÑA':'🇪🇸','ESPANA':'🇪🇸',
-  'ALEMANIA':'🇩🇪','ENGLAND':'🏴','INGLATERRA':'🏴','PORTUGAL':'🇵🇹','ESTADOS UNIDOS':'🇺🇸',
-  'USA':'🇺🇸','MEXICO':'🇲🇽','CANADA':'🇨🇦','MARRUECOS':'🇲🇦','CROACIA':'🇭🇷',
-  'PAISES BAJOS':'🇳🇱','BELGICA':'🇧🇪','URUGUAY':'🇺🇾','COLOMBIA':'🇨🇴','CHILE':'🇨🇱',
-  'ECUADOR':'🇪🇨','PERU':'🇵🇪','VENEZUELA':'🇻🇪','JAPON':'🇯🇵','COREA DEL SUR':'🇰🇷',
-  'AUSTRALIA':'🇦🇺','SENEGAL':'🇸🇳','NIGERIA':'🇳🇬','GHANA':'🇬🇭','CAMERUN':'🇨🇲',
-  'ARABIA SAUDITA':'🇸🇦','IRAN':'🇮🇷','SUIZA':'🇨🇭','DINAMARCA':'🇩🇰','SUECIA':'🇸🇪',
-  'NORUEGA':'🇳🇴','AUSTRIA':'🇦🇹','POLONIA':'🇵🇱','SERBIA':'🇷🇸','UCRANIA':'🇺🇦',
-  'TURQUIA':'🇹🇷','GRECIA':'🇬🇷','RUMANIA':'🇷🇴','HUNGRIA':'🇭🇺','COSTA RICA':'🇨🇷',
-  'PANAMA':'🇵🇦','HONDURAS':'🇭🇳','EL SALVADOR':'🇸🇻','JAMAICA':'🇯🇲','BOLIVIA':'🇧🇴',
-  'PARAGUAY':'🇵🇾','INDONESIA':'🇮🇩','IRAK':'🇮🇶','ARGELIA':'🇩🇿','EGIPTO':'🇪🇬',
-  'SUDAFRICA':'🇿🇦','COSTA DE MARFIL':'🇨🇮','MALI':'🇲🇱',
-};
-function normalize(t) {
-  return (t||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[''`´]/g,'');
-}
-function getFlag(n) { return FLAGS[normalize(n)] || '🏳️'; }
-
-window.toast = (msg, type = 'info') => {
-  const t = document.getElementById('toast');
-  const icons = { info:'ℹ️', success:'✅', warn:'⚠️', error:'❌' };
-  t.textContent = (icons[type]||'') + ' ' + msg;
-  t.className = 'show';
-  setTimeout(() => t.className = '', 3500);
+// ── TOAST ──
+window.toast=(msg,type='info')=>{
+  const t=document.getElementById('toast');
+  const icons={info:'ℹ️',success:'✅',warn:'⚠️',error:'❌'};
+  t.textContent=(icons[type]||'')+' '+msg; t.className='show';
+  setTimeout(()=>t.className='',3500);
 };
 </script>
 </body>

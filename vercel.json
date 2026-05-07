@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "api/server.js", "use": "@vercel/node" },
+    { "src": "frontend/**/*", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "api/server.js" },
+    { "src": "/polla.html", "dest": "frontend/polla.html" },
+    { "src": "/admin.html", "dest": "frontend/admin.html" },
+    { "src": "/(.*)", "dest": "frontend/index.html" }
+  ]
+}
