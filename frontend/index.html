@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Polla 2026 · Mundial FIFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700;1,800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+/* ─── TOKENS ─────────────────────────────────────────────────────────────── */
+:root {
+  --red:      #DA0015;
+  --red-dark: #9E000F;
+  --red-deep: #6B0009;
+  --gold:     #F0C040;
+  --gold2:    #C89A00;
+  --white:    #FFFFFF;
+  --off:      #F7F4EF;
+  --ink:      #0D0D0D;
+  --ink2:     #2A2A2A;
+  --muted:    #7A7A7A;
+  --border:   #E2DDD6;
+
+  --sidebar-w: 280px;
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-body:    'Barlow', sans-serif;
+}
+
+/* ─── RESET ──────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--off);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; }
+
+/* ─── HEADER ─────────────────────────────────────────────────────────────── */
+header {
+  background: var(--red);
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+}
+
+/* Textura de puntos estilo Panini */
+header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px);
+  background-size: 18px 18px;
+  pointer-events: none;
+  z-index: 0;
+}
+/* Franja diagonal dorada */
+header::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0; right: 0;
+  height: 8px;
+  background: var(--gold);
+  z-index: 2;
+}
+
+/* ── Topbar ── */
+.topbar {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 40px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.topbar-logo {
+  width: 42px; height: 42px;
+  background: var(--gold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+.topbar-brand-text small {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.65);
+}
+.topbar-brand-text strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: white;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+.topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.topbar-link {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.8);
+  padding: 6px 14px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+.topbar-link:hover { color: white; background: rgba(255,255,255,0.1); }
+.btn-polla {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.88rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--gold);
+  color: var(--ink);
+  padding: 9px 22px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-polla:hover {
+  background: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+/* ── Hero ── */
+.hero {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 40px;
+  padding: 48px 40px 56px;
+  flex-wrap: wrap;
+}
+.hero-left { flex: 1; min-width: 260px; }
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 14px;
+}
+.hero-eyebrow::before, .hero-eyebrow::after {
+  content: '';
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--gold);
+}
+.hero h1 {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 900;
+  font-size: clamp(3.5rem, 8vw, 7rem);
+  color: white;
+  line-height: 0.88;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  text-shadow: 4px 6px 0px var(--red-deep);
+  margin-bottom: 20px;
+}
+.hero h1 span { color: var(--gold); }
+.hero-sub {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.75);
+  max-width: 480px;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+.hero-cta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.btn-hero-main {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--gold);
+  color: var(--ink);
+  padding: 14px 32px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.22s;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.btn-hero-main:hover {
+  background: white;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.35);
+}
+.btn-hero-sec {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.88rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.85);
+  border: 1.5px solid rgba(255,255,255,0.35);
+  padding: 13px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: transparent;
+}
+.btn-hero-sec:hover { border-color: white; color: white; background: rgba(255,255,255,0.08); }
+
+/* Stats en el hero */
+.hero-stats {
+  display: flex;
+  gap: 0;
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+.hero-stat {
+  padding: 20px 28px;
+  text-align: center;
+  border-left: 1px solid rgba(255,255,255,0.15);
+  position: relative;
+}
+.hero-stat:first-child { border-left: none; }
+.hero-stat-num {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 2.8rem;
+  color: var(--gold);
+  line-height: 1;
+  display: block;
+}
+.hero-stat-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  margin-top: 4px;
+  display: block;
+}
+
+/* ─── LAYOUT ─────────────────────────────────────────────────────────────── */
+.layout {
+  display: flex;
+  flex: 1;
+}
+
+/* ─── SIDEBAR ────────────────────────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--ink);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 28px 20px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--red) transparent;
+}
+.sidebar-section-title {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.paises-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.pais-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 6px;
+  padding: 10px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 72px;
+  justify-content: center;
+}
+.pais-card:hover {
+  background: var(--red);
+  border-color: var(--red);
+  transform: translateY(-2px);
+}
+.pais-flag { font-size: 1.5rem; line-height: 1; }
+.pais-name {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* ─── MAIN ───────────────────────────────────────────────────────────────── */
+main {
+  flex: 1;
+  padding: 40px;
+  min-width: 0;
+}
+
+/* ─── SECTION TITLES ─────────────────────────────────────────────────────── */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.section-label-line {
+  width: 4px;
+  height: 32px;
+  background: var(--red);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.section-label h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.6rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink);
+  line-height: 1;
+}
+.section-label p {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.section-wrap { margin-bottom: 52px; }
+
+/* ─── GRUPOS GRID ────────────────────────────────────────────────────────── */
+.grupos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+.grupo-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  transition: all 0.22s;
+}
+.grupo-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+  border-color: var(--red);
+}
+.grupo-card-header {
+  background: var(--ink);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.grupo-card-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: white;
+}
+.grupo-card-badge {
+  background: var(--gold);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 2px;
+}
+.grupo-card-body { padding: 16px 18px; }
+.match-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-radius: 4px;
+  margin: 0 -4px;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+.match-row:last-child { border-bottom: none; }
+.match-row:hover { background: var(--off); }
+.match-team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  flex: 1;
+}
+.match-team.right { flex-direction: row-reverse; text-align: right; }
+.match-team-flag { font-size: 1.1rem; }
+.match-vs {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  flex-shrink: 0;
+  background: var(--off);
+  padding: 3px 8px;
+  border-radius: 3px;
+}
+.match-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.match-meta-date { display: flex; align-items: center; gap: 5px; }
+.match-meta-stadium { display: flex; align-items: center; gap: 5px; }
+
+/* ─── ESTADIOS ───────────────────────────────────────────────────────────── */
+.estadios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+.estadio-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.22s;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  position: relative;
+}
+.estadio-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.15);
+}
+.estadio-card:hover .estadio-overlay { opacity: 1; }
+.estadio-img-wrap {
+  position: relative;
+  height: 170px;
+  overflow: hidden;
+  background: var(--ink2);
+}
+.estadio-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.estadio-card:hover .estadio-img { transform: scale(1.06); }
+.estadio-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(218,0,21,0.85) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  display: flex;
+  align-items: flex-end;
+  padding: 16px;
+}
+.estadio-overlay-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: white;
+}
+.estadio-flag-corner {
+  position: absolute;
+  top: 12px; right: 12px;
+  font-size: 1.4rem;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+}
+.estadio-fallback {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--ink) 0%, var(--ink2) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: rgba(255,255,255,0.5);
+}
+.estadio-fallback i { font-size: 1.8rem; color: var(--gold); }
+.estadio-info {
+  padding: 14px 16px;
+  border-top: 3px solid var(--red);
+}
+.estadio-info h4 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.estadio-info-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.estadio-info-meta span { display: flex; align-items: center; gap: 5px; }
+
+/* ─── MODAL ──────────────────────────────────────────────────────────────── */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(13,13,13,0.75);
+  backdrop-filter: blur(8px);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-box {
+  background: white;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: popIn 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 40px 80px rgba(0,0,0,0.4);
+}
+@keyframes popIn {
+  from { transform: scale(0.92) translateY(16px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+.modal-box-wide { max-width: 780px; }
+.modal-close {
+  position: absolute;
+  top: 14px; right: 16px;
+  width: 32px; height: 32px;
+  background: rgba(0,0,0,0.08);
+  border: none; cursor: pointer;
+  border-radius: 50%;
+  font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink2);
+  transition: all 0.2s;
+  z-index: 10;
+}
+.modal-close:hover { background: var(--red); color: white; }
+.modal-header-red {
+  background: var(--red);
+  padding: 32px 28px 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.modal-header-red::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+.modal-flag-big { font-size: 4rem; display: block; margin-bottom: 8px; line-height: 1; position: relative; }
+.modal-country-name {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 2rem;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  position: relative;
+}
+.modal-group-tag {
+  display: inline-block;
+  background: var(--gold);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 2px;
+  margin-top: 8px;
+  position: relative;
+}
+.modal-body { padding: 24px 28px; }
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.info-item {
+  background: var(--off);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px;
+}
+.info-item-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+.info-item-value {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* Stadium modal */
+.stadium-modal-img {
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+  display: block;
+}
+.stadium-modal-info { padding: 24px 28px; }
+.stadium-modal-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--red);
+  color: white;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 2px;
+  margin-bottom: 12px;
+}
+.stadium-modal-name {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.8rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-bottom: 16px;
+  line-height: 1;
+}
+.stadium-modal-details { display: flex; flex-direction: column; gap: 10px; }
+.stadium-modal-detail {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 0.88rem;
+  color: var(--ink2);
+}
+.stadium-modal-detail i { color: var(--red); width: 16px; margin-top: 2px; }
+
+/* ─── FOOTER ─────────────────────────────────────────────────────────────── */
+footer {
+  background: var(--ink);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+footer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--red) 0%, var(--gold) 50%, var(--red) 100%);
+}
+.footer-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 40px 28px;
+}
+.footer-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 40px;
+  flex-wrap: wrap;
+  padding-bottom: 28px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 24px;
+}
+.footer-brand-col {}
+.footer-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.footer-logo-ball {
+  width: 40px; height: 40px;
+  background: var(--gold);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.footer-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.4rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: white;
+  line-height: 1;
+}
+.footer-title span { color: var(--gold); }
+.footer-desc {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.6;
+  max-width: 280px;
+}
+.footer-made-col { text-align: right; }
+.footer-made-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 8px;
+}
+.footer-ludolab {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.4rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gold);
+  display: block;
+  transition: color 0.2s;
+}
+.footer-ludolab:hover { color: white; }
+.footer-author {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.5);
+  margin-top: 6px;
+}
+.footer-author a {
+  color: rgba(255,255,255,0.7);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s;
+}
+.footer-author a:hover { color: var(--gold); }
+.footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.footer-copy {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 0.04em;
+}
+.footer-flags {
+  display: flex;
+  gap: 6px;
+  font-size: 1.3rem;
+  opacity: 0.6;
+}
+
+/* ─── RESPONSIVE ─────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .sidebar { display: none; }
+  main { padding: 28px 24px; }
+}
+@media (max-width: 768px) {
+  .topbar { padding: 14px 20px; }
+  .topbar-nav { display: none; }
+  .hero { padding: 32px 20px 44px; }
+  .hero h1 { font-size: 3rem; }
+  .hero-stats { display: none; }
+  main { padding: 20px 16px; }
+  .footer-inner { padding: 32px 20px 20px; }
+  .footer-made-col { text-align: left; }
+  .grupos-grid, .estadios-grid { grid-template-columns: 1fr; }
+}
+
+/* ─── UTILITIES ──────────────────────────────────────────────────────────── */
+.mt-48 { margin-top: 48px; }
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ══════════════════════════════════════════════════════════════ -->
+<header>
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-logo">⚽</div>
+      <div class="topbar-brand-text">
+        <small>Dashboard Oficial</small>
+        <strong>La Polla 2026</strong>
+      </div>
+    </div>
+    <nav class="topbar-nav">
+      <a href="#grupos" class="topbar-link">Grupos</a>
+      <a href="#estadios" class="topbar-link">Estadios</a>
+      <a href="polla.html" class="btn-polla">
+        <i class="fas fa-trophy"></i> Entrar a la Polla
+      </a>
+    </nav>
+  </div>
+
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-eyebrow">FIFA World Cup 2026</div>
+      <h1>La <span>Polla</span><br>Mundial</h1>
+      <p class="hero-sub">Predice, compite y vive el Mundial 2026. Revisa el calendario completo, los grupos, las selecciones y los estadios sede.</p>
+      <div class="hero-cta">
+        <a href="polla.html" class="btn-hero-main">
+          <i class="fas fa-futbol"></i> Participar ahora
+        </a>
+        <a href="#grupos" class="btn-hero-sec">Ver calendario</a>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="hero-stat-num" id="stat-paises">—</span>
+        <span class="hero-stat-label">Selecciones</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num" id="stat-grupos">—</span>
+        <span class="hero-stat-label">Grupos</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num" id="stat-estadios">—</span>
+        <span class="hero-stat-label">Estadios</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ══ LAYOUT ══════════════════════════════════════════════════════════════ -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section-title">
+      <i class="fas fa-flag"></i> Selecciones
+    </div>
+    <div id="paises-sidebar" class="paises-grid"></div>
+  </aside>
+
+  <!-- Main -->
+  <main>
+
+    <!-- Grupos / Calendario -->
+    <section class="section-wrap" id="grupos">
+      <div class="section-label">
+        <div class="section-label-line"></div>
+        <div>
+          <h2>Fase de Grupos</h2>
+          <p>Calendario completo · Partidos y horarios</p>
+        </div>
+      </div>
+      <div id="grupos-wrapper" class="grupos-grid"></div>
+    </section>
+
+    <!-- Estadios -->
+    <section class="section-wrap" id="estadios">
+      <div class="section-label">
+        <div class="section-label-line"></div>
+        <div>
+          <h2>Sedes y Estadios</h2>
+          <p>16 ciudades sede · 3 países anfitriones</p>
+        </div>
+      </div>
+      <div id="estadios-container" class="estadios-grid"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ══ MODALS ═══════════════════════════════════════════════════════════════ -->
+<div id="paisModal" class="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<div id="stadiumModal" class="modal" onclick="if(event.target===this)closeStadiumModal()">
+  <div class="modal-box modal-box-wide">
+    <button class="modal-close" onclick="closeStadiumModal()" style="background:rgba(255,255,255,0.15);color:white;">✕</button>
+    <div id="stadium-modal-body"></div>
+  </div>
+</div>
+
+<!-- ══ FOOTER ═══════════════════════════════════════════════════════════════ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand-col">
+        <div class="footer-logo-row">
+          <div class="footer-logo-ball">⚽</div>
+          <div class="footer-title">La <span>Polla</span> 2026</div>
+        </div>
+        <p class="footer-desc">El dashboard oficial del Mundial FIFA 2026. Grupos, partidos, estadios y predicciones en un solo lugar.</p>
+      </div>
+      <div class="footer-made-col">
+        <div class="footer-made-label">Diseñado y desarrollado por</div>
+        <a href="https://ludolab.cl" target="_blank" class="footer-ludolab">Ludolab.cl</a>
+        <div class="footer-author">
+          Felipe Aldunate · <a href="mailto:felipe@ludolab.cl">felipe@ludolab.cl</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2026 Ludolab.cl · Felipe Aldunate · Todos los derechos reservados</div>
+      <div class="footer-flags">🇺🇸🇲🇽🇨🇦</div>
+    </div>
+  </div>
+</footer>
+
+<!-- ══ SCRIPT ════════════════════════════════════════════════════════════════ -->
+<script>
+const mapaImagenesEstadios = {
+  'ATLANTA': 'estadios/estadio_atlanta.png',
+  'MERCEDES': 'estadios/estadio_atlanta.png',
+  'AZTECA': 'estadios/estadio_azteca.png',
+  'CIUDAD DE MEXICO': 'estadios/estadio_azteca.png',
+  'CDMX': 'estadios/estadio_azteca.png',
+  'BOSTON': 'estadios/estadio_boston.png',
+  'FOXBOROUGH': 'estadios/estadio_boston.png',
+  'GILLETTE': 'estadios/estadio_boston.png',
+  'NEW ENGLAND': 'estadios/estadio_boston.png',
+  'DALLAS': 'estadios/estadio_dallas.png',
+  'ARLINGTON': 'estadios/estadio_dallas.png',
+  'GUADALAJARA': 'estadios/estadio_guadalajara.png',
+  'AKRON': 'estadios/estadio_guadalajara.png',
+  'HOUSTON': 'estadios/estadio_houston.png',
+  'NRG': 'estadios/estadio_houston.png',
+  'KANSAS': 'estadios/estadio_kansas.png',
+  'ARROWHEAD': 'estadios/estadio_kansas.png',
+  'GEHA': 'estadios/estadio_kansas.png',
+  'LOS ANGELES': 'estadios/estadio_los_angeles.png',
+  'INGLEWOOD': 'estadios/estadio_los_angeles.png',
+  'SOFI': 'estadios/estadio_los_angeles.png',
+  'MONTERREY': 'estadios/estadio_monterrey.png',
+  'BBVA': 'estadios/estadio_monterrey.png',
+  'MIAMI': 'estadios/estadio_miami.png',
+  'HARD ROCK': 'estadios/estadio_miami.png',
+  'METLIFE': 'estadios/estadio_new_jersey.png',
+  'NEW JERSEY': 'estadios/estadio_new_jersey.png',
+  'EAST RUTHERFORD': 'estadios/estadio_new_jersey.png',
+  'NEW YORK': 'estadios/estadio_new_jersey.png',
+  'PHILADELPHIA': 'estadios/estadio_philadelphia.png',
+  'LINCOLN': 'estadios/estadio_philadelphia.png',
+  'SANTA CLARA': 'estadios/estadio_san_francisco.png',
+  'LEVIS': 'estadios/estadio_san_francisco.png',
+  'LEVI': 'estadios/estadio_san_francisco.png',
+  'SAN FRANCISCO': 'estadios/estadio_san_francisco.png',
+  'BAY': 'estadios/estadio_san_francisco.png',
+  'SEATTLE': 'estadios/estadio_seattle.png',
+  'LUMEN': 'estadios/estadio_seattle.png',
+  'TORONTO': 'estadios/estadio_toronto.png',
+  'BMO': 'estadios/estadio_toronto.png',
+  'VANCOUVER': 'estadios/estadio_vancouver.png',
+  'BC PLACE': 'estadios/estadio_vancouver.png'
+};
+
+const banderasEstadios = {
+  'ATLANTA':'🇺🇸','MERCEDES':'🇺🇸','AZTECA':'🇲🇽','CIUDAD DE MEXICO':'🇲🇽',
+  'BOSTON':'🇺🇸','FOXBOROUGH':'🇺🇸','DALLAS':'🇺🇸','ARLINGTON':'🇺🇸',
+  'GUADALAJARA':'🇲🇽','AKRON':'🇲🇽','HOUSTON':'🇺🇸','KANSAS':'🇺🇸',
+  'ARROWHEAD':'🇺🇸','LOS ANGELES':'🇺🇸','INGLEWOOD':'🇺🇸','SOFI':'🇺🇸',
+  'MONTERREY':'🇲🇽','BBVA':'🇲🇽','MIAMI':'🇺🇸','HARD ROCK':'🇺🇸',
+  'METLIFE':'🇺🇸','NEW JERSEY':'🇺🇸','EAST RUTHERFORD':'🇺🇸','NEW YORK':'🇺🇸',
+  'PHILADELPHIA':'🇺🇸','LINCOLN':'🇺🇸','SANTA CLARA':'🇺🇸','LEVIS':'🇺🇸',
+  'SAN FRANCISCO':'🇺🇸','BAY':'🇺🇸','SEATTLE':'🇺🇸','LUMEN':'🇺🇸',
+  'TORONTO':'🇨🇦','BMO':'🇨🇦','VANCOUVER':'🇨🇦','BC PLACE':'🇨🇦'
+};
+
+const banderas = {
+  'QATAR':'🇶🇦','CATAR':'🇶🇦','ECUADOR':'🇪🇨','SENEGAL':'🇸🇳',
+  'PAISES BAJOS':'🇳🇱','INGLATERRA':'🏴','IRAN':'🇮🇷',
+  'ESTADOS UNIDOS':'🇺🇸','USA':'🇺🇸','GALES':'🏴','ARGENTINA':'🇦🇷',
+  'ARABIA SAUDITA':'🇸🇦','MEXICO':'🇲🇽','POLONIA':'🇵🇱','FRANCIA':'🇫🇷',
+  'AUSTRALIA':'🇦🇺','DINAMARCA':'🇩🇰','TUNEZ':'🇹🇳','ESPANA':'🇪🇸',
+  'ESPAÑA':'🇪🇸','COSTA RICA':'🇨🇷','ALEMANIA':'🇩🇪','JAPON':'🇯🇵',
+  'BELGICA':'🇧🇪','CANADA':'🇨🇦','MARRUECOS':'🇲🇦','CROACIA':'🇭🇷',
+  'BRASIL':'🇧🇷','SERBIA':'🇷🇸','SUIZA':'🇨🇭','CAMERUN':'🇨🇲',
+  'PORTUGAL':'🇵🇹','GHANA':'🇬🇭','URUGUAY':'🇺🇾','COREA DEL SUR':'🇰🇷',
+  'CHILE':'🇨🇱','PERU':'🇵🇪','VENEZUELA':'🇻🇪','BOLIVIA':'🇧🇴',
+  'COLOMBIA':'🇨🇴','ITALIA':'🇮🇹','NIGERIA':'🇳🇬','TURQUIA':'🇹🇷',
+  'NORUEGA':'🇳🇴','SUECIA':'🇸🇪','AUSTRIA':'🇦🇹','POLONIA':'🇵🇱',
+  'UCRANIA':'🇺🇦','GRECIA':'🇬🇷','RUMANIA':'🇷🇴','HUNGRIA':'🇭🇺',
+  'PANAMA':'🇵🇦','HONDURAS':'🇭🇳','EL SALVADOR':'🇸🇻','JAMAICA':'🇯🇲',
+  'PARAGUAY':'🇵🇾','INDONESIA':'🇮🇩','IRAK':'🇮🇶','ARGELIA':'🇩🇿',
+  'EGIPTO':'🇪🇬','SUDAFRICA':'🇿🇦','COSTA DE MARFIL':'🇨🇮','MALI':'🇲🇱',
+  'GEORGIA':'🇬🇪','NUEVA ZELANDA':'🇳🇿','ESCOCIA':'🏴'
+};
+
+let globalData = {};
+
+function normalize(text) {
+  if (!text) return '';
+  return text.toString().trim().toUpperCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[''`´]/g, '');
+}
+
+function getFlag(nombre) {
+  return banderas[normalize(nombre)] || '🏳️';
+}
+
+function getStadiumImg(e) {
+  const nombre = typeof e === 'object' ? (e.nombre || '') : e;
+  const ciudad = typeof e === 'object' ? (e.ciudad || e.city || '') : '';
+  const n = normalize(nombre + ' ' + ciudad);
+  for (const [key, path] of Object.entries(mapaImagenesEstadios)) {
+    if (n.includes(key)) return path;
+  }
+  return null;
+}
+
+function getStadiumFlag(e) {
+  const nombre = typeof e === 'object' ? (e.nombre || '') : e;
+  const ciudad = typeof e === 'object' ? (e.ciudad || e.city || '') : '';
+  const n = normalize(nombre + ' ' + ciudad);
+  for (const [key, flag] of Object.entries(banderasEstadios)) {
+    if (n.includes(key)) return flag;
+  }
+  return '🏟️';
+}
+
+function formatExcelDate(serial) {
+  if (!serial || isNaN(serial)) return serial || 'TBD';
+  const d = new Date(Math.round((serial - 25569) * 86400 * 1000));
+  return d.toLocaleDateString('es-CL', { day: '2-digit', month: 'short' });
+}
+
+function formatExcelTime(t) {
+  if (!t || isNaN(t)) return t || '--:--';
+  const mins = Math.round(t * 24 * 60);
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
+function getValue(obj, keys) {
+  for (const k of keys) {
+    if (obj[k] != null && obj[k] !== '') return obj[k];
+  }
+  return '—';
+}
+
+/* ── Sidebar ── */
+function renderSidebar() {
+  const container = document.getElementById('paises-sidebar');
+  container.innerHTML = '';
+  [...globalData.paises]
+    .sort((a, b) => a.nombre.localeCompare(b.nombre))
+    .forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'pais-card';
+      card.onclick = () => showPaisDetail(p.nombre);
+      card.innerHTML = `<span class="pais-flag">${getFlag(p.nombre)}</span><span class="pais-name">${p.nombre}</span>`;
+      container.appendChild(card);
+    });
+}
+
+/* ── Grupos ── */
+function renderGrupos() {
+  const porGrupo = {};
+  globalData.partidos.forEach(m => {
+    const pLocal = globalData.paises.find(p => normalize(p.nombre) === normalize(m.local));
+    const pVisita = globalData.paises.find(p => normalize(p.nombre) === normalize(m.visita));
+    const grupo = (pLocal?.grupo && pLocal.grupo !== 'Desconocido') ? pLocal.grupo : pVisita?.grupo;
+    if (grupo && grupo !== 'Desconocido') {
+      if (!porGrupo[grupo]) porGrupo[grupo] = [];
+      porGrupo[grupo].push(m);
+    }
+  });
+
+  const wrapper = document.getElementById('grupos-wrapper');
+  wrapper.innerHTML = '';
+  const grupos = Object.keys(porGrupo).sort();
+  document.getElementById('stat-grupos').textContent = grupos.length;
+
+  grupos.forEach(grupo => {
+    const card = document.createElement('div');
+    card.className = 'grupo-card';
+
+    const matchesHtml = porGrupo[grupo].map(m => `
+      <div class="match-row">
+        <div class="match-team">
+          <span class="match-team-flag">${getFlag(m.local)}</span>
+          <span>${m.local}</span>
+        </div>
+        <span class="match-vs">VS</span>
+        <div class="match-team right">
+          <span>${m.visita}</span>
+          <span class="match-team-flag">${getFlag(m.visita)}</span>
+        </div>
+      </div>
+      <div class="match-meta">
+        <span class="match-meta-date"><i class="far fa-calendar-alt"></i> ${formatExcelDate(m.fecha)}</span>
+        <span class="match-meta-stadium"><i class="fas fa-location-dot"></i> ${m.estadio || m.sede || 'TBD'}</span>
+      </div>
+    `).join('');
+
+    card.innerHTML = `
+      <div class="grupo-card-header">
+        <span class="grupo-card-title">Grupo ${grupo}</span>
+        <span class="grupo-card-badge">${porGrupo[grupo].length} partidos</span>
+      </div>
+      <div class="grupo-card-body">${matchesHtml}</div>
+    `;
+    wrapper.appendChild(card);
+  });
+}
+
+/* ── Estadios ── */
+function renderEstadios() {
+  const container = document.getElementById('estadios-container');
+  container.innerHTML = '';
+  const estadios = globalData.estadios || [];
+  document.getElementById('stat-estadios').textContent = estadios.length;
+
+  estadios.forEach(e => {
+    const img = getStadiumImg(e);
+    const flag = getStadiumFlag(e);
+    const ciudad = e.ciudad || e.city || 'N/A';
+
+    const card = document.createElement('div');
+    card.className = 'estadio-card';
+    card.onclick = () => showStadiumDetail(e);
+
+    card.innerHTML = `
+      <div class="estadio-img-wrap">
+        ${img
+          ? `<img src="${img}" class="estadio-img" alt="${e.nombre}"
+               onerror="this.parentElement.innerHTML='<div class=\\'estadio-fallback\\'><i class=\\'fas fa-landmark\\'></i><span>${e.nombre}</span></div>'">`
+          : `<div class="estadio-fallback"><i class="fas fa-landmark"></i><span>${e.nombre}</span></div>`
+        }
+        <div class="estadio-overlay">
+          <span class="estadio-overlay-text"><i class="fas fa-expand-alt"></i> Ver detalle</span>
+        </div>
+        <span class="estadio-flag-corner">${flag}</span>
+      </div>
+      <div class="estadio-info">
+        <h4>${e.nombre}</h4>
+        <div class="estadio-info-meta">
+          <span><i class="fas fa-city" style="color:var(--red)"></i> ${ciudad}</span>
+          <span><i class="fas fa-users" style="color:var(--red)"></i> ${e.capacidad?.toLocaleString() || 'N/A'}</span>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+/* ── Modal País ── */
+function showPaisDetail(nombre) {
+  const p = globalData.paises.find(item => normalize(item.nombre) === normalize(nombre));
+  if (!p) return;
+  document.getElementById('modal-body').innerHTML = `
+    <div class="modal-header-red">
+      <span class="modal-flag-big">${getFlag(p.nombre)}</span>
+      <div class="modal-country-name">${p.nombre}</div>
+      <span class="modal-group-tag">Grupo ${p.grupo || 'TBD'}</span>
+    </div>
+    <div class="modal-body">
+      <div class="info-grid">
+        <div class="info-item"><div class="info-item-label">Ranking FIFA</div><div class="info-item-value">#${getValue(p, ['ranking_2022','ranking_fifa','ranking'])}</div></div>
+        <div class="info-item"><div class="info-item-label">Participaciones</div><div class="info-item-value">${getValue(p, ['participaciones','mundiales_jugados'])}</div></div>
+        <div class="info-item"><div class="info-item-label">Mejor posición</div><div class="info-item-value">${getValue(p, ['mejor_posicion'])}</div></div>
+        <div class="info-item"><div class="info-item-label">Sede base</div><div class="info-item-value">${getValue(p, ['sede','sede_base','base_camp'])}</div></div>
+      </div>
+    </div>
+  `;
+  document.getElementById('paisModal').style.display = 'flex';
+}
+
+function closeModal() { document.getElementById('paisModal').style.display = 'none'; }
+
+/* ── Modal Estadio ── */
+function showStadiumDetail(e) {
+  const img = getStadiumImg(e);
+  const flag = getStadiumFlag(e);
+  const ciudad = e.ciudad || e.city || 'N/A';
+  document.getElementById('stadium-modal-body').innerHTML = `
+    ${img
+      ? `<img src="${img}" class="stadium-modal-img" alt="${e.nombre}"
+           onerror="this.outerHTML='<div style=\\'height:280px;background:linear-gradient(135deg,#0D0D0D,#2A2A2A);display:flex;align-items:center;justify-content:center;\\'><i class=\\'fas fa-landmark\\' style=\\'font-size:3rem;color:#F0C040\\'></i></div>'">`
+      : `<div style="height:240px;background:linear-gradient(135deg,#0D0D0D,#2A2A2A);display:flex;align-items:center;justify-content:center;"><i class="fas fa-landmark" style="font-size:3rem;color:#F0C040"></i></div>`
+    }
+    <div class="stadium-modal-info">
+      <div class="stadium-modal-tag"><i class="fas fa-circle-check"></i> Sede Oficial FIFA 2026</div>
+      <div class="stadium-modal-name">${e.nombre} ${flag}</div>
+      <div class="stadium-modal-details">
+        <div class="stadium-modal-detail"><i class="fas fa-city"></i><span><strong>Ciudad:</strong> ${ciudad}</span></div>
+        <div class="stadium-modal-detail"><i class="fas fa-users"></i><span><strong>Capacidad:</strong> ${e.capacidad?.toLocaleString() || 'N/A'} espectadores</span></div>
+        ${e.datos_relevantes ? `<div class="stadium-modal-detail"><i class="fas fa-info-circle"></i><span>${e.datos_relevantes}</span></div>` : ''}
+      </div>
+    </div>
+  `;
+  document.getElementById('stadiumModal').style.display = 'flex';
+}
+
+function closeStadiumModal() { document.getElementById('stadiumModal').style.display = 'none'; }
+
+/* ── Init ── */
+async function init() {
+  try {
+    const res = await fetch('http://localhost:3000/api/data');
+    globalData = await res.json();
+    document.getElementById('stat-paises').textContent = (globalData.paises || []).length;
+    renderSidebar();
+    renderGrupos();
+    renderEstadios();
+  } catch (err) {
+    console.error(err);
+    document.getElementById('grupos-wrapper').innerHTML =
+      '<p style="color:var(--muted);padding:20px 0;">No se pudo conectar con la API en <code>http://localhost:3000</code>.</p>';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
