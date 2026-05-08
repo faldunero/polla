@@ -1,7 +1,4 @@
 {
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/server.js" }
-  ],
   "routes": [
     { "src": "/polla.html", "dest": "/frontend/polla.html" },
     { "src": "/admin.html", "dest": "/frontend/admin.html" },
