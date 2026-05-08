@@ -475,13 +475,13 @@ document.querySelectorAll('.nav-link').forEach(l=>{
 
 async function init(){
   try{
-    const r=await fetch('http://localhost:3000/api/data');
+    const r=await fetch('/api/data');
     globalData=await r.json();
     const sp=document.getElementById('stat-paises'); if(sp) sp.textContent=(globalData.paises||[]).length;
     renderSidebar(); renderGrupos(); renderEstadios();
   } catch(e){
     const g=document.getElementById('grupos-wrapper');
-    if(g) g.innerHTML='<p style="color:var(--muted);padding:20px 0;">No se pudo conectar con la API en <code>http://localhost:3000</code>.</p>';
+    if(g) g.innerHTML='<p style="color:var(--muted);padding:20px 0;">No se pudo conectar con la API en <code></code>.</p>';
   }
 }
 init();
