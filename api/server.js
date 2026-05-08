@@ -31,7 +31,7 @@ async function sendMail({ to, subject, html }) {
 }
 
 // ─── FIREBASE ─────────────────────────────────────────────────────────────
-admin.initializeApp({ credential: admin.credential.applicationDefault(), projectId: PROJECT_ID });
+admin.initializeApp({ credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}')), projectId: PROJECT_ID });
 const db = admin.firestore();
 
 // ─── AUTH MIDDLEWARE ──────────────────────────────────────────────────────
@@ -292,4 +292,4 @@ app.get('/api/ranking', verifyToken, onlyAdmin, async (req, res) => {
 });
 
 const PORT = 3000;
-app.listen(PORT, () => console.log(`🚀 API en http://localhost:${PORT}`));
+module.exports = app; // app.listen(PORT, () => console.log(`🚀 API en http://localhost:${PORT}`));
