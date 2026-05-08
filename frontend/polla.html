@@ -506,7 +506,7 @@ nav {
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
-  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'; import { getFirestore, collection, getDocs, getDoc, doc, addDoc, setDoc, query, where, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAqrYCFQN8epqx9HZrd7t1Ywz9wVf2Fx5Y",
@@ -520,7 +520,7 @@ const firebaseConfig = {
 
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
-const provider = new GoogleAuthProvider();
+const provider = new GoogleAuthProvider(); const db = getFirestore(firebaseApp);
 
 const API = '';
 const FECHA_CIERRE = new Date('2026-06-10T23:59:59-05:00');
