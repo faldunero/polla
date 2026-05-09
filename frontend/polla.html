@@ -392,11 +392,12 @@ async function renderGrupos(){
     document.getElementById('cancelar-sol-btn').addEventListener('click', async () => {
       if(!confirm('¿Cancelar tu solicitud de ingreso?')) return;
       try {
+        if(!miSolicitud?.id) throw new Error('No se encontró la solicitud');
         await deleteDoc(doc(db,'solicitudes',miSolicitud.id));
         miSolicitud=null;
         toast('Solicitud cancelada','success');
         renderGrupos();
-      } catch(e){ toast(e.message,'error'); }
+      } catch(e){ toast(String(e.message||e),'error'); }
     });
     return;
   }
