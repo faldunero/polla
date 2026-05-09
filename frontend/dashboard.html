@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Polla 2026 · Mundial FIFA</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700;1,800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+:root {
+  --red:#DA0015; --red-dark:#9E000F; --red-deep:#6B0009;
+  --gold:#F0C040; --gold2:#C89A00;
+  --white:#FFFFFF; --off:#F7F4EF; --ink:#0D0D0D; --ink2:#2A2A2A;
+  --muted:#7A7A7A; --border:#E2DDD6;
+  --font-display:'Barlow Condensed',sans-serif;
+  --font-body:'Barlow',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font-body);background:var(--off);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;}
+a{color:inherit;text-decoration:none;}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--red);position:sticky;top:0;z-index:200;border-bottom:3px solid var(--gold);}
+.topbar-inner{display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:62px;gap:16px;}
+.topbar-brand{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.topbar-logo{width:38px;height:38px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;box-shadow:0 3px 10px rgba(0,0,0,0.25);}
+.topbar-brand-text small{display:block;font-size:0.58rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.6);}
+.topbar-brand-text strong{display:block;font-family:var(--font-display);font-size:1.1rem;font-weight:800;color:white;letter-spacing:0.04em;line-height:1;}
+.topbar-nav{display:flex;align-items:center;gap:4px;}
+.nav-link{font-family:var(--font-display);font-size:0.82rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.8);padding:7px 14px;border-radius:4px;transition:all 0.2s;border:1.5px solid transparent;}
+.nav-link:hover,.nav-link.active{color:white;background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.2);}
+.nav-link.active{color:var(--gold);}
+.nav-divider{width:1px;height:24px;background:rgba(255,255,255,0.2);margin:0 6px;}
+.btn-nav-polla{font-family:var(--font-display);font-weight:800;font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;background:var(--gold);color:var(--ink);padding:8px 18px;border-radius:4px;border:none;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:7px;}
+.btn-nav-polla:hover{background:white;transform:translateY(-1px);}
+
+/* ── DISCLAIMER ── */
+.disclaimer{background:var(--ink);color:rgba(255,255,255,0.7);text-align:center;padding:8px 20px;font-size:0.72rem;letter-spacing:0.04em;border-bottom:2px solid var(--gold);}
+.disclaimer strong{color:var(--gold);}
+
+/* ── HERO ── */
+header.hero-section{background:var(--red);position:relative;overflow:hidden;}
+header.hero-section::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,0.07) 1px,transparent 1px);background-size:18px 18px;pointer-events:none;}
+.hero-inner{position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:space-between;gap:40px;padding:44px 40px 52px;flex-wrap:wrap;}
+.hero-left{flex:1;min-width:260px;}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-size:0.72rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+.hero-eyebrow::before,.hero-eyebrow::after{content:'';display:block;width:20px;height:2px;background:var(--gold);}
+.hero h1{font-family:var(--font-display);font-style:italic;font-weight:900;font-size:clamp(3rem,7vw,6.5rem);color:white;line-height:0.88;letter-spacing:-0.01em;text-transform:uppercase;text-shadow:4px 5px 0px var(--red-deep);margin-bottom:18px;}
+.hero h1 span{color:var(--gold);}
+.hero-sub{font-size:0.95rem;color:rgba(255,255,255,0.72);max-width:460px;line-height:1.6;margin-bottom:26px;}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+.btn-hero{font-family:var(--font-display);font-weight:800;font-size:0.95rem;letter-spacing:0.08em;text-transform:uppercase;background:var(--gold);color:var(--ink);padding:13px 28px;border-radius:4px;border:none;cursor:pointer;transition:all 0.22s;box-shadow:0 5px 18px rgba(0,0,0,0.28);display:inline-flex;align-items:center;gap:9px;}
+.btn-hero:hover{background:white;transform:translateY(-3px);}
+.btn-hero-outline{font-family:var(--font-display);font-weight:700;font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.85);border:1.5px solid rgba(255,255,255,0.35);padding:12px 22px;border-radius:4px;cursor:pointer;transition:all 0.2s;background:transparent;}
+.btn-hero-outline:hover{border-color:white;color:white;background:rgba(255,255,255,0.08);}
+.hero-stats{display:flex;gap:0;flex-shrink:0;align-self:flex-end;}
+.hero-stat{padding:18px 26px;text-align:center;border-left:1px solid rgba(255,255,255,0.15);}
+.hero-stat:first-child{border-left:none;}
+.hero-stat-num{font-family:var(--font-display);font-weight:900;font-size:2.6rem;color:var(--gold);line-height:1;display:block;}
+.hero-stat-label{font-size:0.62rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-top:3px;display:block;}
+
+/* ── LAYOUT ── */
+.layout{display:flex;flex:1;}
+.sidebar{width:280px;background:var(--ink);flex-shrink:0;position:sticky;top:65px;height:calc(100vh - 65px);overflow-y:auto;padding:24px 18px;scrollbar-width:thin;scrollbar-color:var(--red) transparent;}
+.sidebar-title{font-family:var(--font-display);font-size:0.68rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:7px;}
+.paises-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.pais-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:9px 7px;text-align:center;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:68px;justify-content:center;}
+.pais-card:hover{background:var(--red);border-color:var(--red);transform:translateY(-2px);}
+.pais-flag{font-size:1.4rem;line-height:1;}
+.pais-name{font-size:0.62rem;font-weight:600;color:rgba(255,255,255,0.7);line-height:1.2;text-align:center;}
+main{flex:1;padding:36px 40px;min-width:0;}
+
+/* ── SECTION ── */
+.section-wrap{margin-bottom:48px;}
+.section-label{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
+.section-line{width:4px;height:30px;background:var(--red);border-radius:2px;flex-shrink:0;}
+.section-label h2{font-family:var(--font-display);font-weight:800;font-size:1.5rem;letter-spacing:0.03em;text-transform:uppercase;color:var(--ink);line-height:1;}
+.section-label p{font-size:0.8rem;color:var(--muted);margin-top:2px;}
+
+/* ── GRUPOS ── */
+.grupos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px;}
+.grupo-card{background:white;border:1px solid var(--border);border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.05);transition:all 0.22s;}
+.grupo-card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,0.1);border-color:var(--red);}
+.grupo-card-head{background:var(--ink);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;}
+.grupo-card-title{font-family:var(--font-display);font-weight:800;font-size:0.95rem;letter-spacing:0.06em;text-transform:uppercase;color:white;}
+.grupo-card-badge{background:var(--gold);color:var(--ink);font-family:var(--font-display);font-size:0.62rem;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;padding:3px 8px;border-radius:2px;}
+.grupo-card-body{padding:14px 16px;}
+.match-row{display:grid;grid-template-columns:1fr auto 1fr;grid-template-rows:auto auto;align-items:center;padding:10px 4px;border-bottom:1px solid var(--border);gap:4px 8px;}
+.match-row:last-child{border-bottom:none;}
+.match-team{display:flex;align-items:center;gap:7px;font-weight:600;font-size:0.85rem;}
+.match-team.right{flex-direction:row-reverse;text-align:right;}
+.match-center-col{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.match-vs{font-family:var(--font-display);font-weight:800;font-size:0.7rem;color:var(--muted);background:var(--off);padding:2px 8px;border-radius:3px;}
+.match-date{font-size:0.7rem;color:var(--muted);white-space:nowrap;}
+.match-stadium{grid-column:1/-1;font-size:0.7rem;color:var(--muted);display:flex;align-items:center;gap:5px;padding-top:4px;border-top:1px dashed var(--border);}
+.match-stadium i{color:var(--red);}
+
+/* ── ESTADIOS ── */
+.estadios-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px;}
+.estadio-card{background:white;border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;transition:all 0.22s;box-shadow:0 2px 10px rgba(0,0,0,0.05);}
+.estadio-card:hover{transform:translateY(-5px);box-shadow:0 14px 36px rgba(0,0,0,0.13);}
+.estadio-img-wrap{position:relative;height:165px;overflow:hidden;background:var(--ink2);}
+.estadio-img{width:100%;height:100%;object-fit:cover;transition:transform 0.4s;}
+.estadio-card:hover .estadio-img{transform:scale(1.06);}
+.estadio-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(218,0,21,0.82) 0%,transparent 55%);opacity:0;transition:opacity 0.3s;display:flex;align-items:flex-end;padding:14px;}
+.estadio-card:hover .estadio-overlay{opacity:1;}
+.estadio-flag-corner{position:absolute;top:10px;right:10px;font-size:1.3rem;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4));}
+.estadio-fallback{width:100%;height:100%;background:linear-gradient(135deg,var(--ink),var(--ink2));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;color:rgba(255,255,255,0.5);}
+.estadio-fallback i{font-size:1.6rem;color:var(--gold);}
+.estadio-info{padding:12px 14px;border-top:3px solid var(--red);}
+.estadio-info h4{font-family:var(--font-display);font-weight:800;font-size:0.95rem;text-transform:uppercase;color:var(--ink);margin-bottom:5px;}
+.estadio-meta{display:flex;justify-content:space-between;font-size:0.72rem;color:var(--muted);}
+.estadio-meta span{display:flex;align-items:center;gap:4px;}
+
+/* ── MODALS ── */
+.modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(13,13,13,0.72);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;}
+.modal-box{background:white;border-radius:8px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;position:relative;animation:popIn 0.24s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 36px 72px rgba(0,0,0,0.38);}
+.modal-box-wide{max-width:760px;}
+@keyframes popIn{from{transform:scale(0.92) translateY(14px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
+.modal-close{position:absolute;top:12px;right:14px;width:30px;height:30px;background:rgba(0,0,0,0.08);border:none;cursor:pointer;border-radius:50%;font-size:0.95rem;display:flex;align-items:center;justify-content:center;color:var(--ink2);transition:all 0.2s;z-index:10;}
+.modal-close:hover{background:var(--red);color:white;}
+.modal-head-red{background:var(--red);padding:28px 24px 22px;text-align:center;position:relative;overflow:hidden;}
+.modal-head-red::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,0.07) 1px,transparent 1px);background-size:16px 16px;}
+.modal-flag-big{font-size:3.8rem;display:block;margin-bottom:6px;line-height:1;position:relative;}
+.modal-country{font-family:var(--font-display);font-weight:900;font-size:1.8rem;color:white;text-transform:uppercase;letter-spacing:0.04em;position:relative;}
+.modal-group-tag{display:inline-block;background:var(--gold);color:var(--ink);font-family:var(--font-display);font-weight:800;font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;padding:3px 11px;border-radius:2px;margin-top:7px;position:relative;}
+.modal-body-pad{padding:22px 26px;}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.info-item{background:var(--off);border:1px solid var(--border);border-radius:6px;padding:13px;}
+.info-label{font-size:0.6rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.info-value{font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--ink);}
+.stadium-modal-img{width:100%;height:300px;object-fit:cover;display:block;}
+.stadium-modal-panel{padding:22px 26px;}
+.stadium-tag{display:inline-flex;align-items:center;gap:6px;background:var(--red);color:white;font-family:var(--font-display);font-size:0.66rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:4px 11px;border-radius:2px;margin-bottom:10px;}
+.stadium-name{font-family:var(--font-display);font-weight:900;font-size:1.7rem;letter-spacing:0.02em;text-transform:uppercase;color:var(--ink);margin-bottom:14px;line-height:1;}
+.stadium-detail{display:flex;align-items:flex-start;gap:10px;font-size:0.86rem;color:var(--ink2);margin-bottom:8px;}
+.stadium-detail i{color:var(--red);width:14px;margin-top:2px;}
+
+/* ── FOOTER ── */
+footer{background:var(--ink);color:white;position:relative;margin-top:auto;}
+footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--red) 0%,var(--gold) 50%,var(--red) 100%);}
+.footer-inner{max-width:1400px;margin:0 auto;padding:36px 40px 24px;}
+.footer-top{display:flex;align-items:flex-start;justify-content:space-between;gap:36px;flex-wrap:wrap;padding-bottom:24px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:20px;}
+.footer-logo-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.footer-ball{width:36px;height:36px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;}
+.footer-title{font-family:var(--font-display);font-weight:900;font-size:1.3rem;letter-spacing:0.06em;text-transform:uppercase;color:white;}
+.footer-title span{color:var(--gold);}
+.footer-desc{font-size:0.8rem;color:rgba(255,255,255,0.45);line-height:1.6;max-width:260px;}
+.footer-made-label{font-size:0.6rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.38);margin-bottom:6px;}
+.footer-ludolab{font-family:var(--font-display);font-weight:800;font-size:1.3rem;letter-spacing:0.04em;text-transform:uppercase;color:var(--gold);display:block;transition:color 0.2s;}
+.footer-ludolab:hover{color:white;}
+.footer-author{font-size:0.76rem;color:rgba(255,255,255,0.45);margin-top:5px;}
+.footer-author a{color:rgba(255,255,255,0.65);text-decoration:underline;text-underline-offset:3px;}
+.footer-author a:hover{color:var(--gold);}
+.footer-bottom{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.footer-copy{font-size:0.7rem;color:rgba(255,255,255,0.28);letter-spacing:0.04em;}
+.footer-flags{font-size:1.2rem;opacity:0.5;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1024px){.sidebar{display:none;}main{padding:24px 20px;}}
+@media(max-width:768px){.topbar-inner{padding:0 16px;}.topbar-nav .nav-link{display:none;}.hero-inner{padding:28px 16px 40px;}.hero-stats{display:none;}main{padding:18px 14px;}.footer-inner{padding:28px 18px 18px;}.footer-made-col{text-align:left;}}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <a href="index.html" class="topbar-brand">
+      <div class="topbar-logo">⚽</div>
+      <div class="topbar-brand-text">
+        <small>Dashboard Oficial</small>
+        <strong>La Polla 2026</strong>
+      </div>
+    </a>
+    <nav class="topbar-nav">
+      <a href="index.html" class="nav-link" id="nav-inicio">Inicio</a>
+      <a href="index.html#grupos" class="nav-link">Grupos</a>
+      <a href="index.html#estadios" class="nav-link">Estadios</a>
+      <div class="nav-divider"></div>
+      <a href="polla.html" class="btn-nav-polla"><i class="fas fa-trophy"></i> La Polla</a>
+      <a href="admin.html" class="nav-link" style="font-size:0.72rem;opacity:0.7;">Admin</a>
+    </nav>
+  </div>
+</div>
+
+<!-- DISCLAIMER -->
+<div class="disclaimer">
+  <strong>⚠️ Sitio no oficial.</strong> Este es un proyecto independiente de entretenimiento. No tiene afiliación con FIFA, UEFA ni ninguna federación de fútbol. · Diseñado por <a href="https://ludolab.cl" target="_blank" style="color:var(--gold);">Ludolab.cl</a>
+</div>
+
+<!-- HERO -->
+<header class="hero-section">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-eyebrow">FIFA World Cup 2026</div>
+      <h1>La <span>Polla</span><br>Mundial</h1>
+      <p class="hero-sub">Predice, compite y vive el Mundial 2026. Revisa el calendario completo, los grupos, las selecciones y los estadios sede.</p>
+      <div class="hero-cta">
+        <a href="polla.html" class="btn-hero"><i class="fas fa-futbol"></i> Participar ahora</a>
+        <a href="#grupos" class="btn-hero-outline">Ver calendario</a>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><span class="hero-stat-num" id="stat-paises">—</span><span class="hero-stat-label">Selecciones</span></div>
+      <div class="hero-stat"><span class="hero-stat-num" id="stat-grupos">—</span><span class="hero-stat-label">Grupos</span></div>
+      <div class="hero-stat"><span class="hero-stat-num" id="stat-estadios">—</span><span class="hero-stat-label">Estadios</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- LAYOUT -->
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-title"><i class="fas fa-flag"></i> Selecciones</div>
+    <div id="paises-sidebar" class="paises-grid"></div>
+  </aside>
+  <main>
+    <section class="section-wrap" id="grupos">
+      <div class="section-label">
+        <div class="section-line"></div>
+        <div><h2>Fase de Grupos</h2><p>Calendario completo · Partidos y horarios</p></div>
+      </div>
+      <div id="grupos-wrapper" class="grupos-grid"></div>
+    </section>
+    <section class="section-wrap" id="estadios">
+      <div class="section-label">
+        <div class="section-line"></div>
+        <div><h2>Sedes y Estadios</h2><p>16 ciudades sede · 3 países anfitriones</p></div>
+      </div>
+      <div id="estadios-container" class="estadios-grid"></div>
+    </section>
+  </main>
+</div>
+
+<!-- MODAL PAÍS -->
+<div id="paisModal" class="modal">
+  <div class="modal-box">
+    <button class="modal-close" id="close-pais-btn">✕</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- MODAL ESTADIO -->
+<div id="stadiumModal" class="modal">
+  <div class="modal-box modal-box-wide">
+    <button class="modal-close" id="close-stadium-btn" style="background:rgba(255,255,255,0.15);color:white;">✕</button>
+    <div id="stadium-modal-body"></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div>
+        <div class="footer-logo-row">
+          <div class="footer-ball">⚽</div>
+          <div class="footer-title">La <span>Polla</span> 2026</div>
+        </div>
+        <p class="footer-desc">Dashboard no oficial del Mundial FIFA 2026. Grupos, partidos, estadios y predicciones en un solo lugar.</p>
+      </div>
+      <div>
+        <div class="footer-made-label">Diseñado y desarrollado por</div>
+        <a href="https://ludolab.cl" target="_blank" class="footer-ludolab">Ludolab.cl</a>
+        <div class="footer-author">Felipe Aldunate · <a href="mailto:felipe@ludolab.cl">felipe@ludolab.cl</a></div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2026 Ludolab.cl · Felipe Aldunate · Todos los derechos reservados · Sitio no oficial</div>
+      <div class="footer-flags">🇺🇸🇲🇽🇨🇦</div>
+    </div>
+  </div>
+</footer>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, getDocs, collection } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const fbApp = initializeApp({
+  apiKey:"AIzaSyAqrYCFQN8epqx9HZrd7t1Ywz9wVf2Fx5Y",
+  authDomain:"polla-495421-ab029.firebaseapp.com",
+  projectId:"polla-495421-ab029",
+  storageBucket:"polla-495421-ab029.firebasestorage.app",
+  messagingSenderId:"366484877682",
+  appId:"1:366484877682:web:a7c21e72c012d4b709adeb"
+});
+const db = getFirestore(fbApp);
+
+const FLAGS_MAP={
+  'QATAR':'🇶🇦','CATAR':'🇶🇦','ECUADOR':'🇪🇨','SENEGAL':'🇸🇳','PAISES BAJOS':'🇳🇱',
+  'HOLANDA':'🇳🇱','INGLATERRA':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','IRAN':'🇮🇷','ESTADOS UNIDOS':'🇺🇸','USA':'🇺🇸',
+  'GALES':'🏴󠁧󠁢󠁷󠁬󠁳󠁿','ARGENTINA':'🇦🇷','ARABIA SAUDITA':'🇸🇦','ARABIA SAUDI':'🇸🇦',
+  'MEXICO':'🇲🇽','POLONIA':'🇵🇱','FRANCIA':'🇫🇷','AUSTRALIA':'🇦🇺','DINAMARCA':'🇩🇰',
+  'TUNEZ':'🇹🇳','ESPANA':'🇪🇸','ESPAÑA':'🇪🇸','COSTA RICA':'🇨🇷','ALEMANIA':'🇩🇪',
+  'JAPON':'🇯🇵','BELGICA':'🇧🇪','CANADA':'🇨🇦','MARRUECOS':'🇲🇦','CROACIA':'🇭🇷',
+  'BRASIL':'🇧🇷','SERBIA':'🇷🇸','SUIZA':'🇨🇭','CAMERUN':'🇨🇲','PORTUGAL':'🇵🇹',
+  'GHANA':'🇬🇭','URUGUAY':'🇺🇾','COREA DEL SUR':'🇰🇷','CHILE':'🇨🇱','PERU':'🇵🇪',
+  'VENEZUELA':'🇻🇪','BOLIVIA':'🇧🇴','COLOMBIA':'🇨🇴','ITALIA':'🇮🇹','NIGERIA':'🇳🇬',
+  'TURQUIA':'🇹🇷','NORUEGA':'🇳🇴','SUECIA':'🇸🇪','AUSTRIA':'🇦🇹','UCRANIA':'🇺🇦',
+  'GRECIA':'🇬🇷','RUMANIA':'🇷🇴','HUNGRIA':'🇭🇺','PANAMA':'🇵🇦','HONDURAS':'🇭🇳',
+  'EL SALVADOR':'🇸🇻','JAMAICA':'🇯🇲','PARAGUAY':'🇵🇾','INDONESIA':'🇮🇩','IRAK':'🇮🇶',
+  'IRAQ':'🇮🇶','ARGELIA':'🇩🇿','EGIPTO':'🇪🇬','SUDAFRICA':'🇿🇦','COSTA DE MARFIL':'🇨🇮',
+  'MALI':'🇲🇱','GEORGIA':'🇬🇪','NUEVA ZELANDA':'🇳🇿','ESCOCIA':'🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+  'ALBANIA':'🇦🇱','ESLOVAQUIA':'🇸🇰','ESLOVENIA':'🇸🇮','REPUBLICA CHECA':'🇨🇿',
+  'CHEQUIA':'🇨🇿','IRLANDA':'🇮🇪','ISLANDIA':'🇮🇸','FINLANDIA':'🇫🇮',
+  'TRINIDAD Y TOBAGO':'🇹🇹','CUBA':'🇨🇺','GUATEMALA':'🇬🇹','NICARAGUA':'🇳🇮',
+  'HAITI':'🇭🇹','REPUBLICA DOMINICANA':'🇩🇴','JAMAICA':'🇯🇲','CURAZAO':'🇨🇼',
+  'TANZANIA':'🇹🇿','KENYA':'🇰🇪','ANGOLA':'🇦🇴','ZAMBIA':'🇿🇲','BURKINA FASO':'🇧🇫',
+  'GUINEA':'🇬🇳','CONGO':'🇨🇬','RD CONGO':'🇨🇩','MOZAMBIQUE':'🇲🇿','ZIMBABWE':'🇿🇼',
+  'LIBIA':'🇱🇾','JORDANIA':'🇯🇴','UZBEKISTAN':'🇺🇿','CHINA':'🇨🇳','INDIA':'🇮🇳',
+  'VIETNAM':'🇻🇳','TAILANDIA':'🇹🇭','FILIPINAS':'🇵🇭','PAPUA NUEVA GUINEA':'🇵🇬',
+  'NUEVA GUINEA':'🇵🇬','BOSNIA':'🇧🇦','BOSNIA Y HERZEGOVINA':'🇧🇦','CABO VERDE':'🇨🇻',
+  'RUMANIA':'🇷🇴','ESLOVAQUIA':'🇸🇰'
+};
+
+const IMG_MAP={
+  'ATLANTA':'estadios/estadio_atlanta.png','MERCEDES':'estadios/estadio_atlanta.png',
+  'AZTECA':'estadios/estadio_azteca.png','CIUDAD DE MEXICO':'estadios/estadio_azteca.png',
+  'BOSTON':'estadios/estadio_boston.png','FOXBOROUGH':'estadios/estadio_boston.png','GILLETTE':'estadios/estadio_boston.png',
+  'DALLAS':'estadios/estadio_dallas.png','ARLINGTON':'estadios/estadio_dallas.png',
+  'GUADALAJARA':'estadios/estadio_guadalajara.png','AKRON':'estadios/estadio_guadalajara.png',
+  'HOUSTON':'estadios/estadio_houston.png','NRG':'estadios/estadio_houston.png',
+  'KANSAS':'estadios/estadio_kansas.png','ARROWHEAD':'estadios/estadio_kansas.png','GEHA':'estadios/estadio_kansas.png',
+  'LOS ANGELES':'estadios/estadio_los_angeles.png','INGLEWOOD':'estadios/estadio_los_angeles.png','SOFI':'estadios/estadio_los_angeles.png',
+  'MONTERREY':'estadios/estadio_monterrey.png','BBVA':'estadios/estadio_monterrey.png',
+  'MIAMI':'estadios/estadio_miami.png','HARD ROCK':'estadios/estadio_miami.png',
+  'METLIFE':'estadios/estadio_new_jersey.png','NEW JERSEY':'estadios/estadio_new_jersey.png','EAST RUTHERFORD':'estadios/estadio_new_jersey.png','NEW YORK':'estadios/estadio_new_jersey.png',
+  'PHILADELPHIA':'estadios/estadio_philadelphia.png','LINCOLN':'estadios/estadio_philadelphia.png',
+  'SANTA CLARA':'estadios/estadio_san_francisco.png','LEVIS':'estadios/estadio_san_francisco.png','LEVI':'estadios/estadio_san_francisco.png','SAN FRANCISCO':'estadios/estadio_san_francisco.png','BAY':'estadios/estadio_san_francisco.png',
+  'SEATTLE':'estadios/estadio_seattle.png','LUMEN':'estadios/estadio_seattle.png',
+  'TORONTO':'estadios/estadio_toronto.png','BMO':'estadios/estadio_toronto.png',
+  'VANCOUVER':'estadios/estadio_vancouver.png','BC PLACE':'estadios/estadio_vancouver.png'
+};
+
+const FLAG_ESTADIO={
+  'ATLANTA':'🇺🇸','BOSTON':'🇺🇸','DALLAS':'🇺🇸','HOUSTON':'🇺🇸','KANSAS':'🇺🇸',
+  'LOS ANGELES':'🇺🇸','INGLEWOOD':'🇺🇸','MIAMI':'🇺🇸','NEW JERSEY':'🇺🇸','EAST RUTHERFORD':'🇺🇸',
+  'METLIFE':'🇺🇸','PHILADELPHIA':'🇺🇸','SANTA CLARA':'🇺🇸','LEVIS':'🇺🇸','SEATTLE':'🇺🇸',
+  'NEW YORK':'🇺🇸','SOFI':'🇺🇸','FOXBOROUGH':'🇺🇸','ARLINGTON':'🇺🇸','GILLETTE':'🇺🇸',
+  'AZTECA':'🇲🇽','GUADALAJARA':'🇲🇽','MONTERREY':'🇲🇽','AKRON':'🇲🇽','BBVA':'🇲🇽','CIUDAD DE MEXICO':'🇲🇽',
+  'TORONTO':'🇨🇦','VANCOUVER':'🇨🇦','BMO':'🇨🇦','BC PLACE':'🇨🇦'
+};
+
+let globalData = {};
+
+function norm(t){ return (t||'').toString().trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[''`´]/g,''); }
+
+function getFlag(n){
+  const k = norm(n);
+  if(FLAGS_MAP[k]) return FLAGS_MAP[k];
+  // fallback: buscar si alguna clave está contenida
+  for(const [key,val] of Object.entries(FLAGS_MAP)){ if(k.includes(key)||key.includes(k)) return val; }
+  return '🏳️';
+}
+
+function getStadiumImg(e){
+  const n = norm((e.nombre||'') + ' ' + (e.ciudad||e.city||''));
+  for(const [k,v] of Object.entries(IMG_MAP)){ if(n.includes(k)) return v; }
+  return null;
+}
+
+function getStadiumFlag(e){
+  const n = norm((e.nombre||'') + ' ' + (e.ciudad||e.city||''));
+  for(const [k,v] of Object.entries(FLAG_ESTADIO)){ if(n.includes(k)) return v; }
+  return '🏟️';
+}
+
+function fmtDate(s){
+  if(!s||isNaN(s)) return s||'TBD';
+  const d=new Date(Math.round((s-25569)*86400*1000));
+  return d.toLocaleDateString('es-CL',{day:'2-digit',month:'short'});
+}
+function fmtTime(t){
+  if(!t||isNaN(t)) return '--:--';
+  const m=Math.round(t*24*60),h=Math.floor(m/60),mn=m%60;
+  return `${String(h).padStart(2,'0')}:${String(mn).padStart(2,'0')}`;
+}
+function getVal(obj,keys){ for(const k of keys){ if(obj[k]!=null&&obj[k]!=='') return obj[k]; } return '—'; }
+
+// Sidebar
+function renderSidebar(){
+  const c=document.getElementById('paises-sidebar'); if(!c) return;
+  c.innerHTML='';
+  [...globalData.paises].sort((a,b)=>a.nombre.localeCompare(b.nombre)).forEach(p=>{
+    const d=document.createElement('div'); d.className='pais-card'; d.onclick=()=>showPais(p.nombre);
+    d.innerHTML=`<span class="pais-flag">${getFlag(p.nombre)}</span><span class="pais-name">${p.nombre}</span>`;
+    c.appendChild(d);
+  });
+}
+
+// Grupos
+function renderGrupos(){
+  const porGrupo={};
+  globalData.partidos.forEach(m=>{
+    const pL=globalData.paises.find(p=>norm(p.nombre)===norm(m.local));
+    const pV=globalData.paises.find(p=>norm(p.nombre)===norm(m.visita));
+    const g=(pL?.grupo&&pL.grupo!=='Desconocido')?pL.grupo:pV?.grupo;
+    if(g&&g!=='Desconocido'){ if(!porGrupo[g]) porGrupo[g]=[]; porGrupo[g].push(m); }
+  });
+  const w=document.getElementById('grupos-wrapper'); if(!w) return;
+  w.innerHTML='';
+  const gs=Object.keys(porGrupo).sort();
+  const sp=document.getElementById('stat-grupos'); if(sp) sp.textContent=gs.length;
+  gs.forEach(g=>{
+    const card=document.createElement('div'); card.className='grupo-card';
+    const matches=porGrupo[g].map(m=>`
+      <div class="match-row">
+        <div class="match-team"><span style="font-size:1.1rem;">${getFlag(m.local)}</span><span>${m.local}</span></div>
+        <div class="match-center-col">
+          <span class="match-vs">VS</span>
+          <span class="match-date"><i class="far fa-calendar-alt"></i> ${fmtDate(m.fecha)}</span>
+        </div>
+        <div class="match-team right"><span>${m.visita}</span><span style="font-size:1.1rem;">${getFlag(m.visita)}</span></div>
+        <div class="match-stadium"><i class="fas fa-location-dot"></i> ${m.estadio||m.sede||'TBD'}</div>
+      </div>`).join('');
+    card.innerHTML=`<div class="grupo-card-head"><span class="grupo-card-title">Grupo ${g}</span><span class="grupo-card-badge">${porGrupo[g].length} partidos</span></div><div class="grupo-card-body">${matches}</div>`;
+    w.appendChild(card);
+  });
+}
+
+// Estadios
+function renderEstadios(){
+  const c=document.getElementById('estadios-container'); if(!c) return;
+  c.innerHTML='';
+  const estadios=globalData.estadios||[];
+  const se=document.getElementById('stat-estadios'); if(se) se.textContent=estadios.length;
+  estadios.forEach(e=>{
+    const img=getStadiumImg(e), flag=getStadiumFlag(e), ciudad=e.ciudad||e.city||'N/A';
+    const card=document.createElement('div'); card.className='estadio-card'; card.onclick=()=>showStadium(e);
+    card.innerHTML=`
+      <div class="estadio-img-wrap">
+        ${img?`<img src="${img}" class="estadio-img" alt="${e.nombre}" onerror="this.parentElement.innerHTML='<div class=estadio-fallback><i class=\\'fas fa-landmark\\'></i><span>${e.nombre}</span></div>'">`:
+        `<div class="estadio-fallback"><i class="fas fa-landmark"></i><span>${e.nombre}</span></div>`}
+        <div class="estadio-overlay"><span style="font-family:var(--font-display);font-weight:700;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:white;"><i class="fas fa-expand-alt"></i> Ver detalle</span></div>
+        <span class="estadio-flag-corner">${flag}</span>
+      </div>
+      <div class="estadio-info">
+        <h4>${e.nombre} <span style="font-size:1rem;">${flag}</span></h4>
+        <div class="estadio-meta">
+          <span><i class="fas fa-city" style="color:var(--red)"></i> ${ciudad}</span>
+          <span><i class="fas fa-users" style="color:var(--red)"></i> ${e.capacidad?.toLocaleString()||'N/A'}</span>
+        </div>
+      </div>`;
+    c.appendChild(card);
+  });
+}
+
+// Modal País
+function showPais(nombre){
+  const p=globalData.paises.find(i=>norm(i.nombre)===norm(nombre)); if(!p) return;
+  document.getElementById('modal-body').innerHTML=`
+    <div class="modal-head-red">
+      <span class="modal-flag-big">${getFlag(p.nombre)}</span>
+      <div class="modal-country">${p.nombre}</div>
+      <span class="modal-group-tag">Grupo ${p.grupo||'TBD'}</span>
+    </div>
+    <div class="modal-body-pad">
+      <div class="info-grid">
+        <div class="info-item"><div class="info-label">Ranking FIFA</div><div class="info-value">#${getVal(p,['ranking_2022','ranking_fifa','ranking'])}</div></div>
+        <div class="info-item"><div class="info-label">Participaciones</div><div class="info-value">${getVal(p,['participaciones','mundiales_jugados'])}</div></div>
+        <div class="info-item"><div class="info-label">Mejor posición</div><div class="info-value">${getVal(p,['mejor_posicion'])}</div></div>
+        <div class="info-item"><div class="info-label">Sede base</div><div class="info-value">${getVal(p,['sede','sede_base','base_camp'])}</div></div>
+      </div>
+    </div>`;
+  document.getElementById('paisModal').style.display='flex';
+}
+// Modal event listeners
+document.getElementById('close-pais-btn').addEventListener('click', closeModal);
+document.getElementById('close-stadium-btn').addEventListener('click', closeStadiumModal);
+document.getElementById('paisModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeModal(); });
+document.getElementById('stadiumModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeStadiumModal(); });
+
+function closeModal(){ document.getElementById('paisModal').style.display='none'; }
+function closeStadiumModal(){ document.getElementById('stadiumModal').style.display='none'; }
+function showStadium(e){
+  const img=getStadiumImg(e), flag=getStadiumFlag(e), ciudad=e.ciudad||e.city||'N/A';
+  document.getElementById('stadium-modal-body').innerHTML=`
+    ${img?`<img src="${img}" class="stadium-modal-img" alt="${e.nombre}" onerror="this.style.display='none'">`:
+    `<div style="height:220px;background:linear-gradient(135deg,#0D0D0D,#2A2A2A);display:flex;align-items:center;justify-content:center;"><i class="fas fa-landmark" style="font-size:2.5rem;color:#F0C040"></i></div>`}
+    <div class="stadium-modal-panel">
+      <div class="stadium-tag"><i class="fas fa-circle-check"></i> Sede Oficial FIFA 2026</div>
+      <div class="stadium-name">${e.nombre} ${flag}</div>
+      <div class="stadium-detail"><i class="fas fa-city"></i><span><b>Ciudad:</b> ${ciudad}</span></div>
+      <div class="stadium-detail"><i class="fas fa-users"></i><span><b>Capacidad:</b> ${e.capacidad?.toLocaleString()||'N/A'} espectadores</span></div>
+      ${e.datos_relevantes?`<div class="stadium-detail"><i class="fas fa-info-circle"></i><span>${e.datos_relevantes}</span></div>`:''}
+    </div>`;
+  document.getElementById('stadiumModal').style.display='flex';
+}
+function closeStadiumModal(){ document.getElementById('stadiumModal').style.display='none'; }
+
+// Highlight nav active
+document.querySelectorAll('.nav-link').forEach(l=>{
+  if(l.href===location.href) l.classList.add('active');
+});
+
+async function init(){
+  try{
+    const [paisesSnap, partidosSnap, estadiosSnap] = await Promise.all([
+      getDocs(collection(db,'paises')),
+      getDocs(collection(db,'partidos')),
+      getDocs(collection(db,'estadios'))
+    ]);
+    globalData = {
+      paises:   paisesSnap.docs.map(d=>({id:d.id,...d.data()})),
+      partidos: partidosSnap.docs.map(d=>({id:d.id,...d.data()})),
+      estadios: estadiosSnap.docs.map(d=>({id:d.id,...d.data()}))
+    };
+    const sp=document.getElementById('stat-paises'); if(sp) sp.textContent=globalData.paises.length;
+    renderSidebar(); renderGrupos(); renderEstadios();
+  } catch(e){
+    console.error(e);
+    const g=document.getElementById('grupos-wrapper');
+    if(g) g.innerHTML='<p style="color:var(--muted);padding:20px 0;">Error cargando datos: '+e.message+'</p>';
+  }
+}
+init();
+</script>
+</body>
+</html>

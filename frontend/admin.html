@@ -254,6 +254,8 @@ const FLAGS={
   'BOSNIA':'🇧🇦','BOSNIA Y HERZEGOVINA':'🇧🇦','CABO VERDE':'🇨🇻','JORDANIA':'🇯🇴','UZBEKISTAN':'🇺🇿'
 };
 
+const ADMIN_EMAIL = 'faldunate@gmail.com';
+
 function norm(t){ return (t||'').toString().trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[''`´]/g,''); }
 function getFlag(n){
   const k=norm(n);
@@ -277,7 +279,6 @@ onAuthStateChanged(auth,async user=>{
     const appEl=document.getElementById('app'); appEl.style.display='flex';
     document.getElementById('admin-email').textContent=user.email;
     await initAdmin();
-    await initFCM();
   } else {
     currentUser=null;
     document.getElementById('login-screen').style.display='flex';
