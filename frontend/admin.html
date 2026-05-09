@@ -216,7 +216,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:18px 28p
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js';
+import { getFirestore, doc, getDoc, getDocs, setDoc, addDoc, deleteDoc, updateDoc, writeBatch, query, where, orderBy, collection, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const FB={
   apiKey:"AIzaSyAqrYCFQN8epqx9HZrd7t1Ywz9wVf2Fx5Y",
@@ -226,11 +226,9 @@ const FB={
   messagingSenderId:"366484877682",
   appId:"1:366484877682:web:a7c21e72c012d4b709adeb"
 };
-const ADMIN_EMAIL='faldunate@gmail.com';
-const API='';
-
 const fbApp=initializeApp(FB);
 const auth=getAuth(fbApp);
+const db=getFirestore(fbApp);
 const provider=new GoogleAuthProvider();
 
 let currentUser=null, globalPartidos=[];
@@ -288,28 +286,11 @@ onAuthStateChanged(auth,async user=>{
 });
 
 async function getToken_(){ return await currentUser.getIdToken(true); }
-async function apiFetch(path,opts={}){
-  const token=await getToken_();
-  const res=await fetch(API+path,{...opts,headers:{'Content-Type':'application/json','Authorization':'Bearer '+token,...(opts.headers||{})}});
-  if(!res.ok){ const e=await res.json().catch(()=>({error:res.statusText})); throw new Error(e.error||res.statusText); }
-  return res.json();
-}
-
-async function initFCM(){
-  try{
-    const messaging=getMessaging(fbApp);
-    const tok=await getToken(messaging,{vapidKey:'YOUR_VAPID_KEY'});
-    if(tok) await apiFetch('/api/fcm-token',{method:'POST',body:JSON.stringify({token:tok})});
-    onMessage(messaging,payload=>{
-      toast(payload.notification?.body||'Nueva notificación','info');
-      renderSolicitudes(); // refrescar si llega push
-    });
-  } catch(e){ console.log('FCM:',e.message); }
-}
 
 async function initAdmin(){
-  const data=await fetch(API+'/api/data').then(r=>r.json());
-  globalPartidos=data.partidos||[];
+  // Cargar partidos desde Firestore
+  const snap = await getDocs(collection(db,'partidos'));
+  globalPartidos = snap.docs.map(d=>({id:d.id,...d.data()}));
 
   // Llenar selector de grupos en resultados
   const gs=[...new Set(globalPartidos.map(p=>p.grupo).filter(Boolean))].sort();
@@ -339,19 +320,19 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 // ── SOLICITUDES ──
 async function renderSolicitudesCount(){
   try{
-    const sols=await apiFetch('/api/solicitudes');
-    const pendientes=sols.filter(s=>s.estado==='pendiente').length;
+    const snap = await getDocs(query(collection(db,'solicitudes'),where('estado','==','pendiente')));
     const dot=document.getElementById('dot-sol');
-    if(pendientes>0){ dot.textContent=pendientes; dot.style.display='inline-flex'; }
+    if(snap.size>0){ dot.textContent=snap.size; dot.style.display='inline-flex'; }
     else { dot.style.display='none'; }
   } catch{}
 }
 
 async function renderSolicitudes(){
   const c=document.getElementById('tab-solicitudes');
-  c.innerHTML=`<div class="sec-title"><i class="fas fa-user-check"></i> Solicitudes de ingreso</div><div class="alert alert-info"><i class="fas fa-info-circle"></i> Aquí aparecen las solicitudes de los usuarios para unirse a grupos. Aprueba o rechaza cada una.</div><div id="sols-list"><div class="empty"><i class="fas fa-spinner fa-spin"></i></div></div>`;
+  c.innerHTML=`<div class="sec-title"><i class="fas fa-user-check"></i> Solicitudes de ingreso</div><div class="alert alert-info"><i class="fas fa-info-circle"></i> Aprueba o rechaza las solicitudes de ingreso.</div><div id="sols-list"><div class="empty"><i class="fas fa-spinner fa-spin"></i></div></div>`;
   try{
-    const sols=await apiFetch('/api/solicitudes');
+    const snap = await getDocs(query(collection(db,'solicitudes'),orderBy('creadoEn','desc')));
+    const sols = snap.docs.map(d=>({id:d.id,...d.data()}));
     const list=document.getElementById('sols-list');
     const pendientes=sols.filter(s=>s.estado==='pendiente');
     const resto=sols.filter(s=>s.estado!=='pendiente');
@@ -385,18 +366,28 @@ async function renderSolicitudes(){
       btn.addEventListener('click',async()=>{
         btn.disabled=true; btn.textContent='...';
         try{
-          await apiFetch(`/api/solicitudes/${btn.dataset.id}/aprobar`,{method:'POST'});
+          const solId=btn.dataset.id;
+          const solDoc=await getDoc(doc(db,'solicitudes',solId));
+          const s=solDoc.data();
+          // Crear participante
+          await setDoc(doc(db,'participantes',s.uid),{
+            uid:s.uid, email:s.email, nombre:s.nombre,
+            photoURL:s.photoURL||'', grupoId:s.grupoId,
+            grupoNombre:s.grupoNombre, unidoEn:serverTimestamp()
+          });
+          // Actualizar solicitud
+          await updateDoc(doc(db,'solicitudes',solId),{estado:'aprobado'});
           toast('Usuario aprobado ✓','success');
           await renderSolicitudes(); await renderSolicitudesCount();
         } catch(e){ toast(e.message,'error'); btn.disabled=false; btn.textContent='Aprobar'; }
       });
     });
+
     list.querySelectorAll('.rechazar-btn').forEach(btn=>{
       btn.addEventListener('click',async()=>{
-        const motivo=prompt('Motivo del rechazo (opcional):');
         btn.disabled=true; btn.textContent='...';
         try{
-          await apiFetch(`/api/solicitudes/${btn.dataset.id}/rechazar`,{method:'POST',body:JSON.stringify({motivo:motivo||''})});
+          await updateDoc(doc(db,'solicitudes',btn.dataset.id),{estado:'rechazado'});
           toast('Solicitud rechazada','success');
           await renderSolicitudes(); await renderSolicitudesCount();
         } catch(e){ toast(e.message,'error'); btn.disabled=false; btn.textContent='Rechazar'; }
@@ -425,19 +416,18 @@ async function renderGrupos(){
     const desc=document.getElementById('g-desc').value.trim();
     if(!nombre) return toast('Ingresa un nombre','warn');
     try{
-      await apiFetch('/api/grupos',{method:'POST',body:JSON.stringify({nombre,descripcion:desc})});
+      await addDoc(collection(db,'grupos'),{nombre,descripcion:desc,creadoEn:serverTimestamp()});
       document.getElementById('g-nombre').value=''; document.getElementById('g-desc').value='';
       toast('Grupo creado ✓','success'); await loadGruposList();
     } catch(e){ toast(e.message,'error'); }
   });
-
   await loadGruposList();
 }
 
 async function loadGruposList(){
-  const list=document.getElementById('grupos-list');
-  if(!list) return;
-  const grupos=await fetch(API+'/api/grupos').then(r=>r.json());
+  const list=document.getElementById('grupos-list'); if(!list) return;
+  const snap=await getDocs(collection(db,'grupos'));
+  const grupos=snap.docs.map(d=>({id:d.id,...d.data()}));
   if(!grupos.length){ list.innerHTML='<div class="empty"><i class="fas fa-layer-group"></i><p>No hay grupos aún.</p></div>'; return; }
   list.innerHTML='';
   grupos.forEach(g=>{
@@ -449,7 +439,7 @@ async function loadGruposList(){
       </div>`;
     item.querySelector('.elim-btn').addEventListener('click',async()=>{
       if(!confirm(`¿Eliminar "${g.nombre}"?`)) return;
-      try{ await apiFetch(`/api/grupos/${g.id}`,{method:'DELETE'}); toast('Grupo eliminado','success'); await loadGruposList(); }
+      try{ await deleteDoc(doc(db,'grupos',g.id)); toast('Grupo eliminado','success'); await loadGruposList(); }
       catch(e){ toast(e.message,'error'); }
     });
     list.appendChild(item);
@@ -461,7 +451,8 @@ async function renderParticipantes(){
   const c=document.getElementById('tab-participantes');
   c.innerHTML=`<div class="sec-title"><i class="fas fa-id-card"></i> Participantes inscritos <span class="count" id="part-count">0</span></div><div id="parts-list"><div class="empty"><i class="fas fa-spinner fa-spin"></i></div></div>`;
   try{
-    const parts=await apiFetch('/api/participantes');
+    const snap=await getDocs(collection(db,'participantes'));
+    const parts=snap.docs.map(d=>({id:d.id,...d.data()}));
     document.getElementById('part-count').textContent=parts.length;
     const list=document.getElementById('parts-list');
     if(!parts.length){ list.innerHTML='<div class="empty"><i class="fas fa-users"></i><p>No hay participantes aún.</p></div>'; return; }
@@ -475,12 +466,20 @@ async function renderParticipantes(){
           <div class="list-item-info"><h4>${p.nombre}</h4><p>${p.email} · Grupo: <strong>${p.grupoNombre}</strong></p></div>
         </div>
         <div class="list-item-actions">
-          <button class="btn btn-red btn-sm elim-btn" data-uid="${p.uid}"><i class="fas fa-user-minus"></i> Remover</button>
+          <button class="btn btn-red btn-sm elim-btn"><i class="fas fa-user-minus"></i> Remover</button>
         </div>`;
       item.querySelector('.elim-btn').addEventListener('click',async()=>{
-        if(!confirm(`¿Remover a ${p.nombre}? Se eliminarán también sus apuestas.`)) return;
-        try{ await apiFetch(`/api/participantes/${p.uid}`,{method:'DELETE'}); toast('Participante removido','success'); await renderParticipantes(); }
-        catch(e){ toast(e.message,'error'); }
+        if(!confirm(`¿Remover a ${p.nombre}?`)) return;
+        try{
+          await deleteDoc(doc(db,'participantes',p.uid));
+          const apSnap=await getDocs(query(collection(db,'apuestas'),where('uid','==',p.uid)));
+          const solSnap=await getDocs(query(collection(db,'solicitudes'),where('uid','==',p.uid)));
+          const batch=writeBatch(db);
+          apSnap.docs.forEach(d=>batch.delete(d.ref));
+          solSnap.docs.forEach(d=>batch.delete(d.ref));
+          await batch.commit();
+          toast('Participante removido','success'); await renderParticipantes();
+        } catch(e){ toast(e.message,'error'); }
       });
       list.appendChild(item);
     });
@@ -492,19 +491,32 @@ function renderResultados(){
   const c=document.getElementById('tab-resultados');
   c.innerHTML=`
     <div class="sec-title"><i class="fas fa-futbol"></i> Ingresar resultados reales</div>
-    <div class="alert alert-warn"><i class="fas fa-triangle-exclamation"></i> Al guardar, los puntajes de todos los participantes se recalculan automáticamente.</div>
+    <div class="alert alert-warn"><i class="fas fa-triangle-exclamation"></i> Al guardar, los puntajes se recalculan automáticamente.</div>
     <div class="filter-row">
-      <select id="filtro-grupo" class="filter-select" onchange="filtrarPartidos()"><option value="">Todos los grupos</option></select>
-      <label class="check-label"><input type="checkbox" id="solo-pend" onchange="filtrarPartidos()"> Solo pendientes</label>
+      <select id="filtro-grupo" class="filter-select"><option value="">Todos los grupos</option></select>
+      <label class="check-label"><input type="checkbox" id="solo-pend"> Solo pendientes</label>
     </div>
     <div id="partidos-list"></div>`;
 
-  // Re-popular selector
   const gs=[...new Set(globalPartidos.map(p=>p.grupo).filter(Boolean))].sort();
   const sel=document.getElementById('filtro-grupo');
   gs.forEach(g=>{ const o=document.createElement('option'); o.value=g; o.textContent='Grupo '+g; sel.appendChild(o); });
-
+  sel.addEventListener('change',filtrarPartidos);
+  document.getElementById('solo-pend').addEventListener('change',filtrarPartidos);
   filtrarPartidos();
+}
+
+function calcularPuntaje(real,apuesta){
+  if(real.local==null) return null;
+  const exacto=Number(apuesta.local)===Number(real.local)&&Number(apuesta.visita)===Number(real.visita);
+  const empateReal=real.local===real.visita;
+  if(exacto&&!empateReal) return 4;
+  if(exacto&&empateReal) return 2;
+  const gr=real.local>real.visita?'L':real.local<real.visita?'V':'E';
+  const ga=apuesta.local>apuesta.visita?'L':apuesta.local<apuesta.visita?'V':'E';
+  if(gr===ga&&gr!=='E') return 3;
+  if(gr==='E'&&ga==='E') return 1;
+  return 0;
 }
 
 window.filtrarPartidos=()=>{
@@ -513,8 +525,7 @@ window.filtrarPartidos=()=>{
   let partidos=globalPartidos;
   if(filtro) partidos=partidos.filter(p=>p.grupo===filtro);
   if(soloPend) partidos=partidos.filter(p=>p.resultado_local==null);
-  const list=document.getElementById('partidos-list');
-  if(!list) return;
+  const list=document.getElementById('partidos-list'); if(!list) return;
   if(!partidos.length){ list.innerHTML='<div class="empty"><p>Sin partidos para mostrar.</p></div>'; return; }
   list.innerHTML='';
   partidos.forEach(p=>{
@@ -538,10 +549,19 @@ window.filtrarPartidos=()=>{
       if(l===''||v==='') return toast('Ingresa ambos goles','warn');
       e.currentTarget.disabled=true; e.currentTarget.textContent='...';
       try{
-        const r=await apiFetch('/api/resultados',{method:'POST',body:JSON.stringify({partidoId:pid,golesLocal:Number(l),golesVisita:Number(v)})});
+        // Actualizar resultado del partido
+        await updateDoc(doc(db,'partidos',pid),{resultado_local:Number(l),resultado_visita:Number(v)});
+        // Recalcular puntajes
+        const apSnap=await getDocs(query(collection(db,'apuestas'),where('partidoId','==',pid)));
+        const batch=writeBatch(db);
+        apSnap.docs.forEach(d=>{
+          const a=d.data();
+          batch.update(d.ref,{puntaje:calcularPuntaje({local:Number(l),visita:Number(v)},{local:a.golesLocal,visita:a.golesVisita})});
+        });
+        await batch.commit();
         const idx=globalPartidos.findIndex(p=>p.id===pid);
         if(idx!==-1){ globalPartidos[idx].resultado_local=Number(l); globalPartidos[idx].resultado_visita=Number(v); }
-        toast(`Guardado · ${r.apuestasActualizadas} apuestas actualizadas`,'success');
+        toast(`Guardado · ${apSnap.size} apuestas actualizadas`,'success');
         filtrarPartidos();
       } catch(e){ toast(e.message,'error'); e.currentTarget.disabled=false; e.currentTarget.textContent='Guardar'; }
     });
@@ -554,8 +574,15 @@ async function renderRanking(){
   const c=document.getElementById('tab-ranking');
   c.innerHTML=`<div class="sec-title"><i class="fas fa-trophy"></i> Ranking global</div><div class="empty"><i class="fas fa-spinner fa-spin"></i></div>`;
   try{
-    const ranking=await apiFetch('/api/ranking');
-    if(!ranking.length){ c.innerHTML+='<div class="empty"><i class="fas fa-chart-bar"></i><p>Aún no hay apuestas.</p></div>'; return; }
+    const [partSnap,apSnap]=await Promise.all([
+      getDocs(collection(db,'participantes')),
+      getDocs(collection(db,'apuestas'))
+    ]);
+    const ps={};
+    partSnap.docs.forEach(d=>{ ps[d.data().uid]={...d.data(),total:0}; });
+    apSnap.docs.forEach(d=>{ const a=d.data(); if(a.puntaje!=null&&ps[a.uid]) ps[a.uid].total+=a.puntaje; });
+    const ranking=Object.values(ps).sort((a,b)=>b.total-a.total);
+    if(!ranking.length){ c.innerHTML=`<div class="sec-title"><i class="fas fa-trophy"></i> Ranking global</div><div class="empty"><i class="fas fa-chart-bar"></i><p>Aún no hay apuestas.</p></div>`; return; }
     let html=`<div class="sec-title"><i class="fas fa-trophy"></i> Ranking global <span class="count">${ranking.length} jugadores</span></div>
     <table class="ranking-table"><thead><tr><th>#</th><th>Jugador</th><th>Grupo</th><th>Email</th><th>Puntos</th></tr></thead><tbody>`;
     ranking.forEach((r,i)=>{

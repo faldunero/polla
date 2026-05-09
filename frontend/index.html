@@ -352,7 +352,17 @@ async function renderGrupos(){
         <h3 style="color:var(--gold);">Solicitud pendiente</h3>
         <p>Tu solicitud para unirte al grupo <strong>"${miSolicitud.grupoNombre}"</strong> está siendo revisada por el administrador.</p>
         <p style="margin-top:8px;">Te notificaremos por email cuando sea aprobada.</p>
+        <button id="cancelar-sol-btn" class="btn btn-outline" style="margin-top:20px;"><i class="fas fa-times"></i> Cancelar solicitud</button>
       </div>`;
+    document.getElementById('cancelar-sol-btn').addEventListener('click', async () => {
+      if(!confirm('¿Cancelar tu solicitud de ingreso?')) return;
+      try {
+        await deleteDoc(doc(db,'solicitudes',miSolicitud.id));
+        miSolicitud=null;
+        toast('Solicitud cancelada','success');
+        renderGrupos();
+      } catch(e){ toast(e.message,'error'); }
+    });
     return;
   }
   if(miSolicitud?.estado==='rechazado'){
