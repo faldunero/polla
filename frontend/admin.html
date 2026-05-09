@@ -49,7 +49,7 @@ a{text-decoration:none;color:inherit;}
 
 /* ── LOGIN ── */
 #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at top,rgba(218,0,21,0.08) 0%,transparent 55%),var(--bg);}
-.login-card{text-align:center;padding:44px 38px;background:var(--card);border:1px solid var(--border);border-radius:16px;max-width:380px;width:100%;}
+.login-card{padding:36px 32px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;max-width:380px;width:100%;backdrop-filter:blur(20px);box-shadow:0 32px 80px rgba(0,0,0,0.5);}
 .login-card h1{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:2.2rem;color:var(--red);margin:10px 0 8px;}
 .login-card p{color:var(--muted);margin-bottom:26px;font-size:0.88rem;line-height:1.6;}
 .btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px;background:white;color:#1f2937;border:none;border-radius:10px;font-size:0.9rem;font-weight:600;cursor:pointer;font-family:'Barlow',sans-serif;transition:all 0.2s;}
@@ -148,18 +148,46 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:18px 28p
 
 <!-- LOGIN -->
 <div id="login-screen">
-  <div class="login-card">
-    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:0.8rem;margin-bottom:20px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'">
-      <i class="fas fa-arrow-left"></i> Volver al inicio
-    </a>
-    <span style="font-size:2.5rem;">🔐</span>
-    <h1>Panel Admin</h1>
-    <p>Solo el administrador puede acceder. Inicia sesión con tu cuenta autorizada.</p>
-    <button class="btn-google" id="login-btn">
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
-      Ingresar con Google
-    </button>
-    <p id="login-error" style="color:var(--red);margin-top:14px;font-size:0.82rem;"></p>
+  <!-- Topbar -->
+  <div class="topbar" style="position:fixed;top:0;left:0;right:0;">
+    <div class="topbar-inner">
+      <a href="index.html" class="topbar-brand">
+        <div class="topbar-logo">⚽</div>
+        <div class="topbar-brand-text"><small>Dashboard Oficial</small><strong>La Polla 2026</strong></div>
+      </a>
+      <nav class="topbar-nav">
+        <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Inicio</a>
+        <a href="polla.html" class="nav-link"><i class="fas fa-trophy"></i> La Polla</a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Fondo -->
+  <div style="position:fixed;inset:0;background:linear-gradient(135deg,#6B0009 0%,#0a0e1a 60%,#0a0e1a 100%);z-index:-1;"></div>
+  <div style="position:fixed;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:22px 22px;z-index:-1;pointer-events:none;"></div>
+
+  <!-- Card -->
+  <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:100px 20px 40px;">
+    <div class="login-card">
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="width:64px;height:64px;background:rgba(239,68,68,0.15);border:2px solid rgba(239,68,68,0.4);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 16px;">🔐</div>
+        <h1 style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:2.4rem;color:var(--red);letter-spacing:0.04em;text-transform:uppercase;line-height:1;margin-bottom:8px;">Panel Admin</h1>
+        <p style="color:rgba(255,255,255,0.5);font-size:0.88rem;line-height:1.6;">Solo el administrador puede acceder.<br>Inicia sesión con tu cuenta autorizada.</p>
+      </div>
+      <button class="btn-google" id="login-btn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
+        Ingresar con Google
+      </button>
+      <p id="login-error" style="color:var(--red);margin-top:12px;font-size:0.82rem;text-align:center;min-height:20px;"></p>
+      <a href="index.html" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;padding:10px;color:rgba(255,255,255,0.5);font-size:0.82rem;text-decoration:none;border-radius:8px;transition:all 0.2s;border:1px solid rgba(255,255,255,0.1);" onmouseover="this.style.color='white';this.style.borderColor='rgba(255,255,255,0.3)'" onmouseout="this.style.color='rgba(255,255,255,0.5)';this.style.borderColor='rgba(255,255,255,0.1)'">
+        <i class="fas fa-arrow-left"></i> Volver al dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="position:fixed;bottom:0;left:0;right:0;padding:14px;text-align:center;font-size:0.7rem;color:rgba(255,255,255,0.3);">
+    © 2026 <a href="https://ludolab.cl" target="_blank" style="color:var(--gold);text-decoration:none;">Ludolab.cl</a> · Felipe Aldunate · Sitio no oficial
   </div>
 </div>
 

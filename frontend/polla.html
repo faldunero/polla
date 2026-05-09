@@ -52,7 +52,7 @@ a{text-decoration:none;color:inherit;}
 
 /* ── LOGIN ── */
 #login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at top,rgba(218,0,21,0.1) 0%,transparent 55%),var(--bg);}
-.login-card{text-align:center;padding:48px 40px;background:var(--card);border:1px solid var(--border);border-radius:16px;max-width:400px;width:100%;box-shadow:0 28px 70px rgba(0,0,0,0.5);}
+.login-card{padding:36px 32px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:20px;max-width:380px;width:100%;backdrop-filter:blur(20px);box-shadow:0 32px 80px rgba(0,0,0,0.4);}
 .login-card h1{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:2.6rem;color:var(--gold);letter-spacing:0.04em;margin:12px 0 8px;}
 .login-card p{color:var(--muted);margin-bottom:28px;line-height:1.6;font-size:0.92rem;}
 .btn-google{display:flex;align-items:center;justify-content:center;gap:11px;width:100%;padding:13px;background:white;color:#1f2937;border:none;border-radius:10px;font-size:0.92rem;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Barlow',sans-serif;}
@@ -160,17 +160,46 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:20px 28p
 
 <!-- LOGIN -->
 <div id="login-screen">
-  <div class="login-card">
-    <a href="index.html" style="display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:0.8rem;margin-bottom:20px;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'">
-      <i class="fas fa-arrow-left"></i> Volver al inicio
-    </a>
-    <span style="font-size:3rem;">⚽</span>
-    <h1>La Polla 2026</h1>
-    <p>Predice los resultados del Mundial 2026 y compite con tus amigos. Inicia sesión para participar.</p>
-    <button class="btn-google" id="login-btn">
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
-      Continuar con Google
-    </button>
+  <!-- Topbar igual que el app -->
+  <div class="topbar" style="position:fixed;top:0;left:0;right:0;">
+    <div class="topbar-inner">
+      <a href="index.html" class="topbar-brand">
+        <div class="topbar-logo">⚽</div>
+        <div class="topbar-brand-text"><small>Dashboard Oficial</small><strong>La Polla 2026</strong></div>
+      </a>
+      <nav class="topbar-nav">
+        <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Inicio</a>
+        <a href="index.html#grupos" class="nav-link">Grupos</a>
+        <a href="index.html#estadios" class="nav-link">Estadios</a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Hero de fondo -->
+  <div style="position:fixed;inset:0;background:linear-gradient(135deg,#DA0015 0%,#6B0009 50%,#0a0e1a 100%);z-index:-1;"></div>
+  <div style="position:fixed;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,0.04) 1px,transparent 1px);background-size:22px 22px;z-index:-1;pointer-events:none;"></div>
+
+  <!-- Card centrada -->
+  <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:100px 20px 40px;">
+    <div class="login-card">
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="font-size:3.5rem;margin-bottom:12px;">⚽</div>
+        <h1 style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-style:italic;font-size:3rem;color:var(--gold);letter-spacing:0.04em;text-transform:uppercase;line-height:1;margin-bottom:8px;">La Polla<br>2026</h1>
+        <p style="color:rgba(255,255,255,0.6);font-size:0.92rem;line-height:1.6;max-width:300px;margin:0 auto;">Predice los resultados del Mundial 2026 y compite con tus amigos.</p>
+      </div>
+      <button class="btn-google" id="login-btn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
+        Continuar con Google
+      </button>
+      <a href="index.html" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;padding:10px;color:rgba(255,255,255,0.5);font-size:0.82rem;text-decoration:none;border-radius:8px;transition:all 0.2s;border:1px solid rgba(255,255,255,0.1);" onmouseover="this.style.color='white';this.style.borderColor='rgba(255,255,255,0.3)'" onmouseout="this.style.color='rgba(255,255,255,0.5)';this.style.borderColor='rgba(255,255,255,0.1)'">
+        <i class="fas fa-arrow-left"></i> Volver al dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="position:fixed;bottom:0;left:0;right:0;padding:14px;text-align:center;font-size:0.7rem;color:rgba(255,255,255,0.3);">
+    © 2026 <a href="https://ludolab.cl" target="_blank" style="color:var(--gold);text-decoration:none;">Ludolab.cl</a> · Felipe Aldunate · Sitio no oficial
   </div>
 </div>
 
