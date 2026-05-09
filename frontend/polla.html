@@ -447,7 +447,7 @@ async function renderGruposGrid(container, mostrarBtn){
             if(miSolicitud){
               await deleteDoc(doc(db,'solicitudes',miSolicitud.id));
             }
-            await addDoc(collection(db,'solicitudes'),{
+            const solRef = await addDoc(collection(db,'solicitudes'),{
               uid: currentUser.uid,
               email: currentUser.email,
               nombre: currentUser.displayName||currentUser.email,
@@ -457,7 +457,7 @@ async function renderGruposGrid(container, mostrarBtn){
               estado: 'pendiente',
               creadoEn: serverTimestamp()
             });
-            miSolicitud={estado:'pendiente',grupoNombre:g.nombre};
+            miSolicitud={id:solRef.id, estado:'pendiente', grupoNombre:g.nombre};
             toast('¡Solicitud enviada! El admin te notificará.','success');
             renderGrupos();
           } catch(e){ toast(e.message,'error'); btn.disabled=false; btn.textContent='Solicitar ingreso'; }
