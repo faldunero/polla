@@ -164,7 +164,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:20px 28p
     <span style="font-size:3rem;">⚽</span>
     <h1>La Polla 2026</h1>
     <p>Predice los resultados del Mundial 2026 y compite con tus amigos. Inicia sesión para participar.</p>
-    <button class="btn-google" onclick="loginGoogle()">
+    <button class="btn-google" id="login-btn">
       <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
       Continuar con Google
     </button>
@@ -189,7 +189,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:20px 28p
           <img id="user-avatar" class="user-avatar" src="" alt="">
           <span id="user-name" class="user-name"></span>
         </div>
-        <button class="btn-salir" onclick="logout()">Salir</button>
+        <button class="btn-salir" id="logout-btn">Salir</button>
       </nav>
     </div>
   </div>
@@ -281,7 +281,10 @@ function fmtDate(s){ if(!s||isNaN(s)) return s||'TBD'; const d=new Date(Math.rou
 
 // ── AUTH ──
 window.loginGoogle = async () => { try { await signInWithPopup(auth, provider); } catch(e){ toast(e.message,'error'); } };
-window.logout = async () => { await signOut(auth); window.location.href='index.html'; };
+
+async function logout(){ await signOut(auth); window.location.href='index.html'; }
+document.getElementById('logout-btn')?.addEventListener('click', logout);
+document.getElementById('login-btn')?.addEventListener('click', ()=>loginGoogle());
 
 onAuthStateChanged(auth, async user => {
   if(user){

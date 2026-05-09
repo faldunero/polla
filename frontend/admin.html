@@ -152,7 +152,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:18px 28p
     <span style="font-size:2.5rem;">🔐</span>
     <h1>Panel Admin</h1>
     <p>Solo el administrador puede acceder. Inicia sesión con tu cuenta autorizada.</p>
-    <button class="btn-google" onclick="loginGoogle()">
+    <button class="btn-google" id="login-btn">
       <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
       Ingresar con Google
     </button>
@@ -174,7 +174,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:18px 28p
         <a href="polla.html" class="nav-link"><i class="fas fa-trophy"></i> La Polla</a>
         <span class="admin-badge"><i class="fas fa-shield-halved"></i> Admin</span>
         <span id="admin-email" style="font-size:0.78rem;color:rgba(255,255,255,0.55);"></span>
-        <button class="btn-salir" onclick="logout()">Salir</button>
+        <button class="btn-salir" id="logout-btn">Salir</button>
       </div>
     </div>
   </div>
@@ -265,7 +265,10 @@ function getFlag(n){
 }
 
 window.loginGoogle=async()=>{ try{ await signInWithPopup(auth,provider); } catch(e){ document.getElementById('login-error').textContent=e.message; } };
-window.logout=async()=>{ await signOut(auth); window.location.href='index.html'; };
+
+async function logout(){ await signOut(auth); window.location.href='index.html'; }
+document.getElementById('logout-btn')?.addEventListener('click', logout);
+document.getElementById('login-btn')?.addEventListener('click', ()=>loginGoogle());
 
 onAuthStateChanged(auth,async user=>{
   if(user){
