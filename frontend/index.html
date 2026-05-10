@@ -200,8 +200,9 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
       <h1>La <span>Polla</span><br>Mundial</h1>
       <p class="hero-sub">Predice, compite y vive el Mundial 2026. Revisa el calendario completo, los grupos, las selecciones y los estadios sede.</p>
       <div class="hero-cta">
-        <a href="polla.html" class="btn-hero"><i class="fas fa-futbol"></i> Participar ahora</a>
+        <a href="polla.html" class="btn-hero"><i class="fas fa-futbol" style="font-family:'Font Awesome 6 Free';"></i> Participar ahora</a>
         <a href="#grupos" class="btn-hero-outline">Ver calendario</a>
+        <button id="open-puntaje-btn" class="btn-hero-outline"><i class="fas fa-star" style="font-family:'Font Awesome 6 Free';"></i> Reglas</button>
       </div>
     </div>
     <div class="hero-stats">
@@ -220,16 +221,10 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
   </aside>
   <main>
 
-    <!-- SISTEMA DE PUNTAJE — Modal trigger -->
     <section class="section-wrap" id="grupos">
-      <div class="section-label" style="justify-content:space-between;">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div class="section-line"></div>
-          <div><h2>Fase de Grupos</h2><p>Calendario completo · Partidos y horarios</p></div>
-        </div>
-        <button id="open-puntaje-btn" style="display:inline-flex;align-items:center;gap:7px;font-family:var(--font-display);font-weight:700;font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--red);background:transparent;border:1.5px solid rgba(218,0,21,0.3);border-radius:6px;padding:7px 16px;cursor:pointer;transition:all 0.2s;white-space:nowrap;">
-          <i class="fas fa-star"></i> Ver puntajes
-        </button>
+      <div class="section-label">
+        <div class="section-line"></div>
+        <div><h2>Fase de Grupos</h2><p>Calendario completo · Partidos y horarios</p></div>
       </div>
       <div id="grupos-wrapper" class="grupos-grid"></div>
     </section>
