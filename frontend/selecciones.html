@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Selecciones · La Polla 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700;1,800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+:root{
+  --red:#DA0015;--red-dark:#9E000F;--red-deep:#6B0009;
+  --gold:#F0C040;--gold2:#C89A00;
+  --white:#FFFFFF;--off:#F7F4EF;--ink:#0D0D0D;--ink2:#2A2A2A;
+  --muted:#7A7A7A;--border:#E2DDD6;
+  --font-display:'Barlow Condensed',sans-serif;
+  --font-body:'Barlow',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font-body);background:var(--off);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;}
+a{color:inherit;text-decoration:none;}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--red);position:sticky;top:0;z-index:200;border-bottom:3px solid var(--gold);}
+.topbar-inner{display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:62px;gap:16px;}
+.topbar-brand{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.topbar-logo{width:38px;height:38px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;box-shadow:0 3px 10px rgba(0,0,0,0.25);}
+.topbar-brand-text small{display:block;font-size:0.58rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.6);}
+.topbar-brand-text strong{display:block;font-family:var(--font-display);font-size:1.1rem;font-weight:800;color:white;letter-spacing:0.04em;line-height:1;}
+.topbar-nav{display:flex;align-items:center;gap:4px;}
+.nav-link{font-family:var(--font-display);font-size:0.82rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.8);padding:7px 14px;border-radius:4px;transition:all 0.2s;border:1.5px solid transparent;}
+.nav-link:hover,.nav-link.active{color:white;background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.2);}
+.nav-link.active{color:var(--gold);}
+.nav-divider{width:1px;height:24px;background:rgba(255,255,255,0.2);margin:0 6px;}
+.btn-nav-polla{font-family:var(--font-display);font-weight:800;font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;background:var(--gold);color:var(--ink);padding:8px 18px;border-radius:4px;border:none;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:7px;}
+.btn-nav-polla:hover{background:white;transform:translateY(-1px);}
+
+/* ── DISCLAIMER ── */
+.disclaimer{background:var(--ink);color:rgba(255,255,255,0.7);text-align:center;padding:8px 20px;font-size:0.72rem;letter-spacing:0.04em;border-bottom:2px solid var(--gold);}
+.disclaimer strong{color:var(--gold);}
+
+/* ── PAGE HERO ── */
+.page-hero{background:var(--red);position:relative;overflow:hidden;padding:40px 40px 48px;}
+.page-hero::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,0.07) 1px,transparent 1px);background-size:18px 18px;pointer-events:none;}
+.page-hero-inner{position:relative;z-index:1;}
+.page-eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);font-size:0.72rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;}
+.page-eyebrow::before,.page-eyebrow::after{content:'';display:block;width:20px;height:2px;background:var(--gold);}
+.page-hero h1{font-family:var(--font-display);font-style:italic;font-weight:900;font-size:clamp(2.4rem,5vw,4.5rem);color:white;line-height:0.9;text-transform:uppercase;text-shadow:3px 4px 0px var(--red-deep);margin-bottom:10px;}
+.page-hero h1 span{color:var(--gold);}
+.page-hero-sub{font-size:0.9rem;color:rgba(255,255,255,0.65);max-width:500px;}
+
+/* ── MAIN ── */
+main{flex:1;padding:40px;}
+.grupos-container{display:flex;flex-direction:column;gap:48px;}
+
+/* ── GRUPO SECTION ── */
+.grupo-section{}
+.grupo-header{display:flex;align-items:center;gap:14px;margin-bottom:20px;}
+.grupo-letter{font-family:var(--font-display);font-weight:900;font-size:3rem;color:white;background:var(--ink);width:64px;height:64px;display:flex;align-items:center;justify-content:center;border-radius:8px;flex-shrink:0;letter-spacing:-0.02em;box-shadow:0 4px 14px rgba(0,0,0,0.18);}
+.grupo-title-wrap{}
+.grupo-title{font-family:var(--font-display);font-weight:800;font-size:1.4rem;text-transform:uppercase;letter-spacing:0.04em;color:var(--ink);line-height:1;}
+.grupo-subtitle{font-size:0.78rem;color:var(--muted);margin-top:3px;}
+.grupo-divider{flex:1;height:2px;background:linear-gradient(90deg,var(--border) 0%,transparent 100%);}
+
+/* ── PAISES GRID ── */
+.paises-grupo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;}
+.pais-big-card{background:white;border:1px solid var(--border);border-radius:10px;padding:28px 16px 20px;text-align:center;cursor:pointer;transition:all 0.22s;box-shadow:0 2px 10px rgba(0,0,0,0.05);display:flex;flex-direction:column;align-items:center;gap:10px;}
+.pais-big-card:hover{transform:translateY(-5px);box-shadow:0 14px 36px rgba(0,0,0,0.13);border-color:var(--red);}
+.pais-big-flag{font-size:3.8rem;line-height:1;display:block;}
+.pais-big-name{font-family:var(--font-display);font-weight:800;font-size:1rem;text-transform:uppercase;letter-spacing:0.04em;color:var(--ink);line-height:1.2;}
+.pais-big-ranking{font-size:0.7rem;color:var(--muted);font-weight:600;}
+.pais-big-badge{background:var(--off);border:1px solid var(--border);border-radius:4px;font-family:var(--font-display);font-size:0.62rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:3px 8px;}
+
+/* ── LOADING ── */
+.loading-state{text-align:center;padding:80px 20px;color:var(--muted);}
+.loading-state i{font-size:2rem;color:var(--red);margin-bottom:12px;display:block;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── MODAL ── */
+.modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(13,13,13,0.72);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;}
+.modal-box{background:white;border-radius:8px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;position:relative;animation:popIn 0.24s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 36px 72px rgba(0,0,0,0.38);}
+@keyframes popIn{from{transform:scale(0.92) translateY(14px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
+.modal-close{position:absolute;top:12px;right:14px;width:30px;height:30px;background:rgba(0,0,0,0.08);border:none;cursor:pointer;border-radius:50%;font-size:0.95rem;display:flex;align-items:center;justify-content:center;color:var(--ink2);transition:all 0.2s;z-index:10;}
+.modal-close:hover{background:var(--red);color:white;}
+.modal-head-red{background:var(--red);padding:28px 24px 22px;text-align:center;position:relative;overflow:hidden;}
+.modal-head-red::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,0.07) 1px,transparent 1px);background-size:16px 16px;}
+.modal-flag-big{font-size:3.8rem;display:block;margin-bottom:6px;line-height:1;position:relative;}
+.modal-country{font-family:var(--font-display);font-weight:900;font-size:1.8rem;color:white;text-transform:uppercase;letter-spacing:0.04em;position:relative;}
+.modal-group-tag{display:inline-block;background:var(--gold);color:var(--ink);font-family:var(--font-display);font-weight:800;font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;padding:3px 11px;border-radius:2px;margin-top:7px;position:relative;}
+.modal-body-pad{padding:22px 26px;}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.info-item{background:var(--off);border:1px solid var(--border);border-radius:6px;padding:13px;}
+.info-label{font-size:0.6rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.info-value{font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--ink);}
+
+/* ── FOOTER ── */
+footer{background:var(--ink);color:white;position:relative;margin-top:auto;}
+footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--red) 0%,var(--gold) 50%,var(--red) 100%);}
+.footer-inner{padding:28px 40px 20px;}
+.footer-bottom{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.footer-copy{font-size:0.7rem;color:rgba(255,255,255,0.28);letter-spacing:0.04em;}
+.footer-flags{font-size:1.2rem;opacity:0.5;}
+
+@media(max-width:768px){
+  .topbar-inner{padding:0 16px;}
+  .topbar-nav .nav-link{display:none;}
+  main{padding:24px 16px;}
+  .page-hero{padding:28px 16px 36px;}
+  .paises-grupo-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
+  .pais-big-flag{font-size:3rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <a href="index.html" class="topbar-brand">
+      <div class="topbar-logo">⚽</div>
+      <div class="topbar-brand-text">
+        <small>Dashboard Oficial</small>
+        <strong>La Polla 2026</strong>
+      </div>
+    </a>
+    <nav class="topbar-nav">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="index.html#grupos" class="nav-link">Grupos</a>
+      <a href="selecciones.html" class="nav-link active">Selecciones</a>
+      <a href="index.html#estadios" class="nav-link">Estadios</a>
+      <div class="nav-divider"></div>
+      <a href="polla.html" class="btn-nav-polla"><i class="fas fa-trophy"></i> La Polla</a>
+      <a href="admin.html" class="nav-link" style="font-size:0.72rem;opacity:0.7;">Admin</a>
+    </nav>
+  </div>
+</div>
+
+<!-- DISCLAIMER -->
+<div class="disclaimer">
+  <strong>⚠️ Sitio no oficial.</strong> Este es un proyecto independiente de entretenimiento. No tiene afiliación con FIFA, UEFA ni ninguna federación de fútbol. · Diseñado por <a href="https://ludolab.cl" target="_blank" style="color:var(--gold);">Ludolab.cl</a>
+</div>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <div class="page-eyebrow">FIFA World Cup 2026</div>
+    <h1>Las <span>48</span><br>Selecciones</h1>
+    <p class="page-hero-sub">Conoce todas las selecciones clasificadas, agrupadas por grupo. Haz clic en cualquier país para ver su ficha completa.</p>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main>
+  <div id="grupos-container" class="grupos-container">
+    <div class="loading-state">
+      <i class="fas fa-circle-notch"></i>
+      <p>Cargando selecciones...</p>
+    </div>
+  </div>
+</main>
+
+<!-- MODAL PAÍS -->
+<div id="paisModal" class="modal">
+  <div class="modal-box">
+    <button class="modal-close" id="close-pais-btn">✕</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2026 Ludolab.cl · Felipe Aldunate · Todos los derechos reservados · Sitio no oficial</div>
+      <div class="footer-flags">🇺🇸🇲🇽🇨🇦</div>
+    </div>
+  </div>
+</footer>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, getDocs, collection } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const fbApp = initializeApp({
+  apiKey:"AIzaSyAqrYCFQN8epqx9HZrd7t1Ywz9wVf2Fx5Y",
+  authDomain:"polla-495421-ab029.firebaseapp.com",
+  projectId:"polla-495421-ab029",
+  storageBucket:"polla-495421-ab029.firebasestorage.app",
+  messagingSenderId:"366484877682",
+  appId:"1:366484877682:web:a7c21e72c012d4b709adeb"
+});
+const db = getFirestore(fbApp);
+
+const FLAGS_MAP={
+  'QATAR':'🇶🇦','CATAR':'🇶🇦','ECUADOR':'🇪🇨','SENEGAL':'🇸🇳','PAISES BAJOS':'🇳🇱',
+  'HOLANDA':'🇳🇱','INGLATERRA':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','IRAN':'🇮🇷','ESTADOS UNIDOS':'🇺🇸','USA':'🇺🇸',
+  'GALES':'🏴󠁧󠁢󠁷󠁬󠁳󠁿','ARGENTINA':'🇦🇷','ARABIA SAUDITA':'🇸🇦','ARABIA SAUDI':'🇸🇦',
+  'MEXICO':'🇲🇽','POLONIA':'🇵🇱','FRANCIA':'🇫🇷','AUSTRALIA':'🇦🇺','DINAMARCA':'🇩🇰',
+  'TUNEZ':'🇹🇳','ESPANA':'🇪🇸','ESPAÑA':'🇪🇸','COSTA RICA':'🇨🇷','ALEMANIA':'🇩🇪',
+  'JAPON':'🇯🇵','BELGICA':'🇧🇪','CANADA':'🇨🇦','MARRUECOS':'🇲🇦','CROACIA':'🇭🇷',
+  'BRASIL':'🇧🇷','SERBIA':'🇷🇸','SUIZA':'🇨🇭','CAMERUN':'🇨🇲','PORTUGAL':'🇵🇹',
+  'GHANA':'🇬🇭','URUGUAY':'🇺🇾','COREA DEL SUR':'🇰🇷','CHILE':'🇨🇱','PERU':'🇵🇪',
+  'VENEZUELA':'🇻🇪','BOLIVIA':'🇧🇴','COLOMBIA':'🇨🇴','ITALIA':'🇮🇹','NIGERIA':'🇳🇬',
+  'TURQUIA':'🇹🇷','NORUEGA':'🇳🇴','SUECIA':'🇸🇪','AUSTRIA':'🇦🇹','UCRANIA':'🇺🇦',
+  'GRECIA':'🇬🇷','RUMANIA':'🇷🇴','HUNGRIA':'🇭🇺','PANAMA':'🇵🇦','HONDURAS':'🇭🇳',
+  'EL SALVADOR':'🇸🇻','JAMAICA':'🇯🇲','PARAGUAY':'🇵🇾','INDONESIA':'🇮🇩','IRAK':'🇮🇶',
+  'IRAQ':'🇮🇶','ARGELIA':'🇩🇿','EGIPTO':'🇪🇬','SUDAFRICA':'🇿🇦','COSTA DE MARFIL':'🇨🇮',
+  'MALI':'🇲🇱','GEORGIA':'🇬🇪','NUEVA ZELANDA':'🇳🇿','ESCOCIA':'🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+  'ALBANIA':'🇦🇱','ESLOVAQUIA':'🇸🇰','ESLOVENIA':'🇸🇮','REPUBLICA CHECA':'🇨🇿',
+  'CHEQUIA':'🇨🇿','IRLANDA':'🇮🇪','ISLANDIA':'🇮🇸','FINLANDIA':'🇫🇮',
+  'TRINIDAD Y TOBAGO':'🇹🇹','CUBA':'🇨🇺','GUATEMALA':'🇬🇹','NICARAGUA':'🇳🇮',
+  'HAITI':'🇭🇹','REPUBLICA DOMINICANA':'🇩🇴','CURAZAO':'🇨🇼',
+  'TANZANIA':'🇹🇿','KENYA':'🇰🇪','ANGOLA':'🇦🇴','ZAMBIA':'🇿🇲','BURKINA FASO':'🇧🇫',
+  'GUINEA':'🇬🇳','CONGO':'🇨🇬','RD CONGO':'🇨🇩','MOZAMBIQUE':'🇲🇿','ZIMBABWE':'🇿🇼',
+  'LIBIA':'🇱🇾','JORDANIA':'🇯🇴','UZBEKISTAN':'🇺🇿','CHINA':'🇨🇳','INDIA':'🇮🇳',
+  'VIETNAM':'🇻🇳','TAILANDIA':'🇹🇭','FILIPINAS':'🇵🇭','PAPUA NUEVA GUINEA':'🇵🇬',
+  'BOSNIA':'🇧🇦','BOSNIA Y HERZEGOVINA':'🇧🇦','CABO VERDE':'🇨🇻',
+  'RUMANIA':'🇷🇴','ESLOVAQUIA':'🇸🇰'
+};
+
+function norm(t){ return (t||'').toString().trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[''`´]/g,''); }
+
+function getFlag(n){
+  const k = norm(n);
+  if(FLAGS_MAP[k]) return FLAGS_MAP[k];
+  for(const [key,val] of Object.entries(FLAGS_MAP)){ if(k.includes(key)||key.includes(k)) return val; }
+  return '🏳️';
+}
+
+let paises = [];
+
+function showPais(nombre){
+  const p = paises.find(i => norm(i.nombre) === norm(nombre));
+  if(!p) return;
+  document.getElementById('modal-body').innerHTML=`
+    <div class="modal-head-red">
+      <span class="modal-flag-big">${getFlag(p.nombre)}</span>
+      <div class="modal-country">${p.nombre}</div>
+      <span class="modal-group-tag">Grupo ${p.grupo||'TBD'}</span>
+    </div>
+    <div class="modal-body-pad">
+      <div class="info-grid">
+        <div class="info-item"><div class="info-label">Ranking FIFA</div><div class="info-value">#${p.ranking_fifa||p.ranking_2022||'—'}</div></div>
+        <div class="info-item"><div class="info-label">Participaciones</div><div class="info-value">${p.participaciones||'—'}</div></div>
+        <div class="info-item"><div class="info-label">Mejor posición</div><div class="info-value">${p.mejor_posicion||'—'}</div></div>
+        <div class="info-item"><div class="info-label">Sede base</div><div class="info-value">${p.sede||'—'}</div></div>
+        <div class="info-item"><div class="info-label">Goleador histórico</div><div class="info-value">${p.goleador_historico||'—'}</div></div>
+        <div class="info-item"><div class="info-label">Goleador mundiales</div><div class="info-value">${p.goleador_mundiales||'—'}</div></div>
+        <div class="info-item"><div class="info-label">Jugador más caro</div><div class="info-value">${p.jugador_mas_caro||'—'}</div></div>
+        <div class="info-item"><div class="info-label">Valor plantel</div><div class="info-value">${p.valor_plantel_usd ? 'USD $'+p.valor_plantel_usd+'M' : '—'}</div></div>
+      </div>
+    </div>`;
+  document.getElementById('paisModal').style.display='flex';
+}
+
+function renderGrupos(){
+  const porGrupo = {};
+  paises.forEach(p => {
+    const g = p.grupo || 'Sin grupo';
+    if(!porGrupo[g]) porGrupo[g] = [];
+    porGrupo[g].push(p);
+  });
+
+  const container = document.getElementById('grupos-container');
+  container.innerHTML = '';
+
+  Object.keys(porGrupo).sort().forEach(g => {
+    const section = document.createElement('div');
+    section.className = 'grupo-section';
+
+    const cards = porGrupo[g].map(p => `
+      <div class="pais-big-card" onclick="window._showPais('${p.nombre.replace(/'/g,"\\'")}')">
+        <span class="pais-big-flag">${getFlag(p.nombre)}</span>
+        <span class="pais-big-name">${p.nombre}</span>
+        ${p.ranking_fifa ? `<span class="pais-big-ranking">FIFA #${p.ranking_fifa}</span>` : ''}
+        <span class="pais-big-badge">Grupo ${g}</span>
+      </div>`).join('');
+
+    section.innerHTML = `
+      <div class="grupo-header">
+        <div class="grupo-letter">${g}</div>
+        <div class="grupo-title-wrap">
+          <div class="grupo-title">Grupo ${g}</div>
+          <div class="grupo-subtitle">${porGrupo[g].length} selecciones</div>
+        </div>
+        <div class="grupo-divider"></div>
+      </div>
+      <div class="paises-grupo-grid">${cards}</div>`;
+
+    container.appendChild(section);
+  });
+}
+
+// Expose to inline onclick
+window._showPais = showPais;
+
+async function init(){
+  try{
+    const snap = await getDocs(collection(db,'paises'));
+    paises = snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderGrupos();
+  } catch(e){
+    document.getElementById('grupos-container').innerHTML=`<p style="color:var(--muted);padding:40px 0;text-align:center;">Error cargando datos: ${e.message}</p>`;
+  }
+}
+
+document.getElementById('close-pais-btn').addEventListener('click', ()=>{
+  document.getElementById('paisModal').style.display='none';
+});
+document.getElementById('paisModal').addEventListener('click', e=>{
+  if(e.target===e.currentTarget) document.getElementById('paisModal').style.display='none';
+});
+
+init();
+</script>
+</body>
+</html>
