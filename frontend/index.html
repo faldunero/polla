@@ -222,7 +222,8 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
       <p class="hero-sub">Predice, compite y vive el Mundial 2026. Revisa el calendario completo, los grupos, las selecciones y los estadios sede.</p>
       <div class="hero-cta">
         <a href="polla.html" class="btn-hero"><i class="fas fa-futbol" style="font-family:'Font Awesome 6 Free';"></i> Participar ahora</a>
-        <a href="#grupos" class="btn-hero-outline">Ver calendario</a>
+        <a href="#grupos" class="btn-hero-outline">Programación</a>
+        <a id="btn-download-ics" class="btn-hero-outline" style="cursor:pointer;" title="Agregar partidos a tu calendario"><i class="fas fa-calendar-plus" style="font-family:'Font Awesome 6 Free';"></i> Bajar calendario</a>
         <button id="open-puntaje-btn" class="btn-hero-outline"><i class="fas fa-star" style="font-family:'Font Awesome 6 Free';"></i> Reglas</button>
       </div>
     </div>
@@ -654,6 +655,63 @@ document.getElementById('stadiumModal').addEventListener('click', e=>{
 });
 document.getElementById('puntajeModal').addEventListener('click', e=>{
   if(e.target===e.currentTarget) document.getElementById('puntajeModal').style.display='none';
+});
+
+// ── DESCARGA CALENDARIO ICS ──
+document.getElementById('btn-download-ics').addEventListener('click', function(){
+  if(!globalData || !globalData.partidos || globalData.partidos.length === 0){
+    alert('Los datos de partidos aún no han cargado. Espera un momento e intenta de nuevo.');
+    return;
+  }
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function toICSDate(dateStr, timeStr){
+    try {
+      const [y,m,d] = (dateStr||'').split('-');
+      const [hh,mm] = (timeStr||'00:00').split(':');
+      const utcH = parseInt(hh,10) + 4;
+      const utcDate = new Date(Date.UTC(parseInt(y),parseInt(m)-1,parseInt(d),utcH,parseInt(mm)));
+      return `${utcDate.getUTCFullYear()}${pad(utcDate.getUTCMonth()+1)}${pad(utcDate.getUTCDate())}T${pad(utcDate.getUTCHours())}${pad(utcDate.getUTCMinutes())}00Z`;
+    } catch(e){ return null; }
+  }
+  function escapeICS(str){ return (str||'').replace(/\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;'); }
+
+  const faseGrupos = globalData.partidos.filter(p => {
+    const fase = (p.fase||p.etapa||p.ronda||'').toLowerCase();
+    return !fase || fase.includes('grupo') || fase.includes('group') || fase === '';
+  });
+  if(faseGrupos.length === 0){ alert('No se encontraron partidos de fase de grupos.'); return; }
+
+  const now = new Date();
+  const stamp = `${now.getUTCFullYear()}${pad(now.getUTCMonth()+1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
+  let ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//La Polla 2026//Mundial FIFA 2026//ES\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\nX-WR-CALNAME:Mundial FIFA 2026 · Fase de Grupos\r\nX-WR-TIMEZONE:America/Santiago\r\nX-WR-CALDESC:Partidos de la fase de grupos del Mundial FIFA 2026';
+
+  faseGrupos.forEach((p, i) => {
+    const local1  = p.local || p.equipo_local || p.home || '?';
+    const local2  = p.visitante || p.equipo_visitante || p.away || '?';
+    const estadio = p.estadio || p.venue || '';
+    const ciudad  = p.ciudad || p.city || '';
+    const grupo   = p.grupo || p.group || '';
+    const fecha   = p.fecha || p.date || '';
+    const hora    = p.hora || p.time || '00:00';
+    const dtStart = toICSDate(fecha, hora);
+    if(!dtStart) return;
+    const dtEnd = toICSDate(fecha, `${pad(parseInt(hora.split(':')[0])+2)}:${hora.split(':')[1]||'00'}`);
+    const uid  = `mundial2026-grupo${grupo}-partido${i+1}@lapolla2026`;
+    const loc  = [estadio, ciudad].filter(Boolean).map(escapeICS).join(', ');
+    ics += `\r\nBEGIN:VEVENT\r\nUID:${uid}\r\nDTSTAMP:${stamp}\r\nDTSTART:${dtStart}\r\n`;
+    if(dtEnd) ics += `DTEND:${dtEnd}\r\n`;
+    ics += `SUMMARY:⚽ ${escapeICS(local1)} vs ${escapeICS(local2)}\r\n`;
+    if(loc) ics += `LOCATION:${loc}\r\n`;
+    ics += `DESCRIPTION:Grupo ${escapeICS(grupo)} · Mundial FIFA 2026\\nHorario Chile: ${hora} hrs\r\nEND:VEVENT`;
+  });
+  ics += '\r\nEND:VCALENDAR';
+
+  const blob = new Blob([ics], { type:'text/calendar;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'mundial2026-fase-grupos.ics';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
 });
 
 // ── COUNTDOWN ──
