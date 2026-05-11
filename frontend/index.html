@@ -162,6 +162,27 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
 #open-puntaje-btn:hover{background:rgba(218,0,21,0.06);border-color:var(--red);color:var(--red);}
 
 @media(max-width:768px){.topbar-inner{padding:0 16px;}.topbar-nav .nav-link{display:none;}.hero-inner{padding:28px 16px 40px;}.hero-stats{display:none;}main{padding:18px 14px;}.footer-inner{padding:28px 18px 18px;}.footer-made-col{text-align:left;}}
+
+/* ── COUNTDOWN ── */
+.countdown-bar{background:linear-gradient(90deg,var(--ink) 0%,#1a1a1a 100%);border-bottom:3px solid var(--gold);padding:18px 40px;position:relative;overflow:hidden;}
+.countdown-bar::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:20px 20px;pointer-events:none;}
+.countdown-inner{position:relative;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;}
+.countdown-label{flex-shrink:0;}
+.countdown-label-top{font-size:0.6rem;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:3px;}
+.countdown-label-main{font-family:var(--font-display);font-weight:800;font-size:1rem;letter-spacing:0.06em;text-transform:uppercase;color:white;line-height:1;}
+.countdown-label-sub{font-size:0.7rem;color:rgba(255,255,255,0.45);margin-top:3px;}
+.countdown-units{display:flex;align-items:center;gap:10px;}
+.cd-unit{display:flex;flex-direction:column;align-items:center;min-width:64px;}
+.cd-num{font-family:var(--font-display);font-weight:900;font-size:2.4rem;color:white;line-height:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:6px 12px;min-width:64px;text-align:center;letter-spacing:-0.02em;transition:color 0.3s;}
+.cd-lbl{font-size:0.55rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.38);margin-top:5px;}
+.cd-sep{font-family:var(--font-display);font-weight:900;font-size:2rem;color:var(--gold);opacity:0.6;margin-bottom:18px;animation:blink 1s step-end infinite;}
+@keyframes blink{0%,100%{opacity:0.6;}50%{opacity:0.15;}}
+.countdown-kick{flex-shrink:0;text-align:right;}
+.cd-kick-label{font-size:0.6rem;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:3px;}
+.cd-kick-info{font-family:var(--font-display);font-size:0.88rem;font-weight:700;color:rgba(255,255,255,0.75);letter-spacing:0.04em;}
+.cd-kick-info span{color:var(--gold);}
+.cd-started{font-family:var(--font-display);font-weight:900;font-size:1.6rem;color:var(--gold);letter-spacing:0.06em;text-transform:uppercase;text-align:center;width:100%;}
+@media(max-width:768px){.countdown-bar{padding:14px 16px;}.countdown-units{gap:6px;}.cd-num{font-size:1.8rem;min-width:50px;padding:5px 9px;}.countdown-kick{display:none;}}
 </style>
 </head>
 <body>
@@ -212,6 +233,30 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
     </div>
   </div>
 </header>
+
+<!-- COUNTDOWN -->
+<div class="countdown-bar" id="countdown-bar">
+  <div class="countdown-inner">
+    <div class="countdown-label">
+      <div class="countdown-label-top">⚽ FIFA World Cup 2026</div>
+      <div class="countdown-label-main">Faltan para el Mundial</div>
+      <div class="countdown-label-sub">Partido inaugural · Estadio Azteca</div>
+    </div>
+    <div class="countdown-units" id="countdown-units">
+      <div class="cd-unit"><div class="cd-num" id="cd-dias">--</div><div class="cd-lbl">Días</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-unit"><div class="cd-num" id="cd-horas">--</div><div class="cd-lbl">Horas</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-unit"><div class="cd-num" id="cd-min">--</div><div class="cd-lbl">Min</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-unit"><div class="cd-num" id="cd-seg">--</div><div class="cd-lbl">Seg</div></div>
+    </div>
+    <div class="countdown-kick">
+      <div class="cd-kick-label">Fecha y hora (Chile)</div>
+      <div class="cd-kick-info">Jueves 11 Jun · <span>16:00 hrs</span></div>
+    </div>
+  </div>
+</div>
 
 <!-- LAYOUT -->
 <div class="layout">
@@ -610,6 +655,35 @@ document.getElementById('stadiumModal').addEventListener('click', e=>{
 document.getElementById('puntajeModal').addEventListener('click', e=>{
   if(e.target===e.currentTarget) document.getElementById('puntajeModal').style.display='none';
 });
+
+// ── COUNTDOWN ──
+(function(){
+  // 11 Jun 2026, 16:00 hora Chile (UTC-4 en invierno chileno = UTC+0 -4h → UTC 20:00)
+  const target = new Date('2026-06-11T20:00:00Z');
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function tick(){
+    const now = new Date();
+    const diff = target - now;
+    if(diff <= 0){
+      document.getElementById('countdown-units').innerHTML='<div class="cd-started">🏆 ¡El Mundial ha comenzado!</div>';
+      return;
+    }
+    const dias  = Math.floor(diff / 86400000);
+    const horas = Math.floor((diff % 86400000) / 3600000);
+    const min   = Math.floor((diff % 3600000) / 60000);
+    const seg   = Math.floor((diff % 60000) / 1000);
+    document.getElementById('cd-dias').textContent  = dias;
+    document.getElementById('cd-horas').textContent = pad(horas);
+    document.getElementById('cd-min').textContent   = pad(min);
+    document.getElementById('cd-seg').textContent   = pad(seg);
+    // highlight seconds digit change
+    const el = document.getElementById('cd-seg');
+    el.style.color = 'var(--gold)';
+    setTimeout(()=>el.style.color='', 200);
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
 
 async function init(){
   try{
