@@ -266,6 +266,7 @@ function renderGrupos(){
 
   Object.keys(porGrupo).sort().forEach(g => {
     const section = document.createElement('div');
+    section.setAttribute('id', `grupo-${g}`);
     section.className = 'grupo-section';
 
     const cards = porGrupo[g].map(p => `
