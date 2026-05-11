@@ -135,22 +135,22 @@ main{padding:36px 40px;max-width:1400px;margin:0 auto;}
 .tabla-head{background:var(--ink);padding:20px 24px 16px;position:relative;}
 .tabla-head-title{font-family:var(--font-display);font-weight:900;font-size:1.4rem;color:white;text-transform:uppercase;letter-spacing:0.04em;}
 .tabla-head-sub{font-size:0.72rem;color:rgba(255,255,255,0.45);margin-top:3px;}
-.tabla-wrap{padding:0 0 8px;}
-.tabla-posiciones{width:100%;border-collapse:collapse;}
-.tabla-posiciones th{font-family:var(--font-display);font-size:0.65rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);padding:8px 10px;text-align:center;border-bottom:2px solid var(--border);background:var(--off);}
+.tabla-wrap{padding:0 0 8px;overflow-x:auto;}
+.tabla-posiciones{width:100%;border-collapse:collapse;min-width:480px;}
+.tabla-posiciones th{font-family:var(--font-display);font-size:0.65rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);padding:10px 10px;text-align:center;border-bottom:2px solid var(--border);background:var(--off);}
 .tabla-posiciones th:first-child,.tabla-posiciones th:nth-child(2){text-align:left;}
-.tabla-posiciones td{padding:12px 10px;text-align:center;border-bottom:1px solid var(--border);font-size:0.88rem;color:var(--ink2);}
-.tabla-posiciones td:first-child{font-family:var(--font-display);font-weight:700;font-size:0.9rem;color:var(--muted);width:28px;}
+.tabla-posiciones td{padding:13px 10px;text-align:center;border-bottom:1px solid var(--border);font-size:0.88rem;color:var(--ink2);}
+.tabla-posiciones td:first-child{font-family:var(--font-display);font-weight:700;font-size:0.9rem;color:var(--muted);width:28px;text-align:left;}
 .tabla-posiciones td:nth-child(2){text-align:left;}
-.tabla-posiciones td:last-child{font-family:var(--font-display);font-weight:900;font-size:1rem;color:var(--ink);}
+.tabla-posiciones td:last-child{font-family:var(--font-display);font-weight:900;font-size:1.05rem;color:var(--ink);}
 .tabla-posiciones tr:last-child td{border-bottom:none;}
-.tabla-posiciones tr:hover td{background:var(--off);}
-.tabla-equipo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:0.88rem;color:var(--ink);}
+.tabla-posiciones tbody tr:hover td{background:#fafafa;}
+.tabla-equipo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:0.88rem;color:var(--ink);}
 .tabla-flag{font-size:1.3rem;flex-shrink:0;}
-.tabla-clasificado td{background:rgba(218,0,21,0.04);}
-.tabla-clasificado td:first-child{color:var(--red);}
+.tabla-clasificado td:first-child{color:var(--red);font-weight:900;}
+.tabla-clasificado{border-left:3px solid var(--red);}
 .grupo-card-badge{cursor:pointer;transition:all 0.2s;}
-.grupo-card-badge:hover{background:var(--red);color:white;}
+.grupo-card-badge:hover{background:var(--red-dark);color:white;}
 
 /* ── FOOTER ── */
 footer{background:var(--ink);color:white;position:relative;margin-top:auto;}
@@ -438,7 +438,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
 <!-- MODAL TABLA POSICIONES -->
 <div id="tablaModal" class="modal">
   <div class="modal-box modal-box-wide">
-    <button class="modal-close" id="close-tabla-btn" style="background:rgba(255,255,255,0.12);color:white;">✕</button>
+    <button class="modal-close" id="close-tabla-btn" style="background:rgba(255,255,255,0.15);color:white;">✕</button>
     <div id="tabla-modal-body"></div>
   </div>
 </div>
@@ -608,7 +608,9 @@ function renderGrupos(){
           <span>${m.estadio||m.sede||'Estadio por confirmar'}</span>
         </div>
       </div>`).join('');
-    card.innerHTML=`<div class="grupo-card-head"><a href="selecciones.html#grupo-${g}" class="grupo-card-title" style="text-decoration:none;color:white;">Grupo ${g}</a><span class="grupo-card-badge" onclick="showTabla('${g}')">Tabla de posiciones</span></div><div class="grupo-card-body">${matches}</div>`;
+    card.innerHTML=`<div class="grupo-card-head"><a href="selecciones.html#grupo-${g}" class="grupo-card-title" style="text-decoration:none;color:white;cursor:pointer;">Grupo ${g}</a><span class="grupo-card-badge" data-grupo="${g}">Tabla de posiciones</span></div><div class="grupo-card-body">${matches}</div>`;
+    // Attach click via event listener to avoid inline onclick + module scope issue
+    card.querySelector('.grupo-card-badge').addEventListener('click', ()=> window._showTabla(g));
     w.appendChild(card);
   });
 }
@@ -679,10 +681,9 @@ function showStadium(e){
   document.getElementById('stadiumModal').style.display='flex';
 }
 
-// Modal Tabla Posiciones
-function showTabla(g){
+// Tabla de Posiciones
+window._showTabla = function(g){
   const paisesGrupo = globalData.paises.filter(p=>p.grupo===g);
-  // Build standings: all zeroes (live scores would update these)
   const partidos = globalData.partidos.filter(m=>{
     const pL=globalData.paises.find(p=>norm(p.nombre)===norm(m.local));
     const pV=globalData.paises.find(p=>norm(p.nombre)===norm(m.visita));
@@ -694,7 +695,7 @@ function showTabla(g){
   partidos.forEach(m=>{
     const gl=m.goles_local??m.golesLocal??null;
     const gv=m.goles_visita??m.golesVisita??null;
-    const kL=norm(m.local), kV=norm(m.visita);
+    const kL=norm(m.local), kV=norm(m.visita||m.visita);
     if(!stats[kL]) stats[kL]={nombre:m.local,pj:0,g:0,e:0,pe:0,gf:0,gc:0,pts:0};
     if(!stats[kV]) stats[kV]={nombre:m.visita,pj:0,g:0,e:0,pe:0,gf:0,gc:0,pts:0};
     if(gl!=null&&gv!=null){
@@ -718,8 +719,8 @@ function showTabla(g){
     </tr>`).join('');
   document.getElementById('tabla-modal-body').innerHTML=`
     <div class="tabla-head">
-      <div class="tabla-head-title">⚽ Grupo ${g} · Tabla de Posiciones</div>
-      <div class="tabla-head-sub">PJ · G · E · P · GF · GC · DG · Pts</div>
+      <div class="tabla-head-title">Grupo ${g} · Tabla de Posiciones</div>
+      <div class="tabla-head-sub">Los 2 primeros clasifican a octavos de final</div>
     </div>
     <div class="tabla-wrap">
       <table class="tabla-posiciones">
@@ -731,7 +732,7 @@ function showTabla(g){
       </table>
     </div>`;
   document.getElementById('tablaModal').style.display='flex';
-}
+};
 
 // Highlight nav active
 document.querySelectorAll('.nav-link').forEach(l=>{
