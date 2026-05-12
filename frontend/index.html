@@ -107,57 +107,62 @@ main{padding:36px 40px;max-width:1400px;margin:0 auto;}
 .estadio-meta{display:flex;justify-content:space-between;font-size:0.72rem;color:var(--muted);}
 .estadio-meta span{display:flex;align-items:center;gap:4px;}
 
-/* ── WEATHER TOOLTIP ── */
-.weather-badge {
+/* ── WEATHER INLINE ── */
+.weather-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
+  cursor: pointer;
+  padding: 2px 7px 2px 4px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--off);
+  transition: all 0.18s;
   font-size: 0.72rem;
   color: var(--muted);
-  cursor: default;
-  position: relative;
+  user-select: none;
 }
-.weather-badge .w-icon { font-size: 0.95rem; line-height: 1; }
-.weather-badge .w-temp { font-weight: 700; color: var(--ink); font-size: 0.75rem; }
+.weather-trigger:hover { border-color: var(--red); background: rgba(218,0,21,0.04); color: var(--ink); }
+.weather-trigger.open  { border-color: var(--red); background: rgba(218,0,21,0.06); color: var(--ink); }
+.weather-trigger .w-icon { font-size: 0.95rem; line-height: 1; }
+.weather-trigger .w-temp { font-weight: 700; color: var(--ink); font-size: 0.75rem; }
+.weather-trigger .w-chevron { font-size: 0.55rem; color: var(--muted); transition: transform 0.2s; }
+.weather-trigger.open .w-chevron { transform: rotate(180deg); }
 
-.weather-tooltip {
-  position: absolute;
-  bottom: calc(100% + 10px);
-  left: 50%;
-  transform: translateX(-50%);
+.weather-panel {
+  display: none;
+  margin-top: 8px;
   background: var(--ink);
-  color: white;
-  border-radius: 10px;
-  padding: 10px 14px;
-  width: 180px;
-  font-family: var(--font-body);
-  font-size: 0.75rem;
-  line-height: 1.5;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s, transform 0.2s;
-  transform: translateX(-50%) translateY(4px);
-  z-index: 50;
-  white-space: nowrap;
+  border-radius: 8px;
+  padding: 10px 12px;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
 }
-.weather-tooltip::after {
-  content: '';
-  position: absolute;
-  top: 100%; left: 50%;
-  transform: translateX(-50%);
-  border: 6px solid transparent;
-  border-top-color: var(--ink);
+.weather-panel.open { display: grid; }
+.wp-row { display: flex; flex-direction: column; gap: 1px; }
+.wp-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.42); }
+.wp-val   { font-family: var(--font-display); font-size: 0.88rem; font-weight: 700; color: white; }
+.wp-cond  { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; padding-bottom: 7px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 2px; }
+.wp-cond-icon { font-size: 1.5rem; }
+.wp-cond-text { font-family: var(--font-display); font-weight: 700; font-size: 0.88rem; color: white; }
+.wp-loading { grid-column: 1/-1; font-size: 0.75rem; color: rgba(255,255,255,0.45); font-style: italic; text-align:center; padding: 4px 0; }
+
+/* ── WEATHER EN MODAL ── */
+.modal-weather-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--ink);
+  padding: 12px 18px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  flex-wrap: wrap;
 }
-.weather-badge:hover .weather-tooltip,
-.weather-badge.loaded .weather-tooltip {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-.weather-tooltip-row { display: flex; justify-content: space-between; gap: 8px; }
-.weather-tooltip-row span:first-child { color: rgba(255,255,255,0.55); }
-.weather-tooltip-row span:last-child  { font-weight: 700; }
-.weather-loading { color: rgba(255,255,255,0.5); font-style: italic; text-align: center; padding: 2px 0; }
+.mw-item { display: flex; flex-direction: column; gap: 1px; }
+.mw-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.42); }
+.mw-val   { font-family: var(--font-display); font-size: 0.92rem; font-weight: 700; color: white; }
+.mw-cond  { display: flex; align-items: center; gap: 7px; margin-right: 8px; }
+.mw-cond-icon { font-size: 1.4rem; }
+.mw-loading { color: rgba(255,255,255,0.45); font-style:italic; font-size:0.78rem; }
 
 /* ── MODALS ── */
 .modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(13,13,13,0.72);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;}
@@ -821,57 +826,72 @@ function renderEstadios(){
   estadios.forEach(e=>{
     const img=getStadiumImg(e), flag=getStadiumFlag(e), ciudad=e.ciudad||e.city||'N/A';
     const coords = getCityCoords(e);
-    const card=document.createElement('div'); card.className='estadio-card'; card.onclick=()=>showStadium(e);
+    const wid = coords ? `w_${coords.key.replace(/\s/g,'_')}` : null;
+    const card=document.createElement('div'); card.className='estadio-card';
 
     const weatherHtml = coords ? `
-      <span class="weather-badge" id="wb_${coords.key.replace(/\s/g,'_')}">
+      <button class="weather-trigger" id="wt_${wid}" aria-label="Ver clima">
         <span class="w-icon">🌡️</span>
-        <span class="w-temp">...</span>
-        <div class="weather-tooltip">
-          <div class="weather-loading">Cargando clima...</div>
-        </div>
-      </span>` : '';
+        <span class="w-temp">Clima</span>
+        <span class="w-chevron">▼</span>
+      </button>` : '';
+
+    const weatherPanelHtml = coords ? `
+      <div class="weather-panel" id="wp_${wid}">
+        <div class="wp-loading">Cargando clima...</div>
+      </div>` : '';
 
     card.innerHTML=`
-      <div class="estadio-img-wrap">
+      <div class="estadio-img-wrap" data-open-modal="1">
         ${img?`<img src="${img}" class="estadio-img" alt="${e.nombre}" onerror="this.parentElement.innerHTML='<div class=estadio-fallback><i class=\\'fas fa-landmark\\'></i><span>${e.nombre}</span></div>'">`:
         `<div class="estadio-fallback"><i class="fas fa-landmark"></i><span>${e.nombre}</span></div>`}
         <div class="estadio-overlay"><span style="font-family:var(--font-display);font-weight:700;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:white;"><i class="fas fa-expand-alt"></i> Ver detalle</span></div>
         <span class="estadio-flag-corner">${flag}</span>
       </div>
       <div class="estadio-info">
-        <h4>${e.nombre} <span style="font-size:1rem;">${flag}</span></h4>
+        <h4 data-open-modal="1" style="cursor:pointer;">${e.nombre} <span style="font-size:1rem;">${flag}</span></h4>
         <div class="estadio-meta">
-          <span><i class="fas fa-city" style="color:var(--red)"></i> ${ciudad}</span>
+          <span data-open-modal="1" style="cursor:pointer;"><i class="fas fa-city" style="color:var(--red)"></i> ${ciudad}</span>
           <span style="display:flex;align-items:center;gap:6px;">
-            <span><i class="fas fa-users" style="color:var(--red)"></i> ${e.capacidad?.toLocaleString()||'N/A'}</span>
+            <span data-open-modal="1" style="cursor:pointer;"><i class="fas fa-users" style="color:var(--red)"></i> ${e.capacidad?.toLocaleString()||'N/A'}</span>
             ${weatherHtml}
           </span>
         </div>
+        ${weatherPanelHtml}
       </div>`;
 
-    // Cargar clima al hacer hover (solo una vez)
+    // Click en zonas marcadas → abre modal
+    card.querySelectorAll('[data-open-modal]').forEach(el => {
+      el.addEventListener('click', ()=> showStadium(e));
+    });
+
+    // Toggle clima independiente
     if (coords) {
       let loaded = false;
-      card.addEventListener('mouseenter', async () => {
-        if (loaded) return;
-        loaded = true;
-        const badgeId = `wb_${coords.key.replace(/\s/g,'_')}`;
-        const badge = document.getElementById(badgeId);
-        if (!badge) return;
-        try {
-          const w = await fetchWeather(coords.lat, coords.lon, coords.key);
-          badge.querySelector('.w-icon').textContent = w.icon;
-          badge.querySelector('.w-temp').textContent = `${w.temp}°C`;
-          badge.querySelector('.weather-tooltip').innerHTML = `
-            <div class="weather-tooltip-row"><span>🌤️ Condición</span><span>${w.desc}</span></div>
-            <div class="weather-tooltip-row"><span>🌡️ Temp.</span><span>${w.temp}°C</span></div>
-            <div class="weather-tooltip-row"><span>💧 Humedad</span><span>${w.humidity}%</span></div>
-            <div class="weather-tooltip-row"><span>💨 Viento</span><span>${w.wind} km/h</span></div>
-          `;
-          badge.classList.add('loaded');
-        } catch {
-          badge.querySelector('.weather-tooltip').innerHTML = '<div class="weather-loading">Sin datos</div>';
+      const trigger = card.querySelector(`#wt_${wid}`);
+      const panel   = card.querySelector(`#wp_${wid}`);
+      trigger.addEventListener('click', async (ev) => {
+        ev.stopPropagation();
+        const isOpen = panel.classList.toggle('open');
+        trigger.classList.toggle('open', isOpen);
+        if (!loaded && isOpen) {
+          loaded = true;
+          try {
+            const w = await fetchWeather(coords.lat, coords.lon, coords.key);
+            trigger.querySelector('.w-icon').textContent = w.icon;
+            trigger.querySelector('.w-temp').textContent = `${w.temp}°C`;
+            panel.innerHTML = `
+              <div class="wp-cond">
+                <span class="wp-cond-icon">${w.icon}</span>
+                <span class="wp-cond-text">${w.desc}</span>
+              </div>
+              <div class="wp-row"><span class="wp-label">🌡️ Temp.</span><span class="wp-val">${w.temp}°C</span></div>
+              <div class="wp-row"><span class="wp-label">💧 Humedad</span><span class="wp-val">${w.humidity}%</span></div>
+              <div class="wp-row"><span class="wp-label">💨 Viento</span><span class="wp-val">${w.wind} km/h</span></div>
+            `;
+          } catch {
+            panel.innerHTML = '<div class="wp-loading">Sin datos disponibles</div>';
+          }
         }
       });
     }
@@ -905,6 +925,7 @@ function showPais(nombre){
 
 function showStadium(e){
   const img=getStadiumImg(e), flag=getStadiumFlag(e), ciudad=e.ciudad||e.city||'N/A';
+  const coords = getCityCoords(e);
   document.getElementById('stadium-modal-body').innerHTML=`
     ${img?`<img src="${img}" class="stadium-modal-img" alt="${e.nombre}" onerror="this.style.display='none'">`:
     `<div style="height:220px;background:linear-gradient(135deg,#0D0D0D,#2A2A2A);display:flex;align-items:center;justify-content:center;"><i class="fas fa-landmark" style="font-size:2.5rem;color:#F0C040"></i></div>`}
@@ -914,7 +935,28 @@ function showStadium(e){
       <div class="stadium-detail"><i class="fas fa-city"></i><span><b>Ciudad:</b> ${ciudad}</span></div>
       <div class="stadium-detail"><i class="fas fa-users"></i><span><b>Capacidad:</b> ${e.capacidad?.toLocaleString()||'N/A'} espectadores</span></div>
       ${e.datos_relevantes?`<div class="stadium-detail"><i class="fas fa-info-circle"></i><span>${e.datos_relevantes}</span></div>`:''}
-    </div>`;
+    </div>
+    ${coords ? `<div class="modal-weather-bar" id="mwb_modal"><span class="mw-loading">🌡️ Cargando clima actual...</span></div>` : ''}`;
+
+  if (coords) {
+    fetchWeather(coords.lat, coords.lon, coords.key).then(w => {
+      const bar = document.getElementById('mwb_modal');
+      if (!bar) return;
+      bar.innerHTML = `
+        <div class="mw-cond">
+          <span class="mw-cond-icon">${w.icon}</span>
+          <div><div class="mw-label">Condición actual</div><div class="mw-val">${w.desc}</div></div>
+        </div>
+        <div class="mw-item"><div class="mw-label">🌡️ Temp.</div><div class="mw-val">${w.temp}°C</div></div>
+        <div class="mw-item"><div class="mw-label">💧 Humedad</div><div class="mw-val">${w.humidity}%</div></div>
+        <div class="mw-item"><div class="mw-label">💨 Viento</div><div class="mw-val">${w.wind} km/h</div></div>
+      `;
+    }).catch(() => {
+      const bar = document.getElementById('mwb_modal');
+      if (bar) bar.innerHTML = '<span class="mw-loading">Sin datos de clima</span>';
+    });
+  }
+
   document.getElementById('stadiumModal').style.display='flex';
 }
 
