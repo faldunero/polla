@@ -264,38 +264,6 @@ nav {
 .badge-yellow  { background: rgba(245,200,66,0.15); color: var(--gold); border: 1px solid rgba(245,200,66,0.3); }
 .badge-red     { background: rgba(239,68,68,0.15);  color: var(--red);  border: 1px solid rgba(239,68,68,0.3); }
 
-.filtro-estado-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-.filtro-estado-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 8px 16px;
-  border-radius: 999px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  cursor: pointer;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--muted);
-  font-family: 'DM Sans', sans-serif;
-  transition: all 0.18s;
-}
-.filtro-estado-btn:hover { border-color: var(--gold); color: var(--gold); }
-.filtro-estado-btn.active-all      { background: var(--card); border-color: var(--border); color: var(--text); }
-.filtro-estado-btn.active-pendiente{ background: rgba(245,200,66,0.12); border-color: rgba(245,200,66,0.4); color: var(--gold); }
-.filtro-estado-btn.active-aprobado { background: rgba(34,197,94,0.12);  border-color: rgba(34,197,94,0.4);  color: var(--green); }
-.filtro-estado-btn.active-rechazado{ background: rgba(239,68,68,0.12);  border-color: rgba(239,68,68,0.4);  color: var(--red); }
-.filtro-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.dot-all      { background: var(--muted); }
-.dot-pendiente{ background: var(--gold); }
-.dot-aprobado { background: var(--green); }
-.dot-rechazado{ background: var(--red); }
-
 .solicitud-item {
   display: flex;
   align-items: center;
@@ -340,6 +308,14 @@ nav {
 .stat-sol.s-aprobado  strong { color: var(--green); }
 .stat-sol.s-rechazado strong { color: var(--red); }
 .stat-sol.s-total     strong { color: var(--text); }
+
+.stat-sol.activo { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+.stat-sol.s-total.activo     { border-color: rgba(255,255,255,0.3); }
+.stat-sol.s-pendiente.activo { border-color: var(--gold);  background: rgba(245,200,66,0.1); }
+.stat-sol.s-aprobado.activo  { border-color: var(--green); background: rgba(34,197,94,0.1); }
+.stat-sol.s-rechazado.activo { border-color: var(--red);   background: rgba(239,68,68,0.1); }
+.stat-sol .check-icon { display:none; font-size:0.7rem; margin-top:4px; }
+.stat-sol.activo .check-icon { display:block; }
 </style>
 </head>
 <body>
@@ -404,40 +380,28 @@ nav {
     <div id="tab-solicitudes" class="page">
       <div class="section-title"><i class="fas fa-bell"></i> Solicitudes de participantes</div>
 
-      <!-- Stats rápidas clickeables -->
+      <!-- Cajas toggle — click para activar/desactivar, Total resetea todo -->
       <div class="stats-solicitudes">
-        <div class="stat-sol s-total"     onclick="filtrarSolicitudes('todas')">
-          <strong id="stat-total">0</strong><span>Total</span>
+        <div class="stat-sol s-total activo" id="stc-total" onclick="toggleFiltro('total')">
+          <strong id="stat-total">0</strong>
+          <span>Total</span>
+          <div class="check-icon" style="color:var(--muted);">✓ seleccionado</div>
         </div>
-        <div class="stat-sol s-pendiente" onclick="filtrarSolicitudes('pendiente')">
-          <strong id="stat-pendiente">0</strong><span>Pendientes</span>
+        <div class="stat-sol s-pendiente" id="stc-pendiente" onclick="toggleFiltro('pendiente')">
+          <strong id="stat-pendiente">0</strong>
+          <span>Pendientes</span>
+          <div class="check-icon" style="color:var(--gold);">✓ activo</div>
         </div>
-        <div class="stat-sol s-aprobado"  onclick="filtrarSolicitudes('aprobado')">
-          <strong id="stat-aprobado">0</strong><span>Aprobadas</span>
+        <div class="stat-sol s-aprobado" id="stc-aprobado" onclick="toggleFiltro('aprobado')">
+          <strong id="stat-aprobado">0</strong>
+          <span>Aprobadas</span>
+          <div class="check-icon" style="color:var(--green);">✓ activo</div>
         </div>
-        <div class="stat-sol s-rechazado" onclick="filtrarSolicitudes('rechazado')">
-          <strong id="stat-rechazado">0</strong><span>Rechazadas</span>
+        <div class="stat-sol s-rechazado" id="stc-rechazado" onclick="toggleFiltro('rechazado')">
+          <strong id="stat-rechazado">0</strong>
+          <span>Rechazadas</span>
+          <div class="check-icon" style="color:var(--red);">✓ activo</div>
         </div>
-      </div>
-
-      <!-- Filtros de estado -->
-      <div class="filtro-estado-row" id="filtros-estado">
-        <button class="filtro-estado-btn active-all" data-filtro="todas"      onclick="filtrarSolicitudes('todas')">
-          <span class="filtro-dot dot-all"></span> Todas
-        </button>
-        <button class="filtro-estado-btn" data-filtro="pendiente" onclick="filtrarSolicitudes('pendiente')">
-          <span class="filtro-dot dot-pendiente"></span> Pendientes
-        </button>
-        <button class="filtro-estado-btn" data-filtro="aprobado"  onclick="filtrarSolicitudes('aprobado')">
-          <span class="filtro-dot dot-aprobado"></span> Aprobadas
-        </button>
-        <button class="filtro-estado-btn" data-filtro="rechazado" onclick="filtrarSolicitudes('rechazado')">
-          <span class="filtro-dot dot-rechazado"></span> Rechazadas
-        </button>
-        <button class="filtro-estado-btn" data-filtro="pendiente,aprobado" onclick="filtrarSolicitudes('pendiente,aprobado')">
-          <span class="filtro-dot dot-pendiente"></span>
-          <span class="filtro-dot dot-aprobado" style="margin-left:-4px;"></span> Pendientes + Aprobadas
-        </button>
       </div>
 
       <div id="solicitudes-list"></div>
@@ -573,7 +537,8 @@ window.showTab = async (tab) => {
 
 // ── SOLICITUDES ───────────────────────────────────────────────────────────
 let globalSolicitudes = [];
-let filtroActual = 'todas';
+// Set de estados activos: vacío = mostrar todos (modo "total")
+let filtrosActivos = new Set(); // vacío = Total activo
 
 async function renderSolicitudes() {
   const list = document.getElementById('solicitudes-list');
@@ -581,7 +546,6 @@ async function renderSolicitudes() {
   try {
     globalSolicitudes = await apiFetch('/api/solicitudes');
   } catch(e) {
-    // Si el endpoint no existe aún, leer participantes directamente
     try {
       const parts = await apiFetch('/api/participantes');
       globalSolicitudes = parts;
@@ -590,51 +554,66 @@ async function renderSolicitudes() {
       return;
     }
   }
+  filtrosActivos = new Set(); // reset a "Total" al cargar
   actualizarStats();
+  actualizarToggleCards();
   renderSolicitudesFiltradas();
 }
 
 function actualizarStats() {
-  const total     = globalSolicitudes.length;
-  const pendiente = globalSolicitudes.filter(s => (s.estado||'pendiente') === 'pendiente').length;
-  const aprobado  = globalSolicitudes.filter(s => s.estado === 'aprobado').length;
-  const rechazado = globalSolicitudes.filter(s => s.estado === 'rechazado').length;
-  document.getElementById('stat-total').textContent     = total;
-  document.getElementById('stat-pendiente').textContent = pendiente;
-  document.getElementById('stat-aprobado').textContent  = aprobado;
-  document.getElementById('stat-rechazado').textContent = rechazado;
+  document.getElementById('stat-total').textContent     = globalSolicitudes.length;
+  document.getElementById('stat-pendiente').textContent = globalSolicitudes.filter(s => (s.estado||'pendiente') === 'pendiente').length;
+  document.getElementById('stat-aprobado').textContent  = globalSolicitudes.filter(s => s.estado === 'aprobado').length;
+  document.getElementById('stat-rechazado').textContent = globalSolicitudes.filter(s => s.estado === 'rechazado').length;
 }
+
+function actualizarToggleCards() {
+  const todoActivo = filtrosActivos.size === 0;
+  const ids = ['total','pendiente','aprobado','rechazado'];
+  ids.forEach(id => {
+    const el = document.getElementById('stc-' + id);
+    if (!el) return;
+    const estaActivo = id === 'total' ? todoActivo : filtrosActivos.has(id);
+    el.classList.toggle('activo', estaActivo);
+  });
+}
+
+window.toggleFiltro = (estado) => {
+  if (estado === 'total') {
+    // Total resetea todos los filtros → mostrar todo
+    filtrosActivos.clear();
+  } else {
+    if (filtrosActivos.has(estado)) {
+      filtrosActivos.delete(estado);
+    } else {
+      filtrosActivos.add(estado);
+    }
+    // Si quedan 0 activos después de deseleccionar, volvemos a "total"
+    // (ya queda vacío, que es el estado "total")
+  }
+  actualizarToggleCards();
+  renderSolicitudesFiltradas();
+};
 
 function renderSolicitudesFiltradas() {
   const list = document.getElementById('solicitudes-list');
-  const filtros = filtroActual === 'todas' ? null : filtroActual.split(',');
 
-  const items = filtros
-    ? globalSolicitudes.filter(s => filtros.includes(s.estado || 'pendiente'))
-    : globalSolicitudes;
-
-  // Actualizar botones activos
-  document.querySelectorAll('.filtro-estado-btn').forEach(btn => {
-    const f = btn.dataset.filtro;
-    btn.className = 'filtro-estado-btn';
-    if (f === filtroActual) {
-      const map = { todas:'active-all', pendiente:'active-pendiente', aprobado:'active-aprobado', rechazado:'active-rechazado', 'pendiente,aprobado':'active-pendiente' };
-      btn.classList.add(map[f] || 'active-all');
-    }
-  });
+  const items = filtrosActivos.size === 0
+    ? globalSolicitudes
+    : globalSolicitudes.filter(s => filtrosActivos.has(s.estado || 'pendiente'));
 
   if (!items.length) {
     list.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--muted);">
       <i class="fas fa-inbox" style="font-size:2rem;margin-bottom:12px;display:block;"></i>
-      No hay solicitudes ${filtroActual !== 'todas' ? 'con este estado' : ''}.
+      No hay solicitudes ${filtrosActivos.size > 0 ? 'con los estados seleccionados' : ''}.
     </div>`;
     return;
   }
 
   const estadoBadge = {
-    pendiente:  `<span class="badge badge-yellow"><i class="fas fa-clock"></i> Pendiente</span>`,
-    aprobado:   `<span class="badge badge-green"><i class="fas fa-check"></i> Aprobado</span>`,
-    rechazado:  `<span class="badge badge-red"><i class="fas fa-times"></i> Rechazado</span>`,
+    pendiente: `<span class="badge badge-yellow"><i class="fas fa-clock"></i> Pendiente</span>`,
+    aprobado:  `<span class="badge badge-green"><i class="fas fa-check"></i> Aprobado</span>`,
+    rechazado: `<span class="badge badge-red"><i class="fas fa-times"></i> Rechazado</span>`,
   };
 
   list.innerHTML = items.map(s => {
@@ -642,7 +621,7 @@ function renderSolicitudesFiltradas() {
     const acciones = [];
     if (estado !== 'aprobado')  acciones.push(`<button class="btn btn-green btn-sm" onclick="cambiarEstado('${s.uid||s.id}','aprobado')"><i class="fas fa-check"></i> Aprobar</button>`);
     if (estado !== 'rechazado') acciones.push(`<button class="btn btn-danger btn-sm" onclick="cambiarEstado('${s.uid||s.id}','rechazado')"><i class="fas fa-times"></i> Rechazar</button>`);
-    if (estado !== 'pendiente') acciones.push(`<button class="btn btn-outline btn-sm" onclick="cambiarEstado('${s.uid||s.id}','pendiente')"><i class="fas fa-rotate-left"></i> Poner pendiente</button>`);
+    if (estado !== 'pendiente') acciones.push(`<button class="btn btn-outline btn-sm" onclick="cambiarEstado('${s.uid||s.id}','pendiente')"><i class="fas fa-rotate-left"></i> Pendiente</button>`);
 
     return `<div class="solicitud-item estado-${estado}" id="sol_${s.uid||s.id}">
       <div class="solicitud-info">
@@ -658,18 +637,12 @@ function renderSolicitudesFiltradas() {
   }).join('');
 }
 
-window.filtrarSolicitudes = (filtro) => {
-  filtroActual = filtro;
-  renderSolicitudesFiltradas();
-};
-
 window.cambiarEstado = async (uid, nuevoEstado) => {
   try {
     await apiFetch(`/api/solicitudes/${uid}`, {
       method: 'PATCH',
       body: JSON.stringify({ estado: nuevoEstado })
     });
-    // Actualizar en memoria
     const idx = globalSolicitudes.findIndex(s => (s.uid||s.id) === uid);
     if (idx !== -1) globalSolicitudes[idx].estado = nuevoEstado;
     actualizarStats();
