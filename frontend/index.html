@@ -238,6 +238,61 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
 .cd-kick-info span{color:var(--gold);}
 .cd-started{font-family:var(--font-display);font-weight:900;font-size:1.6rem;color:var(--gold);letter-spacing:0.06em;text-transform:uppercase;text-align:center;width:100%;}
 @media(max-width:768px){.countdown-bar{padding:14px 16px;}.countdown-units{gap:6px;}.cd-num{font-size:1.8rem;min-width:50px;padding:5px 9px;}.countdown-kick{display:none;}}
+
+/* ── RESULTADOS ACCORDION ── */
+.resultados-section{margin-bottom:48px;}
+.fase-acc{margin-bottom:8px;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:white;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
+.fase-acc-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;cursor:pointer;user-select:none;transition:background 0.18s;gap:12px;}
+.fase-acc-header:hover{background:var(--off);}
+.fase-acc-header.open{background:var(--ink);color:white;}
+.fase-acc-left{display:flex;align-items:center;gap:12px;}
+.fase-acc-icon{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;}
+.fase-acc-icon-grupos{background:rgba(240,192,64,0.15);color:var(--gold2);}
+.fase-acc-icon-octavos{background:rgba(59,130,246,0.1);color:#2563eb;}
+.fase-acc-icon-cuartos{background:rgba(139,92,246,0.1);color:#7c3aed;}
+.fase-acc-icon-semis{background:rgba(16,185,129,0.1);color:#059669;}
+.fase-acc-icon-final{background:rgba(240,192,64,0.2);color:var(--gold2);}
+.fase-acc-header.open .fase-acc-icon-grupos{background:rgba(240,192,64,0.25);color:var(--gold);}
+.fase-acc-header.open .fase-acc-icon-octavos,.fase-acc-header.open .fase-acc-icon-cuartos,.fase-acc-header.open .fase-acc-icon-semis,.fase-acc-header.open .fase-acc-icon-final{background:rgba(255,255,255,0.15);color:white;}
+.fase-acc-title{font-family:var(--font-display);font-size:0.92rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;}
+.fase-acc-sub{font-size:0.68rem;color:var(--muted);margin-top:1px;}
+.fase-acc-header.open .fase-acc-sub{color:rgba(255,255,255,0.5);}
+.fase-acc-right{display:flex;align-items:center;gap:10px;}
+.fase-acc-badge{font-size:0.68rem;font-weight:700;font-family:var(--font-display);letter-spacing:0.04em;padding:3px 10px;border-radius:4px;background:var(--off);color:var(--muted);white-space:nowrap;border:1px solid var(--border);}
+.fase-acc-badge.en-curso{background:rgba(218,0,21,0.08);color:var(--red);border-color:rgba(218,0,21,0.2);animation:pulso 2s ease-in-out infinite;}
+.fase-acc-badge.completo{background:rgba(16,185,129,0.08);color:#059669;border-color:rgba(16,185,129,0.2);}
+@keyframes pulso{0%,100%{opacity:1;}50%{opacity:0.65;}}
+.fase-acc-chevron{color:var(--muted);transition:transform 0.22s;font-size:0.8rem;flex-shrink:0;}
+.fase-acc-header.open .fase-acc-chevron{transform:rotate(180deg);color:rgba(255,255,255,0.6);}
+.fase-acc-body{display:none;}
+.fase-acc-body.open{display:block;}
+/* Tabs de grupo */
+.res-grupo-tabs{display:flex;gap:5px;padding:12px 16px 0;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--off);}
+.res-grupo-tab{font-family:var(--font-display);font-size:0.72rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:5px 12px;border-radius:5px;border:1px solid var(--border);background:white;color:var(--muted);cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;gap:4px;}
+.res-grupo-tab:hover{border-color:var(--red);color:var(--red);}
+.res-grupo-tab.active{background:var(--red);color:white;border-color:var(--red);}
+.res-grupo-tab .gtcheck{font-size:0.58rem;opacity:0.8;}
+.res-grupo-panel{display:none;}
+.res-grupo-panel.active{display:block;}
+.res-partidos-wrap{padding:12px 16px;}
+/* Partido resultado row */
+.res-match{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border);}
+.res-match:last-child{border-bottom:none;}
+.res-team{display:flex;align-items:center;gap:7px;font-weight:700;font-size:0.86rem;color:var(--ink);}
+.res-team.right{flex-direction:row-reverse;text-align:right;}
+.res-center{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;}
+.res-score{font-family:var(--font-display);font-weight:900;font-size:1.3rem;color:var(--ink);line-height:1;letter-spacing:0.04em;padding:4px 12px;background:var(--off);border-radius:6px;border:1px solid var(--border);min-width:72px;text-align:center;}
+.res-score.jugado{background:var(--ink);color:white;border-color:var(--ink);}
+.res-score.en-vivo{background:var(--red);color:white;border-color:var(--red);animation:pulso 1.5s ease-in-out infinite;}
+.res-vs{font-family:var(--font-display);font-weight:800;font-size:0.72rem;color:var(--muted);letter-spacing:0.06em;}
+.res-date{font-size:0.66rem;color:var(--muted);margin-top:1px;}
+.res-meta{grid-column:1/-1;font-size:0.67rem;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.res-meta i{color:var(--red);font-size:0.62rem;}
+/* Placeholder equipos elim. */
+.res-team-ph{font-style:italic;color:var(--muted);}
+.fase-elim-wrap{padding:12px 16px;}
+.res-elim-group{margin-bottom:20px;}
+.res-elim-group-title{font-family:var(--font-display);font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);}
 </style>
 </head>
 <body>
@@ -326,6 +381,14 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
         <div><h2>Fase de Grupos</h2><p>Calendario completo · Partidos y horarios</p></div>
       </div>
       <div id="grupos-wrapper" class="grupos-grid"></div>
+    </section>
+
+    <section class="resultados-section" id="resultados">
+      <div class="section-label">
+        <div class="section-line"></div>
+        <div><h2>Resultados del Torneo</h2><p>Resultados en vivo por fase · Actualizado por el admin</p></div>
+      </div>
+      <div id="resultados-accordion"></div>
     </section>
     <section class="section-wrap" id="estadios">
       <div class="section-label">
@@ -595,7 +658,9 @@ function renderGrupos(){
             <span>${m.local}</span>
           </div>
           <div class="match-center-col">
-            <span class="match-vs">VS</span>
+            ${m.resultado_local!=null
+              ? `<span class="match-vs" style="background:var(--ink);color:white;font-size:1rem;padding:4px 10px;">${m.resultado_local}–${m.resultado_visita}</span>`
+              : `<span class="match-vs">VS</span>`}
             <span class="match-date"><i class="far fa-calendar-alt"></i> ${fmtDate(m.fecha)}</span>
           </div>
           <div class="match-team right">
@@ -854,6 +919,247 @@ document.getElementById('btn-download-ics').addEventListener('click', function()
   setInterval(tick, 1000);
 })();
 
+// ── FIXTURE GRUPOS hardcodeado (fallback si Firestore no tiene grupo en partido) ──
+const FG_IDX = {
+  A:['fgA1','fgA2','fgA3','fgA4','fgA5','fgA6'],
+  B:['fgB1','fgB2','fgB3','fgB4','fgB5','fgB6'],
+  C:['fgC1','fgC2','fgC3','fgC4','fgC5','fgC6'],
+  D:['fgD1','fgD2','fgD3','fgD4','fgD5','fgD6'],
+  E:['fgE1','fgE2','fgE3','fgE4','fgE5','fgE6'],
+  F:['fgF1','fgF2','fgF3','fgF4','fgF5','fgF6'],
+  G:['fgG1','fgG2','fgG3','fgG4','fgG5','fgG6'],
+  H:['fgH1','fgH2','fgH3','fgH4','fgH5','fgH6'],
+  I:['fgI1','fgI2','fgI3','fgI4','fgI5','fgI6'],
+  J:['fgJ1','fgJ2','fgJ3','fgJ4','fgJ5','fgJ6'],
+  K:['fgK1','fgK2','fgK3','fgK4','fgK5','fgK6'],
+  L:['fgL1','fgL2','fgL3','fgL4','fgL5','fgL6'],
+};
+
+const FASES_ELIM = [
+  {id:'octavos', label:'Octavos de Final', sublabel:'28 jun – 5 jul', icon:'fas fa-shield-halved', iconClass:'fase-acc-icon-octavos',
+   grupos:[
+    {titulo:'Partidos 1–4 (28–29 jun)', ids:['oct1','oct2','oct3','oct4']},
+    {titulo:'Partidos 5–8 (30 jun – 1 jul)', ids:['oct5','oct6','oct7','oct8']},
+    {titulo:'Partidos 9–12 (2–3 jul)', ids:['oct9','oct10','oct11','oct12']},
+    {titulo:'Partidos 13–16 (4–5 jul)', ids:['oct13','oct14','oct15','oct16']},
+   ]},
+  {id:'cuartos', label:'Cuartos de Final', sublabel:'8–11 jul', icon:'fas fa-trophy', iconClass:'fase-acc-icon-cuartos',
+   grupos:[{titulo:'Cuartos de Final', ids:['qf1','qf2','qf3','qf4','qf5','qf6','qf7','qf8']}]},
+  {id:'semis', label:'Semifinales', sublabel:'15–16 jul', icon:'fas fa-star-half-stroke', iconClass:'fase-acc-icon-semis',
+   grupos:[{titulo:'Semifinales', ids:['sf1','sf2','sf3','sf4']}]},
+  {id:'tercero', label:'Tercer Lugar', sublabel:'18 jul', icon:'fas fa-medal', iconClass:'fase-acc-icon-octavos',
+   grupos:[{titulo:'Partido Tercer Lugar', ids:['3p']}]},
+  {id:'final', label:'Gran Final', sublabel:'19 jul · MetLife Stadium', icon:'fas fa-crown', iconClass:'fase-acc-icon-final',
+   grupos:[{titulo:'Final del Mundial', ids:['fin']}]},
+];
+
+// Determina qué fase está "en curso" para abrir por defecto
+function detectarFaseActual(resCache) {
+  const ahora = new Date();
+  const gruposStart = new Date('2026-06-12');
+  const gruposEnd   = new Date('2026-06-27');
+  const octEnd      = new Date('2026-07-06');
+  const cfEnd       = new Date('2026-07-12');
+  const sfEnd       = new Date('2026-07-17');
+  const tercEnd     = new Date('2026-07-19');
+  const finEnd      = new Date('2026-07-20');
+
+  if (ahora < gruposStart) return 'grupos';
+  if (ahora <= gruposEnd)  return 'grupos';
+  if (ahora <= octEnd)     return 'octavos';
+  if (ahora <= cfEnd)      return 'cuartos';
+  if (ahora <= sfEnd)      return 'semis';
+  if (ahora <= tercEnd)    return 'tercero';
+  if (ahora <= finEnd)     return 'final';
+  return 'final';
+}
+
+function fmtFecha(s) {
+  if (!s) return 'TBD';
+  if (typeof s === 'string') return s;
+  if (isNaN(s)) return s;
+  const d = new Date(Math.round((s - 25569) * 86400 * 1000));
+  return d.toLocaleDateString('es-CL', {day:'2-digit', month:'short'});
+}
+
+function renderResPartido(p, esElim) {
+  if (!p) return '';
+  const tieneRes = p.resultado_local != null;
+  const localNombre  = p.local  || 'Por definir';
+  const visitaNombre = p.visita || 'Por definir';
+  const esPH = !tieneRes && esElim && (
+    localNombre.includes('.') || localNombre.startsWith('G.') ||
+    localNombre.startsWith('Gan') || localNombre.startsWith('Per')
+  );
+  const scoreHtml = tieneRes
+    ? `<div class="res-score jugado">${p.resultado_local} – ${p.resultado_visita}</div>`
+    : `<div class="res-score"><span class="res-vs">VS</span></div>`;
+
+  return `<div class="res-match">
+    <div class="res-team">
+      <span style="font-size:1.15rem;">${esPH ? '⬜' : getFlag(localNombre)}</span>
+      <span class="${esPH ? 'res-team-ph' : ''}">${localNombre}</span>
+    </div>
+    <div class="res-center">
+      ${scoreHtml}
+      <div class="res-date">${fmtFecha(p.fecha)}${p.hora ? ' · ' + p.hora : ''}</div>
+    </div>
+    <div class="res-team right">
+      <span class="${esPH ? 'res-team-ph' : ''}">${visitaNombre}</span>
+      <span style="font-size:1.15rem;">${esPH ? '⬜' : getFlag(visitaNombre)}</span>
+    </div>
+    <div class="res-meta"><i class="fas fa-location-dot"></i>${p.estadio || 'TBD'}</div>
+  </div>`;
+}
+
+async function renderResultadosAccordion() {
+  const container = document.getElementById('resultados-accordion');
+  if (!container) return;
+
+  // Cargar resultados de Firestore (usa partidos ya en globalData + enriquecer con resultados)
+  let resCache = {};
+  try {
+    const snap = await getDocs(collection(db, 'partidos'));
+    snap.docs.forEach(d => { resCache[d.id] = {id: d.id, ...d.data()}; });
+  } catch(e) { console.warn('No se pudo cargar resultados de Firestore:', e.message); }
+
+  const faseActual = detectarFaseActual(resCache);
+  let html = '';
+
+  // ── Fase Grupos ──
+  const gruposKeys = Object.keys(FG_IDX).sort();
+  let totG = 0, compG = 0;
+  gruposKeys.forEach(g => {
+    FG_IDX[g].forEach(id => {
+      totG++;
+      if (resCache[id]?.resultado_local != null) compG++;
+    });
+  });
+  const okG = compG === totG && totG > 0;
+  const enCursoG = faseActual === 'grupos';
+  const abrirG = enCursoG || faseActual === 'octavos' ? false : true; // abierto si está en curso o aún no empieza
+  const abrirGrupos = ['grupos'].includes(faseActual);
+
+  let badgeG = okG ? '<span class="fase-acc-badge completo">✓ Completa</span>'
+    : enCursoG ? '<span class="fase-acc-badge en-curso">🔴 En curso</span>'
+    : compG > 0 ? `<span class="fase-acc-badge">${compG}/${totG}</span>`
+    : '<span class="fase-acc-badge">Próximamente</span>';
+
+  html += `<div class="fase-acc" id="facc-grupos">
+    <div class="fase-acc-header${abrirGrupos?' open':''}" id="faccH-grupos" onclick="toggleFaseAcc('grupos')">
+      <div class="fase-acc-left">
+        <div class="fase-acc-icon fase-acc-icon-grupos"><i class="fas fa-layer-group"></i></div>
+        <div>
+          <div class="fase-acc-title">Fase de Grupos</div>
+          <div class="fase-acc-sub">12 – 26 jun · 12 grupos · 48 partidos</div>
+        </div>
+      </div>
+      <div class="fase-acc-right">${badgeG}<i class="fas fa-chevron-down fase-acc-chevron"></i></div>
+    </div>
+    <div class="fase-acc-body${abrirGrupos?' open':''}" id="faccB-grupos">
+      <div class="res-grupo-tabs" id="rgt-grupos">`;
+
+  gruposKeys.forEach((g, i) => {
+    const comp = FG_IDX[g].filter(id => resCache[id]?.resultado_local != null).length;
+    const tot  = FG_IDX[g].length;
+    const ok   = comp === tot && tot > 0;
+    html += `<button class="res-grupo-tab${i===0?' active':''}" data-grupo="${g}" data-fase="grupos">Grupo ${g} <span class="gtcheck">${ok?'✓':comp+'/'+tot}</span></button>`;
+  });
+
+  html += `</div>`;
+
+  // Paneles de grupos
+  gruposKeys.forEach((g, i) => {
+    const partidos = FG_IDX[g].map(id => {
+      // Preferir datos de Firestore si existen, si no usar fixture base
+      return resCache[id] || globalData.partidos?.find(p => p.id === id) || null;
+    }).filter(Boolean);
+
+    // Fallback: buscar en globalData.partidos por local+visita si no hay por id
+    const partidosGrupo = partidos.length > 0 ? partidos :
+      (globalData.partidos || []).filter(p => {
+        const pL = (globalData.paises||[]).find(pa => norm(pa.nombre)===norm(p.local));
+        const pV = (globalData.paises||[]).find(pa => norm(pa.nombre)===norm(p.visita));
+        return (pL?.grupo||pV?.grupo) === g;
+      });
+
+    html += `<div class="res-grupo-panel${i===0?' active':''}" id="rgp-${g}-grupos">
+      <div class="res-partidos-wrap">
+        ${partidosGrupo.map(p => renderResPartido(p, false)).join('') || '<p style="color:var(--muted);font-size:0.82rem;">Sin partidos disponibles aún.</p>'}
+      </div>
+    </div>`;
+  });
+
+  html += `</div></div>`;
+
+  // ── Fases eliminatorias ──
+  FASES_ELIM.forEach(fase => {
+    const todosIds = fase.grupos.flatMap(g => g.ids);
+    const comp = todosIds.filter(id => resCache[id]?.resultado_local != null).length;
+    const tot  = todosIds.length;
+    const ok   = comp === tot && tot > 0;
+    const enCurso = faseActual === fase.id;
+    const abrir   = faseActual === fase.id;
+
+    let badge = ok ? '<span class="fase-acc-badge completo">✓ Completa</span>'
+      : enCurso ? '<span class="fase-acc-badge en-curso">🔴 En curso</span>'
+      : comp > 0 ? `<span class="fase-acc-badge">${comp}/${tot}</span>`
+      : '<span class="fase-acc-badge">Próximamente</span>';
+
+    html += `<div class="fase-acc" id="facc-${fase.id}">
+      <div class="fase-acc-header${abrir?' open':''}" id="faccH-${fase.id}" onclick="toggleFaseAcc('${fase.id}')">
+        <div class="fase-acc-left">
+          <div class="fase-acc-icon ${fase.iconClass}"><i class="${fase.icon}"></i></div>
+          <div>
+            <div class="fase-acc-title">${fase.label}</div>
+            <div class="fase-acc-sub">${fase.sublabel}</div>
+          </div>
+        </div>
+        <div class="fase-acc-right">${badge}<i class="fas fa-chevron-down fase-acc-chevron"></i></div>
+      </div>
+      <div class="fase-acc-body${abrir?' open':''}" id="faccB-${fase.id}">
+        <div class="fase-elim-wrap">`;
+
+    fase.grupos.forEach(subg => {
+      html += `<div class="res-elim-group">
+        <div class="res-elim-group-title">${subg.titulo}</div>`;
+      subg.ids.forEach(id => {
+        const p = resCache[id] || null;
+        if (!p) {
+          // Partido no en Firestore aún — buscar info del fixture hardcodeado de admin
+          const fallback = {id, local:'Por confirmar', visita:'Por confirmar', fecha:'–', estadio:'–'};
+          html += renderResPartido(fallback, true);
+        } else {
+          html += renderResPartido(p, true);
+        }
+      });
+      html += `</div>`;
+    });
+
+    html += `</div></div></div>`;
+  });
+
+  container.innerHTML = html;
+
+  // Tabs de grupo
+  container.querySelectorAll('.res-grupo-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const fase = tab.dataset.fase;
+      container.querySelectorAll(`.res-grupo-tab[data-fase="${fase}"]`).forEach(t => t.classList.remove('active'));
+      container.querySelectorAll(`[id^="rgp-"][id$="-${fase}"]`).forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(`rgp-${tab.dataset.grupo}-${fase}`)?.classList.add('active');
+    });
+  });
+}
+
+window.toggleFaseAcc = function(id) {
+  const h = document.getElementById('faccH-' + id);
+  const b = document.getElementById('faccB-' + id);
+  if (h) h.classList.toggle('open');
+  if (b) b.classList.toggle('open');
+};
+
 async function init(){
   try{
     const [paisesSnap, partidosSnap, estadiosSnap] = await Promise.all([
@@ -867,7 +1173,7 @@ async function init(){
       estadios: estadiosSnap.docs.map(d=>({id:d.id,...d.data()}))
     };
     const sp=document.getElementById('stat-paises'); if(sp) sp.textContent=globalData.paises.length;
-    renderGrupos(); renderEstadios();
+    renderGrupos(); renderEstadios(); await renderResultadosAccordion();
   } catch(e){
     console.error(e);
     const g=document.getElementById('grupos-wrapper');
