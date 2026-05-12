@@ -316,9 +316,72 @@ nav {
 .stat-sol.s-rechazado.activo { border-color: var(--red);   background: rgba(239,68,68,0.1); }
 .stat-sol .check-icon { display:none; font-size:0.7rem; margin-top:4px; }
 .stat-sol.activo .check-icon { display:block; }
+
+/* ── NAV SITIO (acceso denegado) ── */
+#site-nav {
+  display: none;
+  background: #DA0015;
+  border-bottom: 3px solid #F0C040;
+  padding: 0 40px;
+  height: 62px;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+.site-nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+.site-nav-logo { width: 36px; height: 36px; background: #F0C040; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+.site-nav-brand-text small { display: block; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.6); font-family: 'DM Sans', sans-serif; }
+.site-nav-brand-text strong { display: block; font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; font-weight: 800; color: white; letter-spacing: 0.04em; line-height: 1; }
+.site-nav-links { display: flex; align-items: center; gap: 4px; }
+.site-nav-link { font-family: 'Bebas Neue', sans-serif; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.85); padding: 7px 14px; border-radius: 4px; text-decoration: none; transition: all 0.2s; border: 1.5px solid transparent; }
+.site-nav-link:hover { color: white; background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
+.site-nav-polla { background: #F0C040; color: #0D0D0D; font-family: 'Bebas Neue', sans-serif; font-weight: 800; font-size: 0.85rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 8px 18px; border-radius: 4px; text-decoration: none; display: inline-flex; align-items: center; gap: 7px; transition: all 0.2s; }
+.site-nav-polla:hover { background: white; }
+#acceso-denegado {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 62px);
+  background: radial-gradient(ellipse at top, rgba(239,68,68,0.08) 0%, transparent 55%), var(--bg);
+  padding: 40px 20px;
+  text-align: center;
+}
+#acceso-denegado .denied-icon { font-size: 3.5rem; margin-bottom: 16px; }
+#acceso-denegado h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--red); margin-bottom: 10px; }
+#acceso-denegado p { color: var(--muted); margin-bottom: 28px; max-width: 360px; line-height: 1.6; }
+#acceso-denegado .btn-gold { background: var(--gold); color: #0a0e1a; text-decoration: none; }
 </style>
 </head>
 <body>
+
+<!-- NAV SITIO: visible solo cuando acceso es denegado -->
+<nav id="site-nav">
+  <a href="index.html" class="site-nav-brand">
+    <div class="site-nav-logo">⚽</div>
+    <div class="site-nav-brand-text">
+      <small>Dashboard Oficial</small>
+      <strong>La Polla 2026</strong>
+    </div>
+  </a>
+  <div class="site-nav-links">
+    <a href="index.html" class="site-nav-link">Inicio</a>
+    <a href="index.html#grupos" class="site-nav-link">Grupos</a>
+    <a href="selecciones.html" class="site-nav-link">Selecciones</a>
+    <a href="index.html#estadios" class="site-nav-link">Estadios</a>
+    <a href="polla.html" class="site-nav-polla"><i class="fas fa-futbol"></i> La Polla</a>
+  </div>
+</nav>
+
+<!-- PANTALLA ACCESO DENEGADO -->
+<div id="acceso-denegado">
+  <div class="denied-icon">🔒</div>
+  <h2>Acceso denegado</h2>
+  <p>Tu cuenta no tiene permisos de administrador. Puedes seguir navegando el sitio.</p>
+  <a href="index.html" class="btn btn-gold"><i class="fas fa-home"></i> Volver al inicio</a>
+</div>
 
 <div id="login-screen">
   <div class="login-card">
@@ -470,18 +533,24 @@ onAuthStateChanged(auth, async user => {
   if (user) {
     if (user.email !== ADMIN_EMAIL) {
       await signOut(auth);
-      document.getElementById('login-screen').innerHTML +=
-        '<p style="color:var(--red);margin-top:16px;">❌ No tienes permisos de administrador.</p>';
+      // Mostrar navbar del sitio + pantalla de acceso denegado
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('site-nav').style.display = 'flex';
+      document.getElementById('acceso-denegado').style.display = 'flex';
       return;
     }
     currentUser = user;
     document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('site-nav').style.display = 'none';
+    document.getElementById('acceso-denegado').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     document.getElementById('admin-email').textContent = user.email;
     await initAdmin();
   } else {
     currentUser = null;
     document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('site-nav').style.display = 'none';
+    document.getElementById('acceso-denegado').style.display = 'none';
     document.getElementById('app').style.display = 'none';
   }
 });
