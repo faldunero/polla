@@ -142,6 +142,41 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:18px 28p
 .filter-select{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-family:'Barlow',sans-serif;font-size:0.84rem;cursor:pointer;}
 .filter-select:focus{outline:none;border-color:var(--gold);}
 .check-label{display:flex;align-items:center;gap:7px;font-size:0.82rem;color:var(--muted);cursor:pointer;}
+
+/* ── FASE ACCORDION ── */
+.fase-block{margin-bottom:8px;border-radius:12px;overflow:hidden;border:1px solid var(--border);}
+.fase-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--card);cursor:pointer;user-select:none;transition:background 0.18s;gap:12px;}
+.fase-header:hover{background:var(--card2);}
+.fase-header.open{background:var(--card2);border-bottom:1px solid var(--border);}
+.fase-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.fase-icon-grupos{background:rgba(245,200,66,0.12);color:var(--gold);}
+.fase-icon-octavos{background:rgba(59,130,246,0.12);color:#60a5fa;}
+.fase-icon-cuartos{background:rgba(139,92,246,0.12);color:#a78bfa;}
+.fase-icon-semis{background:rgba(34,197,94,0.12);color:var(--green);}
+.fase-icon-final{background:rgba(245,200,66,0.22);color:var(--gold);}
+.fase-header-left{display:flex;align-items:center;gap:12px;}
+.fase-label{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:800;letter-spacing:0.05em;color:var(--text);}
+.fase-sublabel{font-size:0.7rem;color:var(--muted);margin-top:1px;}
+.fase-chevron{color:var(--muted);transition:transform 0.22s;font-size:0.85rem;flex-shrink:0;}
+.fase-header.open .fase-chevron{transform:rotate(180deg);}
+.fase-progress{font-size:0.7rem;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.04em;padding:3px 10px;border-radius:6px;background:rgba(255,255,255,0.05);color:var(--muted);white-space:nowrap;}
+.fase-progress.completo{background:rgba(34,197,94,0.12);color:var(--green);}
+.fase-body{display:none;}
+.fase-body.open{display:block;}
+.grupo-tabs-wrap{display:flex;align-items:center;gap:6px;padding:14px 18px 0;flex-wrap:wrap;}
+.grupo-tab{font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:6px 13px;border-radius:7px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;gap:5px;}
+.grupo-tab:hover{border-color:rgba(245,200,66,0.35);color:var(--gold);}
+.grupo-tab.active{background:var(--gold);color:#0a0e1a;border-color:var(--gold);}
+.grupo-tab .gtab-check{font-size:0.6rem;opacity:0.75;}
+.grupo-panel{display:none;padding:14px 18px;}
+.grupo-panel.active{display:block;}
+.fase-partidos-wrap{padding:14px 18px;}
+.partido-res{background:var(--card2);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden;}
+.partido-res-row{display:grid;grid-template-columns:1fr auto 1fr auto;align-items:center;gap:12px;padding:14px 18px;}
+.partido-res-row.guardado{border-left:3px solid var(--green);}
+.partido-res-row.pendiente{border-left:3px solid rgba(245,200,66,0.5);}
+.team-editable{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-family:'Barlow',sans-serif;font-size:0.82rem;font-weight:600;width:130px;}
+.team-editable:focus{outline:none;border-color:var(--gold);}
 </style>
 </head>
 <body>
@@ -561,24 +596,149 @@ async function renderParticipantes(){
 }
 
 // ── RESULTADOS ──
-function renderResultados(){
-  const c=document.getElementById('tab-resultados');
-  c.innerHTML=`
-    <div class="sec-title"><i class="fas fa-futbol"></i> Ingresar resultados reales</div>
-    <div class="alert alert-warn"><i class="fas fa-triangle-exclamation"></i> Al guardar, los puntajes se recalculan automáticamente.</div>
-    <div class="filter-row">
-      <select id="filtro-grupo" class="filter-select"><option value="">Todos los grupos</option></select>
-      <label class="check-label"><input type="checkbox" id="solo-pend"> Solo pendientes</label>
-    </div>
-    <div id="partidos-list"></div>`;
+// Fixture hardcodeado para fase de grupos (mismo que polla.html)
+const FG={
+  A:[
+    {id:'fgA1',local:'México',visita:'Ecuador',fecha:'12 jun',hora:'20:00',estadio:'SoFi Stadium, Los Ángeles'},
+    {id:'fgA2',local:'Argentina',visita:'Islandia',fecha:'13 jun',hora:'20:00',estadio:'MetLife Stadium, Nueva York'},
+    {id:'fgA3',local:'México',visita:'Islandia',fecha:'17 jun',hora:'17:00',estadio:'Rose Bowl, Los Ángeles'},
+    {id:'fgA4',local:'Ecuador',visita:'Argentina',fecha:'18 jun',hora:'20:00',estadio:'MetLife Stadium, Nueva York'},
+    {id:'fgA5',local:'Ecuador',visita:'Islandia',fecha:'22 jun',hora:'17:00',estadio:'Rose Bowl, Los Ángeles'},
+    {id:'fgA6',local:'México',visita:'Argentina',fecha:'22 jun',hora:'17:00',estadio:'Rose Bowl, Los Ángeles'},
+  ],
+  B:[
+    {id:'fgB1',local:'España',visita:'Brasil',fecha:'12 jun',hora:'23:00',estadio:'MetLife Stadium, Nueva York'},
+    {id:'fgB2',local:'Japón',visita:'Nigeria',fecha:'13 jun',hora:'17:00',estadio:'AT&T Stadium, Dallas'},
+    {id:'fgB3',local:'España',visita:'Japón',fecha:'16 jun',hora:'20:00',estadio:'MetLife Stadium, Nueva York'},
+    {id:'fgB4',local:'Brasil',visita:'Nigeria',fecha:'17 jun',hora:'23:00',estadio:'SoFi Stadium, Los Ángeles'},
+    {id:'fgB5',local:'Brasil',visita:'Japón',fecha:'21 jun',hora:'17:00',estadio:'AT&T Stadium, Dallas'},
+    {id:'fgB6',local:'Nigeria',visita:'España',fecha:'21 jun',hora:'17:00',estadio:'MetLife Stadium, Nueva York'},
+  ],
+  C:[
+    {id:'fgC1',local:'Estados Unidos',visita:'Portugal',fecha:'12 jun',hora:'20:00',estadio:"Levi's Stadium, San Francisco"},
+    {id:'fgC2',local:'Uruguay',visita:'Angola',fecha:'13 jun',hora:'17:00',estadio:'Estadio Azteca, Ciudad de México'},
+    {id:'fgC3',local:'Estados Unidos',visita:'Uruguay',fecha:'17 jun',hora:'20:00',estadio:'Arrowhead Stadium, Kansas City'},
+    {id:'fgC4',local:'Portugal',visita:'Angola',fecha:'18 jun',hora:'17:00',estadio:'Estadio Azteca, Ciudad de México'},
+    {id:'fgC5',local:'Portugal',visita:'Uruguay',fecha:'22 jun',hora:'17:00',estadio:'Estadio Akron, Guadalajara'},
+    {id:'fgC6',local:'Angola',visita:'Estados Unidos',fecha:'22 jun',hora:'17:00',estadio:"Levi's Stadium, San Francisco"},
+  ],
+  D:[
+    {id:'fgD1',local:'Francia',visita:'Marruecos',fecha:'13 jun',hora:'17:00',estadio:'BC Place, Vancouver'},
+    {id:'fgD2',local:'Senegal',visita:'Azerbaiyán',fecha:'13 jun',hora:'20:00',estadio:'Mercedes-Benz Stadium, Atlanta'},
+    {id:'fgD3',local:'Francia',visita:'Senegal',fecha:'17 jun',hora:'17:00',estadio:'BC Place, Vancouver'},
+    {id:'fgD4',local:'Marruecos',visita:'Azerbaiyán',fecha:'17 jun',hora:'14:00',estadio:'BMO Field, Toronto'},
+    {id:'fgD5',local:'Marruecos',visita:'Senegal',fecha:'21 jun',hora:'20:00',estadio:'BC Place, Vancouver'},
+    {id:'fgD6',local:'Azerbaiyán',visita:'Francia',fecha:'21 jun',hora:'20:00',estadio:'BMO Field, Toronto'},
+  ],
+  E:[
+    {id:'fgE1',local:'Alemania',visita:'Arabia Saudita',fecha:'13 jun',hora:'14:00',estadio:'Gillette Stadium, Boston'},
+    {id:'fgE2',local:'Bélgica',visita:'Guatemala',fecha:'13 jun',hora:'23:00',estadio:'SoFi Stadium, Los Ángeles'},
+    {id:'fgE3',local:'Alemania',visita:'Bélgica',fecha:'17 jun',hora:'14:00',estadio:'Gillette Stadium, Boston'},
+    {id:'fgE4',local:'Arabia Saudita',visita:'Guatemala',fecha:'18 jun',hora:'20:00',estadio:'NRG Stadium, Houston'},
+    {id:'fgE5',local:'Arabia Saudita',visita:'Bélgica',fecha:'22 jun',hora:'14:00',estadio:"Levi's Stadium, San Francisco"},
+    {id:'fgE6',local:'Guatemala',visita:'Alemania',fecha:'22 jun',hora:'14:00',estadio:'Gillette Stadium, Boston'},
+  ],
+  F:[
+    {id:'fgF1',local:'Inglaterra',visita:'Serbia',fecha:'13 jun',hora:'17:00',estadio:'MetLife Stadium, Nueva York'},
+    {id:'fgF2',local:'Países Bajos',visita:'Turquía',fecha:'14 jun',hora:'20:00',estadio:"Levi's Stadium, San Francisco"},
+    {id:'fgF3',local:'Inglaterra',visita:'Países Bajos',fecha:'18 jun',hora:'14:00',estadio:'MetLife Stadium, Nueva York'},
+    {id:'fgF4',local:'Serbia',visita:'Turquía',fecha:'18 jun',hora:'23:00',estadio:'Rose Bowl, Los Ángeles'},
+    {id:'fgF5',local:'Serbia',visita:'Países Bajos',fecha:'22 jun',hora:'23:00',estadio:'Rose Bowl, Los Ángeles'},
+    {id:'fgF6',local:'Turquía',visita:'Inglaterra',fecha:'23 jun',hora:'17:00',estadio:'MetLife Stadium, Nueva York'},
+  ],
+  G:[
+    {id:'fgG1',local:'Croacia',visita:'Portugal',fecha:'14 jun',hora:'17:00',estadio:'NRG Stadium, Houston'},
+    {id:'fgG2',local:'Tanzania',visita:'Eslovaquia',fecha:'14 jun',hora:'23:00',estadio:'Estadio Monterrey, Monterrey'},
+    {id:'fgG3',local:'Portugal',visita:'Tanzania',fecha:'18 jun',hora:'17:00',estadio:'Arrowhead Stadium, Kansas City'},
+    {id:'fgG4',local:'Croacia',visita:'Eslovaquia',fecha:'18 jun',hora:'23:00',estadio:'NRG Stadium, Houston'},
+    {id:'fgG5',local:'Eslovaquia',visita:'Portugal',fecha:'22 jun',hora:'14:00',estadio:'Estadio Monterrey, Monterrey'},
+    {id:'fgG6',local:'Tanzania',visita:'Croacia',fecha:'22 jun',hora:'14:00',estadio:'Estadio Azteca, Ciudad de México'},
+  ],
+  H:[
+    {id:'fgH1',local:'Colombia',visita:'Albania',fecha:'14 jun',hora:'14:00',estadio:'AT&T Stadium, Dallas'},
+    {id:'fgH2',local:'Corea del Sur',visita:'Ghana',fecha:'15 jun',hora:'17:00',estadio:'BMO Field, Toronto'},
+    {id:'fgH3',local:'Colombia',visita:'Corea del Sur',fecha:'19 jun',hora:'14:00',estadio:'AT&T Stadium, Dallas'},
+    {id:'fgH4',local:'Albania',visita:'Ghana',fecha:'19 jun',hora:'20:00',estadio:'Mercedes-Benz Stadium, Atlanta'},
+    {id:'fgH5',local:'Albania',visita:'Corea del Sur',fecha:'23 jun',hora:'20:00',estadio:'BMO Field, Toronto'},
+    {id:'fgH6',local:'Ghana',visita:'Colombia',fecha:'23 jun',hora:'20:00',estadio:'Mercedes-Benz Stadium, Atlanta'},
+  ],
+  I:[
+    {id:'fgI1',local:'Argentina',visita:'Chile',fecha:'15 jun',hora:'23:00',estadio:'MetLife Stadium, Nueva York'},
+    {id:'fgI2',local:'Italia',visita:'México',fecha:'15 jun',hora:'14:00',estadio:'Estadio Azteca, Ciudad de México'},
+    {id:'fgI3',local:'Argentina',visita:'Italia',fecha:'19 jun',hora:'20:00',estadio:'Estadio Akron, Guadalajara'},
+    {id:'fgI4',local:'Chile',visita:'México',fecha:'19 jun',hora:'23:00',estadio:'Estadio Azteca, Ciudad de México'},
+    {id:'fgI5',local:'Chile',visita:'Italia',fecha:'23 jun',hora:'17:00',estadio:'Estadio Azteca, Ciudad de México'},
+    {id:'fgI6',local:'México',visita:'Argentina',fecha:'23 jun',hora:'17:00',estadio:'Rose Bowl, Los Ángeles'},
+  ],
+  J:[
+    {id:'fgJ1',local:'Francia',visita:'Suiza',fecha:'15 jun',hora:'14:00',estadio:"Levi's Stadium, San Francisco"},
+    {id:'fgJ2',local:'Australia',visita:'Arabia Saudita',fecha:'15 jun',hora:'20:00',estadio:'Estadio Akron, Guadalajara'},
+    {id:'fgJ3',local:'Francia',visita:'Australia',fecha:'19 jun',hora:'14:00',estadio:'BC Place, Vancouver'},
+    {id:'fgJ4',local:'Suiza',visita:'Arabia Saudita',fecha:'19 jun',hora:'20:00',estadio:'Estadio Akron, Guadalajara'},
+    {id:'fgJ5',local:'Suiza',visita:'Australia',fecha:'23 jun',hora:'17:00',estadio:'BMO Field, Toronto'},
+    {id:'fgJ6',local:'Arabia Saudita',visita:'Francia',fecha:'23 jun',hora:'17:00',estadio:'BC Place, Vancouver'},
+  ],
+  K:[
+    {id:'fgK1',local:'Japón',visita:'Indonesia',fecha:'15 jun',hora:'23:00',estadio:'NRG Stadium, Houston'},
+    {id:'fgK2',local:'Dinamarca',visita:'Sudáfrica',fecha:'16 jun',hora:'14:00',estadio:'Mercedes-Benz Stadium, Atlanta'},
+    {id:'fgK3',local:'Japón',visita:'Dinamarca',fecha:'20 jun',hora:'23:00',estadio:'AT&T Stadium, Dallas'},
+    {id:'fgK4',local:'Indonesia',visita:'Sudáfrica',fecha:'20 jun',hora:'23:00',estadio:'NRG Stadium, Houston'},
+    {id:'fgK5',local:'Indonesia',visita:'Dinamarca',fecha:'24 jun',hora:'14:00',estadio:'Mercedes-Benz Stadium, Atlanta'},
+    {id:'fgK6',local:'Sudáfrica',visita:'Japón',fecha:'24 jun',hora:'14:00',estadio:'AT&T Stadium, Dallas'},
+  ],
+  L:[
+    {id:'fgL1',local:'Canadá',visita:'Venezuela',fecha:'16 jun',hora:'23:00',estadio:'BC Place, Vancouver'},
+    {id:'fgL2',local:'Alemania',visita:'Escocia',fecha:'17 jun',hora:'17:00',estadio:'Gillette Stadium, Boston'},
+    {id:'fgL3',local:'Canadá',visita:'Alemania',fecha:'21 jun',hora:'20:00',estadio:'BMO Field, Toronto'},
+    {id:'fgL4',local:'Venezuela',visita:'Escocia',fecha:'21 jun',hora:'23:00',estadio:'Arrowhead Stadium, Kansas City'},
+    {id:'fgL5',local:'Venezuela',visita:'Alemania',fecha:'25 jun',hora:'17:00',estadio:'Gillette Stadium, Boston'},
+    {id:'fgL6',local:'Escocia',visita:'Canadá',fecha:'25 jun',hora:'17:00',estadio:'BC Place, Vancouver'},
+  ],
+};
 
-  const gs=[...new Set(globalPartidos.map(p=>p.grupo).filter(Boolean))].sort();
-  const sel=document.getElementById('filtro-grupo');
-  gs.forEach(g=>{ const o=document.createElement('option'); o.value=g; o.textContent='Grupo '+g; sel.appendChild(o); });
-  sel.addEventListener('change',filtrarPartidos);
-  document.getElementById('solo-pend').addEventListener('change',filtrarPartidos);
-  filtrarPartidos();
-}
+const FASES_POST_ADMIN=[
+  {id:'octavos',label:'Octavos de Final',sublabel:'28 jun – 5 jul · 16 partidos',icon:'fas fa-shield-halved',iconClass:'fase-icon-octavos',
+   partidos:[
+    {id:'oct1',local:'1.A',visita:'2.B',fecha:'28 jun',estadio:'MetLife Stadium, Nueva York'},
+    {id:'oct2',local:'1.C',visita:'2.D',fecha:'28 jun',estadio:'SoFi Stadium, Los Ángeles'},
+    {id:'oct3',local:'1.E',visita:'2.F',fecha:'29 jun',estadio:'AT&T Stadium, Dallas'},
+    {id:'oct4',local:'1.G',visita:'2.H',fecha:'29 jun',estadio:'Mercedes-Benz Stadium, Atlanta'},
+    {id:'oct5',local:'1.B',visita:'2.A',fecha:'30 jun',estadio:'Rose Bowl, Los Ángeles'},
+    {id:'oct6',local:'1.D',visita:'2.C',fecha:'30 jun',estadio:"Levi's Stadium, San Francisco"},
+    {id:'oct7',local:'1.F',visita:'2.E',fecha:'1 jul',estadio:'BC Place, Vancouver'},
+    {id:'oct8',local:'1.H',visita:'2.G',fecha:'1 jul',estadio:'BMO Field, Toronto'},
+    {id:'oct9',local:'1.I',visita:'2.J',fecha:'2 jul',estadio:'Estadio Azteca, Ciudad de México'},
+    {id:'oct10',local:'1.K',visita:'2.L',fecha:'2 jul',estadio:'Estadio Akron, Guadalajara'},
+    {id:'oct11',local:'1.J',visita:'2.I',fecha:'3 jul',estadio:'NRG Stadium, Houston'},
+    {id:'oct12',local:'1.L',visita:'2.K',fecha:'3 jul',estadio:'Arrowhead Stadium, Kansas City'},
+    {id:'oct13',local:'3.mejor 1',visita:'3.mejor 2',fecha:'4 jul',estadio:'Gillette Stadium, Boston'},
+    {id:'oct14',local:'3.mejor 3',visita:'3.mejor 4',fecha:'4 jul',estadio:'Estadio Monterrey, Monterrey'},
+    {id:'oct15',local:'3.mejor 5',visita:'3.mejor 6',fecha:'5 jul',estadio:'AT&T Stadium, Dallas'},
+    {id:'oct16',local:'3.mejor 7',visita:'3.mejor 8',fecha:'5 jul',estadio:'MetLife Stadium, Nueva York'},
+   ]},
+  {id:'cuartos',label:'Cuartos de Final',sublabel:'8 – 11 jul · 8 partidos',icon:'fas fa-trophy',iconClass:'fase-icon-cuartos',
+   partidos:[
+    {id:'qf1',local:'G.Oct 1',visita:'G.Oct 2',fecha:'8 jul',estadio:'MetLife Stadium, Nueva York'},
+    {id:'qf2',local:'G.Oct 3',visita:'G.Oct 4',fecha:'8 jul',estadio:'SoFi Stadium, Los Ángeles'},
+    {id:'qf3',local:'G.Oct 5',visita:'G.Oct 6',fecha:'9 jul',estadio:'AT&T Stadium, Dallas'},
+    {id:'qf4',local:'G.Oct 7',visita:'G.Oct 8',fecha:'9 jul',estadio:'BC Place, Vancouver'},
+    {id:'qf5',local:'G.Oct 9',visita:'G.Oct 10',fecha:'10 jul',estadio:'Rose Bowl, Los Ángeles'},
+    {id:'qf6',local:'G.Oct 11',visita:'G.Oct 12',fecha:'10 jul',estadio:'Mercedes-Benz Stadium, Atlanta'},
+    {id:'qf7',local:'G.Oct 13',visita:'G.Oct 14',fecha:'11 jul',estadio:'Estadio Azteca, Ciudad de México'},
+    {id:'qf8',local:'G.Oct 15',visita:'G.Oct 16',fecha:'11 jul',estadio:'Gillette Stadium, Boston'},
+   ]},
+  {id:'semis',label:'Semifinales',sublabel:'15 – 16 jul · 4 partidos',icon:'fas fa-star-half-stroke',iconClass:'fase-icon-semis',
+   partidos:[
+    {id:'sf1',local:'G.CF 1',visita:'G.CF 2',fecha:'15 jul',estadio:'MetLife Stadium, Nueva York'},
+    {id:'sf2',local:'G.CF 3',visita:'G.CF 4',fecha:'15 jul',estadio:'SoFi Stadium, Los Ángeles'},
+    {id:'sf3',local:'G.CF 5',visita:'G.CF 6',fecha:'16 jul',estadio:'AT&T Stadium, Dallas'},
+    {id:'sf4',local:'G.CF 7',visita:'G.CF 8',fecha:'16 jul',estadio:'Rose Bowl, Los Ángeles'},
+   ]},
+  {id:'tercero',label:'Tercer Lugar',sublabel:'18 jul · MetLife Stadium',icon:'fas fa-medal',iconClass:'fase-icon-octavos',
+   partidos:[{id:'3p',local:'Perdedor SF 1',visita:'Perdedor SF 2',fecha:'18 jul',estadio:'MetLife Stadium, Nueva York'}]},
+  {id:'final',label:'Gran Final 🏆',sublabel:'19 jul · MetLife Stadium, Nueva York',icon:'fas fa-crown',iconClass:'fase-icon-final',
+   partidos:[{id:'fin',local:'Ganador SF 1',visita:'Ganador SF 2',fecha:'19 jul',estadio:'MetLife Stadium, Nueva York'}]},
+];
 
 function calcularPuntaje(real,apuesta){
   if(real.local==null) return null;
@@ -593,157 +753,128 @@ function calcularPuntaje(real,apuesta){
   return 0;
 }
 
-window.filtrarPartidos=()=>{
-  const filtro=document.getElementById('filtro-grupo')?.value;
-  const soloPend=document.getElementById('solo-pend')?.checked;
-  let partidos=globalPartidos;
-  if(filtro) partidos=partidos.filter(p=>p.grupo===filtro);
-  if(soloPend) partidos=partidos.filter(p=>p.resultado_local==null);
-  const list=document.getElementById('partidos-list'); if(!list) return;
-  if(!partidos.length){ list.innerHTML='<div class="empty"><p>Sin partidos para mostrar.</p></div>'; return; }
-  list.innerHTML='';
+// Datos de Firestore indexados por id
+let resCache = {}; // partidoId → {resultado_local, resultado_visita, local_nombre, visita_nombre}
 
-  partidos.forEach(p=>{
-    const goles = p.goles || [];
-    const wrapper = document.createElement('div');
-    wrapper.style.cssText='margin-bottom:12px;border:1px solid var(--border);border-radius:12px;overflow:hidden;';
+async function renderResultados(){
+  const c=document.getElementById('tab-resultados');
+  c.innerHTML=`
+    <div class="sec-title"><i class="fas fa-futbol"></i> Ingresar resultados reales
+      <span style="font-size:0.78rem;font-weight:400;color:var(--muted);font-family:'Barlow',sans-serif;margin-left:10px;">Al guardar, los puntajes se recalculan automáticamente.</span>
+    </div>
+    <div class="alert alert-warn"><i class="fas fa-triangle-exclamation"></i> <strong>Nota:</strong> en fases eliminatorias puedes editar los nombres de los equipos cuando clasifiquen, luego ingresar el resultado.</div>
+    <div id="res-fases"></div>`;
 
-    // ── Fila principal ──
-    const row=document.createElement('div');
-    row.className='partido-admin';
-    row.style.borderRadius='0';
-    row.style.border='none';
-    row.id='prow_'+p.id;
-    row.innerHTML=`
-      <div class="team-label"><span>${getFlag(p.local)}</span>${p.local}</div>
-      <div class="result-inputs">
-        <input type="number" min="0" max="20" class="result-input" id="rl_${p.id}" value="${p.resultado_local??''}" placeholder="–">
-        <span style="color:var(--muted);font-weight:800;">:</span>
-        <input type="number" min="0" max="20" class="result-input" id="rv_${p.id}" value="${p.resultado_visita??''}" placeholder="–">
+  // Cargar resultados ya guardados de Firestore
+  try{
+    const snap=await getDocs(collection(db,'partidos'));
+    resCache={};
+    snap.docs.forEach(d=>{ resCache[d.id]={...d.data(),_ref:d.ref}; });
+  }catch(e){ toast('Error cargando Firestore: '+e.message,'error'); return; }
+
+  const container=document.getElementById('res-fases');
+  let html='';
+
+  // ── Fase Grupos (abierta por defecto) ──
+  const gruposKeys=Object.keys(FG).sort();
+  let totG=0,compG=0;
+  gruposKeys.forEach(g=>{ FG[g].forEach(p=>{ totG++; if(resCache[p.id]?.resultado_local!=null) compG++; }); });
+  const okG=compG===totG&&totG>0;
+
+  html+=`<div class="fase-block" id="fase-grupos">
+    <div class="fase-header open" id="fh-grupos" onclick="toggleFaseAdmin('grupos')">
+      <div class="fase-header-left">
+        <div class="fase-icon fase-icon-grupos"><i class="fas fa-layer-group"></i></div>
+        <div><div class="fase-label">Fase de Grupos</div><div class="fase-sublabel">12 – 26 jun · 12 grupos · 48 partidos</div></div>
       </div>
-      <div class="team-label right">${p.visita}<span>${getFlag(p.visita)}</span></div>
-      <div style="display:flex;gap:7px;align-items:center;flex-shrink:0;">
-        ${p.resultado_local!=null?`<span style="font-size:0.7rem;color:var(--green);"><i class="fas fa-check"></i> Guardado</span>`:''}
-        <button class="btn btn-green btn-sm guardar-btn" data-id="${p.id}"><i class="fas fa-save"></i> Guardar</button>
-        <button class="btn btn-outline btn-sm toggle-goles-btn" data-id="${p.id}" title="Detalle de goles">
-          <i class="fas fa-futbol"></i> ${goles.length>0?`${goles.length} gol${goles.length!==1?'es':''}` :'Goles'}
-        </button>
-      </div>`;
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="fase-progress${okG?' completo':''}">${okG?'✓ Completo':compG+'/'+totG+' resultados'}</span>
+        <i class="fas fa-chevron-down fase-chevron"></i>
+      </div>
+    </div>
+    <div class="fase-body open" id="fase-body-grupos">
+      <div class="grupo-tabs-wrap">`;
 
-    // ── Panel de goles (oculto por defecto) ──
-    const golesPanel = document.createElement('div');
-    golesPanel.id='goles-panel-'+p.id;
-    golesPanel.style.cssText='display:none;background:var(--bg2);border-top:1px solid var(--border);padding:16px 20px;';
+  gruposKeys.forEach((g,i)=>{
+    const comp=FG[g].filter(p=>resCache[p.id]?.resultado_local!=null).length;
+    const tot=FG[g].length;
+    const ok=comp===tot&&tot>0;
+    html+=`<button class="grupo-tab${i===0?' active':''}" data-grupo="${g}" id="gtab-${g}">Grupo ${g} <span class="gtab-check">${ok?'✓':comp+'/'+tot}</span></button>`;
+  });
+  html+=`</div>`;
 
-    const renderGolesPanel = ()=>{
-      const goles = (globalPartidos.find(x=>x.id===p.id)||p).goles||[];
-      golesPanel.innerHTML=`
-        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;">
-          <i class="fas fa-futbol"></i> Detalle de goles
+  gruposKeys.forEach((g,i)=>{
+    html+=`<div class="grupo-panel${i===0?' active':''}" id="gpanel-${g}">`;
+    FG[g].forEach(p=>{
+      const r=resCache[p.id];
+      const guardado=r?.resultado_local!=null;
+      html+=renderPartidoAdmin(p,guardado,false);
+    });
+    html+=`</div>`;
+  });
+  html+=`</div></div>`;
+
+  // ── Fases posteriores ──
+  FASES_POST_ADMIN.forEach(fase=>{
+    const comp=fase.partidos.filter(p=>resCache[p.id]?.resultado_local!=null).length;
+    const tot=fase.partidos.length;
+    const ok=comp===tot&&tot>0;
+    html+=`<div class="fase-block" id="fase-${fase.id}">
+      <div class="fase-header" id="fh-${fase.id}" onclick="toggleFaseAdmin('${fase.id}')">
+        <div class="fase-header-left">
+          <div class="fase-icon ${fase.iconClass}"><i class="${fase.icon}"></i></div>
+          <div><div class="fase-label">${fase.label}</div><div class="fase-sublabel">${fase.sublabel}</div></div>
         </div>
-
-        <!-- Lista de goles guardados -->
-        <div id="goles-lista-${p.id}" style="margin-bottom:16px;">
-          ${goles.length===0
-            ? `<p style="color:var(--muted);font-size:0.82rem;font-style:italic;">Sin goles registrados aún.</p>`
-            : goles.map((g,i)=>`
-              <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--card);border-radius:8px;margin-bottom:6px;">
-                <span style="font-size:1rem;">${getFlag(g.equipo==='local'?p.local:p.visita)}</span>
-                <div style="flex:1;">
-                  <span style="font-weight:600;font-size:0.88rem;">${g.jugador||'Jugador'}</span>
-                  <span style="color:var(--muted);font-size:0.78rem;margin-left:8px;">${g.equipo==='local'?p.local:p.visita}</span>
-                </div>
-                <span style="font-size:0.75rem;background:var(--card2);padding:2px 8px;border-radius:4px;color:var(--muted);">
-                  ${g.tiempo==='1'?'1er':'2do'} T · ${g.minuto}'
-                </span>
-                <button class="btn btn-red btn-sm" style="padding:4px 8px;" data-gol-idx="${i}" data-pid="${p.id}">
-                  <i class="fas fa-times"></i>
-                </button>
-              </div>`).join('')
-          }
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="fase-progress${ok?' completo':''}">${ok?'✓ Completo':comp+'/'+tot+' resultados'}</span>
+          <i class="fas fa-chevron-down fase-chevron"></i>
         </div>
+      </div>
+      <div class="fase-body" id="fase-body-${fase.id}">
+        <div class="fase-partidos-wrap">`;
+    fase.partidos.forEach(p=>{
+      const r=resCache[p.id];
+      const guardado=r?.resultado_local!=null;
+      // Para fases elim., usar nombres guardados en Firestore si existen
+      const pConNombres={...p, local:r?.local||p.local, visita:r?.visita||p.visita};
+      html+=renderPartidoAdmin(pConNombres,guardado,true);
+    });
+    html+=`</div></div></div>`;
+  });
 
-        <!-- Formulario nuevo gol -->
-        <div style="background:var(--card);border-radius:10px;padding:14px;border:1px dashed var(--border);">
-          <div style="font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Agregar gol</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr auto auto auto;gap:8px;align-items:end;">
-            <div>
-              <label style="font-size:0.68rem;color:var(--muted);display:block;margin-bottom:4px;">Jugador</label>
-              <input type="text" id="gol-jugador-${p.id}" class="form-input" placeholder="Nombre del goleador" style="width:100%;">
-            </div>
-            <div>
-              <label style="font-size:0.68rem;color:var(--muted);display:block;margin-bottom:4px;">Equipo</label>
-              <select id="gol-equipo-${p.id}" class="form-input">
-                <option value="local">${getFlag(p.local)} ${p.local}</option>
-                <option value="visita">${getFlag(p.visita)} ${p.visita}</option>
-              </select>
-            </div>
-            <div>
-              <label style="font-size:0.68rem;color:var(--muted);display:block;margin-bottom:4px;">Tiempo</label>
-              <select id="gol-tiempo-${p.id}" class="form-input">
-                <option value="1">1er Tiempo</option>
-                <option value="2">2do Tiempo</option>
-              </select>
-            </div>
-            <div>
-              <label style="font-size:0.68rem;color:var(--muted);display:block;margin-bottom:4px;">Minuto</label>
-              <input type="number" min="1" max="120" id="gol-minuto-${p.id}" class="form-input" placeholder="45" style="width:70px;">
-            </div>
-            <button class="btn btn-gold btn-sm agregar-gol-btn" data-id="${p.id}" style="align-self:end;">
-              <i class="fas fa-plus"></i> Agregar
-            </button>
-          </div>
-        </div>`;
+  container.innerHTML=html;
 
-      // Listener eliminar gol
-      golesPanel.querySelectorAll('[data-gol-idx]').forEach(btn=>{
-        btn.addEventListener('click', async()=>{
-          const idx=Number(btn.dataset.golIdx);
-          const pid=btn.dataset.pid;
-          const partido=globalPartidos.find(x=>x.id===pid);
-          const nuevosGoles=(partido.goles||[]).filter((_,i)=>i!==idx);
-          try{
-            await updateDoc(doc(db,'partidos',pid),{goles:nuevosGoles});
-            partido.goles=nuevosGoles;
-            renderGolesPanel();
-            toast('Gol eliminado','success');
-          } catch(e){ toast(String(e.message||e),'error'); }
-        });
-      });
+  // Tabs de grupo
+  container.querySelectorAll('.grupo-tab').forEach(tab=>{
+    tab.addEventListener('click',()=>{
+      container.querySelectorAll('.grupo-tab').forEach(t=>t.classList.remove('active'));
+      container.querySelectorAll('.grupo-panel').forEach(p=>p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('gpanel-'+tab.dataset.grupo)?.classList.add('active');
+    });
+  });
 
-      // Listener agregar gol
-      golesPanel.querySelector('.agregar-gol-btn')?.addEventListener('click', async()=>{
-        const pid=p.id;
-        const jugador=document.getElementById(`gol-jugador-${pid}`)?.value.trim();
-        const equipo=document.getElementById(`gol-equipo-${pid}`)?.value;
-        const tiempo=document.getElementById(`gol-tiempo-${pid}`)?.value;
-        const minuto=document.getElementById(`gol-minuto-${pid}`)?.value;
-        if(!jugador||!minuto) return toast('Completa jugador y minuto','warn');
-        try{
-          const partido=globalPartidos.find(x=>x.id===pid);
-          const nuevosGoles=[...(partido.goles||[]),{jugador,equipo,tiempo,minuto:Number(minuto)}];
-          await updateDoc(doc(db,'partidos',pid),{goles:nuevosGoles});
-          partido.goles=nuevosGoles;
-          renderGolesPanel();
-          toast('Gol agregado ✓','success');
-        } catch(e){ toast(String(e.message||e),'error'); }
-      });
-    };
-
-    renderGolesPanel();
-    wrapper.appendChild(row);
-    wrapper.appendChild(golesPanel);
-    list.appendChild(wrapper);
-
-    // Guardar resultado
-    row.querySelector('.guardar-btn').addEventListener('click',async(e)=>{
-      const pid=e.currentTarget.dataset.id;
+  // Botones guardar
+  container.querySelectorAll('.res-guardar-btn').forEach(btn=>{
+    btn.addEventListener('click', async()=>{
+      const pid=btn.dataset.id;
+      const elim=btn.dataset.elim==='true';
       const l=document.getElementById('rl_'+pid)?.value;
       const v=document.getElementById('rv_'+pid)?.value;
       if(l===''||v==='') return toast('Ingresa ambos goles','warn');
-      e.currentTarget.disabled=true; e.currentTarget.textContent='...';
+      btn.disabled=true; btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> ...';
       try{
-        await updateDoc(doc(db,'partidos',pid),{resultado_local:Number(l),resultado_visita:Number(v)});
+        const updateData={resultado_local:Number(l),resultado_visita:Number(v)};
+        // Para elim., guardar también nombres editados
+        if(elim){
+          const nl=document.getElementById('ne_local_'+pid)?.value.trim();
+          const nv=document.getElementById('ne_visita_'+pid)?.value.trim();
+          if(nl) updateData.local=nl;
+          if(nv) updateData.visita=nv;
+        }
+        // Upsert en colección partidos
+        await setDoc(doc(db,'partidos',pid),updateData,{merge:true});
+        // Recalcular apuestas
         const apSnap=await getDocs(query(collection(db,'apuestas'),where('partidoId','==',pid)));
         const batch=writeBatch(db);
         apSnap.docs.forEach(d=>{
@@ -751,21 +882,76 @@ window.filtrarPartidos=()=>{
           batch.update(d.ref,{puntaje:calcularPuntaje({local:Number(l),visita:Number(v)},{local:a.golesLocal,visita:a.golesVisita})});
         });
         await batch.commit();
-        const idx=globalPartidos.findIndex(x=>x.id===pid);
-        if(idx!==-1){ globalPartidos[idx].resultado_local=Number(l); globalPartidos[idx].resultado_visita=Number(v); }
-        toast(`Guardado · ${apSnap.size} apuestas actualizadas`,'success');
-        filtrarPartidos();
-      } catch(e){ toast(String(e.message||e),'error'); e.currentTarget.disabled=false; e.currentTarget.textContent='Guardar'; }
-    });
-
-    // Toggle panel goles
-    row.querySelector('.toggle-goles-btn').addEventListener('click',()=>{
-      const panel=document.getElementById('goles-panel-'+p.id);
-      panel.style.display=panel.style.display==='none'?'block':'none';
+        // Actualizar cache
+        if(!resCache[pid]) resCache[pid]={};
+        resCache[pid].resultado_local=Number(l);
+        resCache[pid].resultado_visita=Number(v);
+        // Actualizar badge del tab si es grupo
+        const tabG=container.querySelector('.grupo-tab.active');
+        if(tabG){
+          const g=tabG.dataset.grupo;
+          if(FG[g]){
+            const comp=FG[g].filter(p=>resCache[p.id]?.resultado_local!=null).length;
+            const tot=FG[g].length;
+            const chk=tabG.querySelector('.gtab-check');
+            if(chk) chk.textContent=comp===tot?'✓':comp+'/'+tot;
+          }
+        }
+        // Marcar fila como guardada
+        const row=document.getElementById('prow_'+pid);
+        if(row){ row.classList.remove('pendiente'); row.classList.add('guardado'); }
+        const savedSpan=document.getElementById('saved_'+pid);
+        if(savedSpan) savedSpan.style.display='inline-flex';
+        toast(`Guardado · ${apSnap.size} apuesta${apSnap.size!==1?'s':''} recalculada${apSnap.size!==1?'s':''}`,'success');
+        btn.disabled=false; btn.innerHTML='<i class="fas fa-save"></i> Guardar';
+      }catch(e){ toast(String(e.message||e),'error'); btn.disabled=false; btn.innerHTML='<i class="fas fa-save"></i> Guardar'; }
     });
   });
-};
+}
 
+function renderPartidoAdmin(p, guardado, esElim){
+  const r=resCache[p.id];
+  const localNombre = r?.local || p.local;
+  const visitaNombre = r?.visita || p.visita;
+  return `<div class="partido-res" id="pres_${p.id}">
+    <div class="partido-res-row ${guardado?'guardado':'pendiente'}" id="prow_${p.id}">
+      <div class="team-label">
+        <span>${getFlag(localNombre)}</span>
+        ${esElim
+          ? `<input type="text" class="team-editable" id="ne_local_${p.id}" value="${localNombre}" placeholder="Equipo local">`
+          : `<span>${localNombre}</span>`}
+      </div>
+      <div class="result-inputs" style="flex-direction:column;gap:4px;align-items:center;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="number" min="0" max="20" class="result-input" id="rl_${p.id}" value="${r?.resultado_local??''}" placeholder="–">
+          <span style="color:var(--muted);font-weight:800;">:</span>
+          <input type="number" min="0" max="20" class="result-input" id="rv_${p.id}" value="${r?.resultado_visita??''}" placeholder="–">
+        </div>
+        <div style="font-size:0.68rem;color:var(--muted);text-align:center;">${p.fecha}${p.hora?' · '+p.hora:''}</div>
+      </div>
+      <div class="team-label right">
+        ${esElim
+          ? `<input type="text" class="team-editable" id="ne_visita_${p.id}" value="${visitaNombre}" placeholder="Equipo visita">`
+          : `<span>${visitaNombre}</span>`}
+        <span>${getFlag(visitaNombre)}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0;">
+        <span id="saved_${p.id}" style="display:${guardado?'inline-flex':'none'};align-items:center;gap:4px;font-size:0.7rem;color:var(--green);"><i class="fas fa-check-circle"></i> Guardado</span>
+        <button class="btn btn-green btn-sm res-guardar-btn" data-id="${p.id}" data-elim="${esElim}"><i class="fas fa-save"></i> Guardar</button>
+      </div>
+    </div>
+    <div style="padding:6px 18px 10px;display:flex;align-items:center;gap:8px;font-size:0.71rem;color:var(--muted);">
+      <i class="fas fa-location-dot"></i> ${p.estadio||'TBD'}
+    </div>
+  </div>`;
+}
+
+window.toggleFaseAdmin=function(id){
+  const h=document.getElementById('fh-'+id);
+  const b=document.getElementById('fase-body-'+id);
+  if(h)h.classList.toggle('open');
+  if(b)b.classList.toggle('open');
+};
 // ── RANKING ──
 async function renderRanking(){
   const c=document.getElementById('tab-ranking');
