@@ -87,8 +87,9 @@ main{padding:36px 40px;max-width:1400px;margin:0 auto;}
 .match-center-col{display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0;}
 .match-vs{font-family:var(--font-display);font-weight:800;font-size:0.75rem;color:var(--muted);background:var(--off);padding:3px 10px;border-radius:4px;letter-spacing:0.06em;}
 .match-date{font-size:0.72rem;color:var(--muted);display:flex;align-items:center;gap:4px;}
-.match-info-line{display:flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--muted);}
+.match-info-line{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:0.72rem;color:var(--muted);}
 .match-info-line i{color:var(--red);font-size:0.7rem;}
+.match-info-left{display:flex;align-items:center;gap:6px;}
 
 /* ── ESTADIOS ── */
 .estadios-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px;}
@@ -171,15 +172,18 @@ main{padding:36px 40px;max-width:1400px;margin:0 auto;}
   gap: 4px;
   font-size: 0.7rem;
   color: var(--muted);
-  margin-left: 6px;
   background: var(--off);
   border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 1px 7px 1px 5px;
+  padding: 2px 8px 2px 5px;
   white-space: nowrap;
+  flex-shrink: 0;
 }
-.match-weather .mw-icon { font-size: 0.85rem; line-height: 1; }
-.match-weather .mw-t    { font-weight: 700; color: var(--ink); }
+.match-weather .mw-icon { font-size: 0.9rem; line-height: 1; }
+.match-weather .mw-t    { font-weight: 700; color: var(--ink); font-size: 0.72rem; }
+/* En res-center (resultados) → centrado */
+.res-center .match-weather { margin-top: 2px; }
+/* En match-info-line (grupos) → pushed right via space-between */ 
 
 /* ── MODALS ── */
 .modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(13,13,13,0.72);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;}
@@ -752,8 +756,7 @@ function renderGrupos(){
           </div>
         </div>
         <div class="match-info-line">
-          <i class="fas fa-location-dot"></i>
-          <span>${sede||'Estadio por confirmar'}</span>
+          <span class="match-info-left"><i class="fas fa-location-dot"></i>${sede||'Estadio por confirmar'}</span>
           ${sede ? `<span class="match-weather" id="${wbid}"><span class="mw-icon">🌡️</span><span class="mw-t">…</span></span>` : ''}
         </div>
       </div>`}).join('');
@@ -820,13 +823,32 @@ function getCityCoords(estadio) {
 function getCoordsFromSede(sede) {
   if (!sede) return null;
   const n = norm(sede);
-  // Primero intentar por IMG_MAP para encontrar la ciudad canónica
-  for (const [k] of Object.entries(IMG_MAP)) {
+
+  // Mapeo explícito de nombres de estadio → clave de ciudad
+  const SEDE_MAP = {
+    'FILADELFIA': 'PHILADELPHIA', 'PHILADELPHIA': 'PHILADELPHIA',
+    'TORONTO': 'TORONTO', 'BMO': 'TORONTO',
+    'VANCOUVER': 'VANCOUVER', 'BC PLACE': 'VANCOUVER',
+    'AZTECA': 'CIUDAD DE MEXICO', 'CIUDAD DE MEXICO': 'CIUDAD DE MEXICO',
+    'GUADALAJARA': 'GUADALAJARA', 'AKRON': 'GUADALAJARA',
+    'MONTERREY': 'MONTERREY', 'BBVA': 'MONTERREY',
+    'ATLANTA': 'ATLANTA', 'MERCEDES': 'ATLANTA',
+    'BOSTON': 'BOSTON', 'FOXBOROUGH': 'BOSTON', 'GILLETTE': 'BOSTON', 'NEW ENGLAND': 'BOSTON',
+    'DALLAS': 'DALLAS', 'ARLINGTON': 'DALLAS', 'AT&T': 'DALLAS',
+    'HOUSTON': 'HOUSTON', 'NRG': 'HOUSTON',
+    'KANSAS': 'KANSAS', 'ARROWHEAD': 'KANSAS', 'GEHA': 'KANSAS',
+    'LOS ANGELES': 'LOS ANGELES', 'SOFI': 'INGLEWOOD', 'INGLEWOOD': 'INGLEWOOD',
+    'MIAMI': 'MIAMI', 'HARD ROCK': 'MIAMI',
+    'METLIFE': 'NEW JERSEY', 'NEW JERSEY': 'NEW JERSEY', 'NEW YORK': 'NEW JERSEY',
+    'EAST RUTHERFORD': 'NEW JERSEY',
+    'SANTA CLARA': 'SANTA CLARA', 'LEVIS': 'SANTA CLARA', 'SAN FRANCISCO': 'SANTA CLARA',
+    'SEATTLE': 'SEATTLE', 'LUMEN': 'SEATTLE',
+  };
+
+  for (const [k, cityKey] of Object.entries(SEDE_MAP)) {
     if (n.includes(k)) {
-      // Buscar en CITY_COORDS
-      for (const [ck, coords] of Object.entries(CITY_COORDS)) {
-        if (k.includes(ck) || ck.includes(k)) return { key: ck, ...coords };
-      }
+      const coords = CITY_COORDS[cityKey];
+      if (coords) return { key: cityKey, ...coords };
     }
   }
   // Fallback directo en CITY_COORDS
@@ -1253,10 +1275,18 @@ function detectarFaseActual(resCache) {
 
 function fmtFecha(s) {
   if (!s) return 'TBD';
-  if (typeof s === 'string') return s;
-  if (isNaN(s)) return s;
-  const d = new Date(Math.round((s - 25569) * 86400 * 1000));
-  return d.toLocaleDateString('es-CL', {day:'2-digit', month:'short'});
+  // Número serial de Excel (ej: 46014.916...)
+  if (typeof s === 'number' || (!isNaN(Number(s)) && String(s).match(/^\d+(\.\d+)?$/))) {
+    const serial = Math.floor(Number(s));
+    const d = new Date(Math.round((serial - 25569) * 86400 * 1000));
+    if (!isNaN(d)) return d.toLocaleDateString('es-CL', {day:'2-digit', month:'2-digit', year:'numeric'});
+  }
+  // String tipo "2026-06-10"
+  if (typeof s === 'string' && s.match(/^\d{4}-\d{2}-\d{2}/)) {
+    const [y,m,d] = s.split('-');
+    return `${d}/${m}/${y}`;
+  }
+  return s;
 }
 
 function renderResPartido(p, esElim) {
@@ -1280,15 +1310,13 @@ function renderResPartido(p, esElim) {
     <div class="res-center">
       ${scoreHtml}
       <div class="res-date">${fmtFecha(p.fecha)}${p.hora ? ' · ' + p.hora : ''}</div>
+      ${p.estadio ? `<span class="match-weather res-weather-badge"><span class="mw-icon">🌡️</span><span class="mw-t">…</span></span>` : ''}
     </div>
     <div class="res-team right">
       <span class="${esPH ? 'res-team-ph' : ''}">${visitaNombre}</span>
       <span style="font-size:1.15rem;">${esPH ? '⬜' : getFlag(visitaNombre)}</span>
     </div>
-    <div class="res-meta">
-      <i class="fas fa-location-dot"></i>${p.estadio || 'TBD'}
-      ${p.estadio ? `<span class="match-weather res-weather-badge"><span class="mw-icon">🌡️</span><span class="mw-t">…</span></span>` : ''}
-    </div>
+    <div class="res-meta"><i class="fas fa-location-dot"></i>${p.estadio || 'TBD'}</div>
   </div>`;
 }
 
