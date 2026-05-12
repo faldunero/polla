@@ -164,6 +164,23 @@ main{padding:36px 40px;max-width:1400px;margin:0 auto;}
 .mw-cond-icon { font-size: 1.4rem; }
 .mw-loading { color: rgba(255,255,255,0.45); font-style:italic; font-size:0.78rem; }
 
+/* ── CLIMA EN PARTIDOS ── */
+.match-weather {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-left: 6px;
+  background: var(--off);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 1px 7px 1px 5px;
+  white-space: nowrap;
+}
+.match-weather .mw-icon { font-size: 0.85rem; line-height: 1; }
+.match-weather .mw-t    { font-weight: 700; color: var(--ink); }
+
 /* ── MODALS ── */
 .modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(13,13,13,0.72);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;}
 .modal-box{background:white;border-radius:8px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;position:relative;animation:popIn 0.24s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 36px 72px rgba(0,0,0,0.38);}
@@ -713,7 +730,10 @@ function renderGrupos(){
   const sp=document.getElementById('stat-grupos'); if(sp) sp.textContent=gs.length;
   gs.forEach(g=>{
     const card=document.createElement('div'); card.className='grupo-card';
-    const matches=porGrupo[g].map(m=>`
+    const matches=porGrupo[g].map((m,mi)=>{
+      const sede = m.estadio||m.sede||'';
+      const wbid = `gwb_${g}_${mi}`;
+      return `
       <div class="match-row">
         <div class="match-teams-line">
           <div class="match-team">
@@ -733,13 +753,28 @@ function renderGrupos(){
         </div>
         <div class="match-info-line">
           <i class="fas fa-location-dot"></i>
-          <span>${m.estadio||m.sede||'Estadio por confirmar'}</span>
+          <span>${sede||'Estadio por confirmar'}</span>
+          ${sede ? `<span class="match-weather" id="${wbid}"><span class="mw-icon">🌡️</span><span class="mw-t">…</span></span>` : ''}
         </div>
-      </div>`).join('');
+      </div>`}).join('');
     card.innerHTML=`<div class="grupo-card-head"><a href="selecciones.html#grupo-${g}" class="grupo-card-title" style="text-decoration:none;color:white;cursor:pointer;">Grupo ${g}</a><span class="grupo-card-badge" data-grupo="${g}">Tabla de posiciones</span></div><div class="grupo-card-body">${matches}</div>`;
     // Attach click via event listener to avoid inline onclick + module scope issue
     card.querySelector('.grupo-card-badge').addEventListener('click', ()=> window._showTabla(g));
     w.appendChild(card);
+    // Poblar clima en cada partido del grupo
+    porGrupo[g].forEach((m, mi) => {
+      const sede = m.estadio||m.sede||'';
+      if (!sede) return;
+      const coords = getCoordsFromSede(sede);
+      if (!coords) return;
+      const badgeEl = document.getElementById(`gwb_${g}_${mi}`);
+      if (!badgeEl) return;
+      fetchWeather(coords.lat, coords.lon, coords.key).then(ww => {
+        badgeEl.querySelector('.mw-icon').textContent = ww.icon;
+        badgeEl.querySelector('.mw-t').textContent = `${ww.temp}°C`;
+        badgeEl.title = `${ww.desc} · ${ww.humidity}% hum · ${ww.wind} km/h`;
+      }).catch(() => { badgeEl.style.display='none'; });
+    });
   });
 }
 
@@ -777,6 +812,26 @@ function getCityCoords(estadio) {
   const nombre = norm(estadio.nombre || '');
   for (const [key, coords] of Object.entries(CITY_COORDS)) {
     if (ciudad.includes(key) || nombre.includes(key)) return { key, ...coords };
+  }
+  return null;
+}
+
+// Resuelve coords a partir del nombre de un estadio/sede en un partido
+function getCoordsFromSede(sede) {
+  if (!sede) return null;
+  const n = norm(sede);
+  // Primero intentar por IMG_MAP para encontrar la ciudad canónica
+  for (const [k] of Object.entries(IMG_MAP)) {
+    if (n.includes(k)) {
+      // Buscar en CITY_COORDS
+      for (const [ck, coords] of Object.entries(CITY_COORDS)) {
+        if (k.includes(ck) || ck.includes(k)) return { key: ck, ...coords };
+      }
+    }
+  }
+  // Fallback directo en CITY_COORDS
+  for (const [key, coords] of Object.entries(CITY_COORDS)) {
+    if (n.includes(key)) return { key, ...coords };
   }
   return null;
 }
@@ -865,34 +920,42 @@ function renderEstadios(){
       el.addEventListener('click', ()=> showStadium(e));
     });
 
-    // Toggle clima independiente
+    // Toggle clima independiente + carga automática al inicio
     if (coords) {
-      let loaded = false;
       const trigger = card.querySelector(`#wt_${wid}`);
       const panel   = card.querySelector(`#wp_${wid}`);
+      let loaded = false;
+
+      async function loadWeather() {
+        if (loaded) return;
+        loaded = true;
+        try {
+          const w = await fetchWeather(coords.lat, coords.lon, coords.key);
+          trigger.querySelector('.w-icon').textContent = w.icon;
+          trigger.querySelector('.w-temp').textContent = `${w.temp}°C`;
+          panel.innerHTML = `
+            <div class="wp-cond">
+              <span class="wp-cond-icon">${w.icon}</span>
+              <span class="wp-cond-text">${w.desc}</span>
+            </div>
+            <div class="wp-row"><span class="wp-label">🌡️ Temp.</span><span class="wp-val">${w.temp}°C</span></div>
+            <div class="wp-row"><span class="wp-label">💧 Humedad</span><span class="wp-val">${w.humidity}%</span></div>
+            <div class="wp-row"><span class="wp-label">💨 Viento</span><span class="wp-val">${w.wind} km/h</span></div>
+          `;
+        } catch {
+          panel.innerHTML = '<div class="wp-loading">Sin datos disponibles</div>';
+        }
+      }
+
+      // Cargar automáticamente (escalonado para no saturar la API)
+      const idx = c.children.length; // cantidad ya en el DOM antes del append
+      setTimeout(loadWeather, idx * 80);
+
       trigger.addEventListener('click', async (ev) => {
         ev.stopPropagation();
         const isOpen = panel.classList.toggle('open');
         trigger.classList.toggle('open', isOpen);
-        if (!loaded && isOpen) {
-          loaded = true;
-          try {
-            const w = await fetchWeather(coords.lat, coords.lon, coords.key);
-            trigger.querySelector('.w-icon').textContent = w.icon;
-            trigger.querySelector('.w-temp').textContent = `${w.temp}°C`;
-            panel.innerHTML = `
-              <div class="wp-cond">
-                <span class="wp-cond-icon">${w.icon}</span>
-                <span class="wp-cond-text">${w.desc}</span>
-              </div>
-              <div class="wp-row"><span class="wp-label">🌡️ Temp.</span><span class="wp-val">${w.temp}°C</span></div>
-              <div class="wp-row"><span class="wp-label">💧 Humedad</span><span class="wp-val">${w.humidity}%</span></div>
-              <div class="wp-row"><span class="wp-label">💨 Viento</span><span class="wp-val">${w.wind} km/h</span></div>
-            `;
-          } catch {
-            panel.innerHTML = '<div class="wp-loading">Sin datos disponibles</div>';
-          }
-        }
+        await loadWeather();
       });
     }
     c.appendChild(card);
@@ -1209,7 +1272,7 @@ function renderResPartido(p, esElim) {
     ? `<div class="res-score jugado">${p.resultado_local} – ${p.resultado_visita}</div>`
     : `<div class="res-score"><span class="res-vs">VS</span></div>`;
 
-  return `<div class="res-match">
+  return `<div class="res-match" data-wbsede="${(p.estadio||'').replace(/"/g,'')}">
     <div class="res-team">
       <span style="font-size:1.15rem;">${esPH ? '⬜' : getFlag(localNombre)}</span>
       <span class="${esPH ? 'res-team-ph' : ''}">${localNombre}</span>
@@ -1222,7 +1285,10 @@ function renderResPartido(p, esElim) {
       <span class="${esPH ? 'res-team-ph' : ''}">${visitaNombre}</span>
       <span style="font-size:1.15rem;">${esPH ? '⬜' : getFlag(visitaNombre)}</span>
     </div>
-    <div class="res-meta"><i class="fas fa-location-dot"></i>${p.estadio || 'TBD'}</div>
+    <div class="res-meta">
+      <i class="fas fa-location-dot"></i>${p.estadio || 'TBD'}
+      ${p.estadio ? `<span class="match-weather res-weather-badge"><span class="mw-icon">🌡️</span><span class="mw-t">…</span></span>` : ''}
+    </div>
   </div>`;
 }
 
@@ -1364,6 +1430,28 @@ async function renderResultadosAccordion() {
       tab.classList.add('active');
       document.getElementById(`rgp-${tab.dataset.grupo}-${fase}`)?.classList.add('active');
     });
+  });
+
+  // Poblar clima en todos los partidos de resultados
+  const weatherBadges = container.querySelectorAll('.res-match[data-wbsede]');
+  let delay = 0;
+  const seenKeys = {};
+  weatherBadges.forEach(row => {
+    const sede = row.dataset.wbsede;
+    if (!sede || sede === '–') return;
+    const badge = row.querySelector('.res-weather-badge');
+    if (!badge) return;
+    const coords = getCoordsFromSede(sede);
+    if (!coords) { badge.style.display='none'; return; }
+    const d = seenKeys[coords.key] ? 0 : (delay += 60);
+    seenKeys[coords.key] = true;
+    setTimeout(() => {
+      fetchWeather(coords.lat, coords.lon, coords.key).then(ww => {
+        badge.querySelector('.mw-icon').textContent = ww.icon;
+        badge.querySelector('.mw-t').textContent = `${ww.temp}°C`;
+        badge.title = `${ww.desc} · ${ww.humidity}% hum · ${ww.wind} km/h`;
+      }).catch(() => { badge.style.display='none'; });
+    }, d);
   });
 }
 
