@@ -840,7 +840,7 @@ function getCoordsFromSede(sede) {
     'LOS ANGELES': 'LOS ANGELES', 'SOFI': 'INGLEWOOD', 'INGLEWOOD': 'INGLEWOOD',
     'MIAMI': 'MIAMI', 'HARD ROCK': 'MIAMI',
     'METLIFE': 'NEW JERSEY', 'NEW JERSEY': 'NEW JERSEY', 'NEW YORK': 'NEW JERSEY',
-    'EAST RUTHERFORD': 'NEW JERSEY',
+    'EAST RUTHERFORD': 'NEW JERSEY', 'NUEVA YORK': 'NEW JERSEY', 'NUEVA JERSEY': 'NEW JERSEY',
     'SANTA CLARA': 'SANTA CLARA', 'LEVIS': 'SANTA CLARA', 'SAN FRANCISCO': 'SANTA CLARA',
     'SEATTLE': 'SEATTLE', 'LUMEN': 'SEATTLE',
   };
@@ -1275,18 +1275,35 @@ function detectarFaseActual(resCache) {
 
 function fmtFecha(s) {
   if (!s) return 'TBD';
-  // Número serial de Excel (ej: 46014.916...)
+  // Número serial de Excel (ej: 46014.916...) — tomar solo parte entera
   if (typeof s === 'number' || (!isNaN(Number(s)) && String(s).match(/^\d+(\.\d+)?$/))) {
     const serial = Math.floor(Number(s));
     const d = new Date(Math.round((serial - 25569) * 86400 * 1000));
     if (!isNaN(d)) return d.toLocaleDateString('es-CL', {day:'2-digit', month:'2-digit', year:'numeric'});
   }
-  // String tipo "2026-06-10"
-  if (typeof s === 'string' && s.match(/^\d{4}-\d{2}-\d{2}/)) {
-    const [y,m,d] = s.split('-');
-    return `${d}/${m}/${y}`;
+  // String tipo "2026-06-10" o con decimal "2026-06-10.916" — cortar el decimal
+  if (typeof s === 'string') {
+    const clean = s.split('.')[0].trim(); // eliminar cualquier decimal
+    if (clean.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      const [y,m,d] = clean.split('-');
+      return `${d}/${m}/${y}`;
+    }
+    return clean;
   }
   return s;
+}
+
+function fmtHora(h) {
+  if (!h && h !== 0) return null;
+  // Decimal Excel (0.625 = 15:00)
+  if (typeof h === 'number' || (!isNaN(Number(h)) && String(h).match(/^0?\.\d+$/))) {
+    const mins = Math.round(Number(h) * 24 * 60);
+    const hh = Math.floor(mins / 60), mm = mins % 60;
+    return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+  }
+  // Ya es string tipo "15:00"
+  if (typeof h === 'string' && h.match(/^\d{1,2}:\d{2}/)) return h;
+  return null;
 }
 
 function renderResPartido(p, esElim) {
@@ -1309,7 +1326,7 @@ function renderResPartido(p, esElim) {
     </div>
     <div class="res-center">
       ${scoreHtml}
-      <div class="res-date">${fmtFecha(p.fecha)}${p.hora ? ' · ' + p.hora : ''}</div>
+      <div class="res-date">${fmtFecha(p.fecha)}${fmtHora(p.hora) ? ' · ' + fmtHora(p.hora) : ''}</div>
       ${p.estadio ? `<span class="match-weather res-weather-badge"><span class="mw-icon">🌡️</span><span class="mw-t">…</span></span>` : ''}
     </div>
     <div class="res-team right">
