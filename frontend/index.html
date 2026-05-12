@@ -107,6 +107,58 @@ main{padding:36px 40px;max-width:1400px;margin:0 auto;}
 .estadio-meta{display:flex;justify-content:space-between;font-size:0.72rem;color:var(--muted);}
 .estadio-meta span{display:flex;align-items:center;gap:4px;}
 
+/* ── WEATHER TOOLTIP ── */
+.weather-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: var(--muted);
+  cursor: default;
+  position: relative;
+}
+.weather-badge .w-icon { font-size: 0.95rem; line-height: 1; }
+.weather-badge .w-temp { font-weight: 700; color: var(--ink); font-size: 0.75rem; }
+
+.weather-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: white;
+  border-radius: 10px;
+  padding: 10px 14px;
+  width: 180px;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  transform: translateX(-50%) translateY(4px);
+  z-index: 50;
+  white-space: nowrap;
+}
+.weather-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%; left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--ink);
+}
+.weather-badge:hover .weather-tooltip,
+.weather-badge.loaded .weather-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.weather-tooltip-row { display: flex; justify-content: space-between; gap: 8px; }
+.weather-tooltip-row span:first-child { color: rgba(255,255,255,0.55); }
+.weather-tooltip-row span:last-child  { font-weight: 700; }
+.weather-loading { color: rgba(255,255,255,0.5); font-style: italic; text-align: center; padding: 2px 0; }
+
 /* ── MODALS ── */
 .modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(13,13,13,0.72);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;}
 .modal-box{background:white;border-radius:8px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;position:relative;animation:popIn 0.24s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 36px 72px rgba(0,0,0,0.38);}
@@ -687,6 +739,80 @@ function renderGrupos(){
 }
 
 // Estadios
+// ── COORDENADAS CIUDADES SEDE ─────────────────────────────────────────────
+const CITY_COORDS = {
+  'ATLANTA':       { lat: 33.749, lon: -84.388 },
+  'BOSTON':        { lat: 42.360, lon: -71.059 },
+  'DALLAS':        { lat: 32.776, lon: -96.797 },
+  'HOUSTON':       { lat: 29.760, lon: -95.370 },
+  'KANSAS':        { lat: 39.099, lon: -94.578 },
+  'KANSAS CITY':   { lat: 39.099, lon: -94.578 },
+  'LOS ANGELES':   { lat: 34.052, lon: -118.244 },
+  'INGLEWOOD':     { lat: 33.961, lon: -118.353 },
+  'MIAMI':         { lat: 25.774, lon: -80.194 },
+  'NEW YORK':      { lat: 40.712, lon: -74.006 },
+  'NEW JERSEY':    { lat: 40.812, lon: -74.071 },
+  'EAST RUTHERFORD':{ lat: 40.812, lon: -74.071 },
+  'PHILADELPHIA':  { lat: 39.952, lon: -75.165 },
+  'SANTA CLARA':   { lat: 37.354, lon: -121.955 },
+  'SAN FRANCISCO': { lat: 37.774, lon: -122.419 },
+  'SEATTLE':       { lat: 47.606, lon: -122.332 },
+  'CIUDAD DE MEXICO':{ lat: 19.433, lon: -99.133 },
+  'MEXICO':        { lat: 19.433, lon: -99.133 },
+  'GUADALAJARA':   { lat: 20.659, lon: -103.350 },
+  'MONTERREY':     { lat: 25.686, lon: -100.316 },
+  'TORONTO':       { lat: 43.651, lon: -79.347 },
+  'VANCOUVER':     { lat: 49.283, lon: -123.121 },
+};
+
+const weatherCache = {};
+
+function getCityCoords(estadio) {
+  const ciudad = norm(estadio.ciudad || estadio.city || '');
+  const nombre = norm(estadio.nombre || '');
+  for (const [key, coords] of Object.entries(CITY_COORDS)) {
+    if (ciudad.includes(key) || nombre.includes(key)) return { key, ...coords };
+  }
+  return null;
+}
+
+const WMO_ICONS = {
+  0:'☀️', 1:'🌤️', 2:'⛅', 3:'☁️',
+  45:'🌫️', 48:'🌫️',
+  51:'🌦️', 53:'🌦️', 55:'🌧️',
+  61:'🌧️', 63:'🌧️', 65:'🌧️',
+  71:'🌨️', 73:'🌨️', 75:'❄️',
+  80:'🌦️', 81:'🌧️', 82:'⛈️',
+  95:'⛈️', 96:'⛈️', 99:'⛈️',
+};
+const WMO_DESC = {
+  0:'Despejado', 1:'Mayormente despejado', 2:'Parcialmente nublado', 3:'Nublado',
+  45:'Neblina', 48:'Neblina',
+  51:'Llovizna leve', 53:'Llovizna', 55:'Llovizna fuerte',
+  61:'Lluvia leve', 63:'Lluvia', 65:'Lluvia fuerte',
+  71:'Nieve leve', 73:'Nieve', 75:'Nieve fuerte',
+  80:'Chubascos leves', 81:'Chubascos', 82:'Chubascos fuertes',
+  95:'Tormenta', 96:'Tormenta c/granizo', 99:'Tormenta fuerte',
+};
+
+async function fetchWeather(lat, lon, cacheKey) {
+  if (weatherCache[cacheKey]) return weatherCache[cacheKey];
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode,windspeed_10m,relative_humidity_2m&timezone=auto&temperature_unit=celsius`;
+  const r = await fetch(url);
+  const d = await r.json();
+  const c = d.current;
+  const result = {
+    temp:     Math.round(c.temperature_2m),
+    code:     c.weathercode,
+    wind:     Math.round(c.windspeed_10m),
+    humidity: c.relative_humidity_2m,
+    icon:     WMO_ICONS[c.weathercode] || '🌡️',
+    desc:     WMO_DESC[c.weathercode]  || 'N/A',
+  };
+  weatherCache[cacheKey] = result;
+  return result;
+}
+
 function renderEstadios(){
   const c=document.getElementById('estadios-container'); if(!c) return;
   c.innerHTML='';
@@ -694,7 +820,18 @@ function renderEstadios(){
   const se=document.getElementById('stat-estadios'); if(se) se.textContent=estadios.length;
   estadios.forEach(e=>{
     const img=getStadiumImg(e), flag=getStadiumFlag(e), ciudad=e.ciudad||e.city||'N/A';
+    const coords = getCityCoords(e);
     const card=document.createElement('div'); card.className='estadio-card'; card.onclick=()=>showStadium(e);
+
+    const weatherHtml = coords ? `
+      <span class="weather-badge" id="wb_${coords.key.replace(/\s/g,'_')}">
+        <span class="w-icon">🌡️</span>
+        <span class="w-temp">...</span>
+        <div class="weather-tooltip">
+          <div class="weather-loading">Cargando clima...</div>
+        </div>
+      </span>` : '';
+
     card.innerHTML=`
       <div class="estadio-img-wrap">
         ${img?`<img src="${img}" class="estadio-img" alt="${e.nombre}" onerror="this.parentElement.innerHTML='<div class=estadio-fallback><i class=\\'fas fa-landmark\\'></i><span>${e.nombre}</span></div>'">`:
@@ -706,9 +843,38 @@ function renderEstadios(){
         <h4>${e.nombre} <span style="font-size:1rem;">${flag}</span></h4>
         <div class="estadio-meta">
           <span><i class="fas fa-city" style="color:var(--red)"></i> ${ciudad}</span>
-          <span><i class="fas fa-users" style="color:var(--red)"></i> ${e.capacidad?.toLocaleString()||'N/A'}</span>
+          <span style="display:flex;align-items:center;gap:6px;">
+            <span><i class="fas fa-users" style="color:var(--red)"></i> ${e.capacidad?.toLocaleString()||'N/A'}</span>
+            ${weatherHtml}
+          </span>
         </div>
       </div>`;
+
+    // Cargar clima al hacer hover (solo una vez)
+    if (coords) {
+      let loaded = false;
+      card.addEventListener('mouseenter', async () => {
+        if (loaded) return;
+        loaded = true;
+        const badgeId = `wb_${coords.key.replace(/\s/g,'_')}`;
+        const badge = document.getElementById(badgeId);
+        if (!badge) return;
+        try {
+          const w = await fetchWeather(coords.lat, coords.lon, coords.key);
+          badge.querySelector('.w-icon').textContent = w.icon;
+          badge.querySelector('.w-temp').textContent = `${w.temp}°C`;
+          badge.querySelector('.weather-tooltip').innerHTML = `
+            <div class="weather-tooltip-row"><span>🌤️ Condición</span><span>${w.desc}</span></div>
+            <div class="weather-tooltip-row"><span>🌡️ Temp.</span><span>${w.temp}°C</span></div>
+            <div class="weather-tooltip-row"><span>💧 Humedad</span><span>${w.humidity}%</span></div>
+            <div class="weather-tooltip-row"><span>💨 Viento</span><span>${w.wind} km/h</span></div>
+          `;
+          badge.classList.add('loaded');
+        } catch {
+          badge.querySelector('.weather-tooltip').innerHTML = '<div class="weather-loading">Sin datos</div>';
+        }
+      });
+    }
     c.appendChild(card);
   });
 }
