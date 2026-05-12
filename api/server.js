@@ -1,76 +1,75 @@
 const express = require('express');
-const admin = require('firebase-admin');
-const cors = require('cors');
-const path = require('path');
+const admin   = require('firebase-admin');
+const cors    = require('cors');
+const path    = require('path');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
 app.use(express.static(path.join(__dirname, 'frontend')));
 
-const PROJECT_ID = 'polla-495421-ab029';
-const ADMIN_EMAIL = 'faldunate@gmail.com';
-
-// Fecha límite: 1 día antes del inicio del Mundial 2026 (11 junio 2026)
+// ── Constantes ───────────────────────────────────────────────────────────────
+const PROJECT_ID   = 'polla-495421-ab029';
+const ADMIN_UID    = 'ILpJZ22JLnQWhrLZgPzIvUn6MJt1'; // faldunate@gmail.com
 const FECHA_CIERRE = new Date('2026-06-10T23:59:59-05:00');
 
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
-  projectId: PROJECT_ID
+  projectId:  PROJECT_ID
 });
 
 const db = admin.firestore();
 
-// ─── Middleware: verificar token Firebase ───────────────────────────────────
+// ── Middleware: verificar token Firebase ─────────────────────────────────────
 async function verifyToken(req, res, next) {
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'No autorizado' });
   }
   try {
-    const token = auth.split('Bearer ')[1];
-    const decoded = await admin.auth().verifyIdToken(token);
+    const decoded = await admin.auth().verifyIdToken(auth.split('Bearer ')[1]);
     req.user = decoded;
     next();
   } catch {
-    return res.status(401).json({ error: 'Token inválido' });
+    return res.status(401).json({ error: 'Token inválido o expirado' });
   }
 }
 
-// ─── Middleware: solo admin ─────────────────────────────────────────────────
+// ── Middleware: solo admin ───────────────────────────────────────────────────
+// Usa UID (no email). El UID es inmutable en Firebase;
+// el email puede cambiar o ser falseado con custom tokens.
 function onlyAdmin(req, res, next) {
-  if (req.user.email !== ADMIN_EMAIL) {
-    return res.status(403).json({ error: 'Solo el administrador puede hacer esto' });
+  if (req.user.uid !== ADMIN_UID) {
+    return res.status(403).json({ error: 'Acceso denegado: solo el administrador puede realizar esta acción' });
   }
   next();
 }
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// ── Scoring ──────────────────────────────────────────────────────────────────
+// 4 pts → resultado exacto con ganador
+// 3 pts → ganador correcto (marcador incorrecto)
+// 2 pts → empate exacto
+// 1 pt  → empate predicho pero marcador incorrecto
+// 0 pts → sin acierto
 function calcularPuntaje(real, apuesta) {
-  // real y apuesta = { local: N, visita: N }
-  if (real.local == null || real.visita == null) return null; // partido sin resultado aún
+  const rl = Number(real.local),    rv = Number(real.visita);
+  const al = Number(apuesta.local), av = Number(apuesta.visita);
 
-  const realEmpate = real.local === real.visita;
-  const apuestaEmpate = apuesta.local === apuesta.visita;
-  const resultadoExacto =
-    Number(apuesta.local) === Number(real.local) &&
-    Number(apuesta.visita) === Number(real.visita);
+  const exacto     = al === rl && av === rv;
+  const empateReal = rl === rv;
 
-  if (resultadoExacto && !realEmpate) return 4; // resultado exacto con ganador
-  if (resultadoExacto && realEmpate)  return 2; // resultado exacto empate
+  if (exacto && !empateReal) return 4;
+  if (exacto &&  empateReal) return 2;
 
-  // ganador correcto (no exacto)
-  const ganadorReal    = real.local > real.visita ? 'L' : real.local < real.visita ? 'V' : 'E';
-  const ganadorApuesta = apuesta.local > apuesta.visita ? 'L' : apuesta.local < apuesta.visita ? 'V' : 'E';
+  const gr = rl > rv ? 'L' : rl < rv ? 'V' : 'E';
+  const ga = al > av ? 'L' : al < av ? 'V' : 'E';
 
-  if (ganadorReal === ganadorApuesta && ganadorReal !== 'E') return 3; // ganador correcto
-  if (ganadorReal === 'E' && ganadorApuesta === 'E')         return 1; // empate no exacto
-
+  if (gr === ga && gr !== 'E') return 3;
+  if (gr === 'E' && ga === 'E') return 1;
   return 0;
 }
 
-// ─── DATA GENERAL ───────────────────────────────────────────────────────────
+// ── DATA GENERAL (pública) ───────────────────────────────────────────────────
 app.get('/api/data', async (req, res) => {
   try {
     const [paisesSnap, partidosSnap, estadiosSnap] = await Promise.all([
@@ -84,36 +83,41 @@ app.get('/api/data', async (req, res) => {
       estadios: estadiosSnap.docs.map(d => ({ id: d.id, ...d.data() }))
     });
   } catch (e) {
-    res.status(500).send(e.message);
+    res.status(500).json({ error: e.message });
   }
 });
 
-// ─── GRUPOS ─────────────────────────────────────────────────────────────────
+// ── GRUPOS ───────────────────────────────────────────────────────────────────
 
-// Listar grupos públicos
+// Listar grupos (público)
 app.get('/api/grupos', async (req, res) => {
   try {
-    const snap = await db.collection('grupos').get();
-    const grupos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    res.json(grupos);
+    const snap = await db.collection('grupos').orderBy('creadoEn').get();
+    res.json(snap.docs.map(d => ({ id: d.id, ...d.data() })));
   } catch (e) {
-    res.status(500).send(e.message);
+    // fallback sin ordenar si no existe el índice
+    try {
+      const snap2 = await db.collection('grupos').get();
+      res.json(snap2.docs.map(d => ({ id: d.id, ...d.data() })));
+    } catch (e2) {
+      res.status(500).json({ error: e2.message });
+    }
   }
 });
 
 // Crear grupo (solo admin)
 app.post('/api/grupos', verifyToken, onlyAdmin, async (req, res) => {
   const { nombre, descripcion } = req.body;
-  if (!nombre) return res.status(400).json({ error: 'Falta el nombre' });
+  if (!nombre?.trim()) return res.status(400).json({ error: 'Falta el nombre del grupo' });
   try {
     const ref = await db.collection('grupos').add({
-      nombre,
-      descripcion: descripcion || '',
-      creadoEn: admin.firestore.FieldValue.serverTimestamp()
+      nombre:      nombre.trim(),
+      descripcion: descripcion?.trim() || '',
+      creadoEn:    admin.firestore.FieldValue.serverTimestamp()
     });
     res.json({ id: ref.id, nombre, descripcion });
   } catch (e) {
-    res.status(500).send(e.message);
+    res.status(500).json({ error: e.message });
   }
 });
 
@@ -123,95 +127,145 @@ app.delete('/api/grupos/:id', verifyToken, onlyAdmin, async (req, res) => {
     await db.collection('grupos').doc(req.params.id).delete();
     res.json({ ok: true });
   } catch (e) {
-    res.status(500).send(e.message);
+    res.status(500).json({ error: e.message });
   }
 });
 
-// ─── PARTICIPANTES ──────────────────────────────────────────────────────────
+// ── PARTICIPANTES ────────────────────────────────────────────────────────────
+
+// Obtener mi perfil
+app.get('/api/me', verifyToken, async (req, res) => {
+  try {
+    const doc = await db.collection('participantes').doc(req.user.uid).get();
+    res.json(doc.exists ? { id: doc.id, ...doc.data() } : null);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // Unirse a un grupo
 app.post('/api/grupos/:grupoId/unirse', verifyToken, async (req, res) => {
+  // El admin no participa en la polla
+  if (req.user.uid === ADMIN_UID) {
+    return res.status(403).json({ error: 'El administrador no puede unirse a grupos de jugadores' });
+  }
+
+  if (new Date() > FECHA_CIERRE) {
+    return res.status(403).json({ error: 'Las inscripciones están cerradas' });
+  }
+
   const { grupoId } = req.params;
-  const uid = req.user.uid;
-  const email = req.user.email;
-  const nombre = req.user.name || email;
+  const uid    = req.user.uid;
+  const email  = req.user.email;
+  const nombre = req.user.name || req.user.email;
 
   try {
-    const grupoRef = db.collection('grupos').doc(grupoId);
-    const grupoDoc = await grupoRef.get();
+    const grupoDoc = await db.collection('grupos').doc(grupoId).get();
     if (!grupoDoc.exists) return res.status(404).json({ error: 'Grupo no encontrado' });
 
-    // Verificar si ya está en otro grupo
-    const yaEnSnap = await db.collection('participantes')
-      .where('uid', '==', uid).get();
-    if (!yaEnSnap.empty) {
-      const actual = yaEnSnap.docs[0].data();
-      if (actual.grupoId !== grupoId) {
-        return res.status(400).json({ error: `Ya estás en el grupo "${actual.grupoNombre}"` });
-      }
-      return res.json({ ok: true, mensaje: 'Ya estás en este grupo' });
+    const yaDoc = await db.collection('participantes').doc(uid).get();
+    if (yaDoc.exists) {
+      const actual = yaDoc.data();
+      if (actual.grupoId === grupoId) return res.json({ ok: true, mensaje: 'Ya estás en este grupo' });
+      return res.status(400).json({ error: `Ya estás inscrito en "${actual.grupoNombre}"` });
     }
 
     await db.collection('participantes').doc(uid).set({
       uid, email, nombre,
       grupoId,
       grupoNombre: grupoDoc.data().nombre,
+      estado:  'aprobado',
       unidoEn: admin.firestore.FieldValue.serverTimestamp()
     });
 
     res.json({ ok: true });
   } catch (e) {
-    res.status(500).send(e.message);
+    res.status(500).json({ error: e.message });
   }
 });
 
-// Obtener participante actual
-app.get('/api/me', verifyToken, async (req, res) => {
+// ── SOLICITUDES (admin) ──────────────────────────────────────────────────────
+
+// Listar todos los participantes
+app.get('/api/solicitudes', verifyToken, onlyAdmin, async (req, res) => {
   try {
-    const doc = await db.collection('participantes').doc(req.user.uid).get();
-    if (!doc.exists) return res.json(null);
-    res.json({ id: doc.id, ...doc.data() });
+    const snap = await db.collection('participantes').get();
+    const lista = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const orden = { pendiente: 0, aprobado: 1, rechazado: 2 };
+    lista.sort((a, b) =>
+      (orden[a.estado || 'pendiente'] ?? 0) - (orden[b.estado || 'pendiente'] ?? 0)
+    );
+    res.json(lista);
   } catch (e) {
-    res.status(500).send(e.message);
+    res.status(500).json({ error: e.message });
   }
 });
 
-// ─── APUESTAS ───────────────────────────────────────────────────────────────
+// Cambiar estado de un participante
+app.patch('/api/solicitudes/:uid', verifyToken, onlyAdmin, async (req, res) => {
+  const { uid }    = req.params;
+  const { estado } = req.body;
+  if (!['pendiente', 'aprobado', 'rechazado'].includes(estado)) {
+    return res.status(400).json({ error: 'Estado inválido' });
+  }
+  try {
+    await db.collection('participantes').doc(uid).update({
+      estado,
+      estadoActualizadoEn: admin.firestore.FieldValue.serverTimestamp()
+    });
+    res.json({ ok: true, uid, estado });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
-// Guardar/actualizar apuesta de un partido
+// ── APUESTAS ─────────────────────────────────────────────────────────────────
+
+// Guardar / actualizar apuesta
 app.post('/api/apuestas', verifyToken, async (req, res) => {
-  // Verificar cierre
-  if (new Date() > FECHA_CIERRE) {
+  // El admin no apuesta
+  if (req.user.uid === ADMIN_UID) {
+    return res.status(403).json({ error: 'El administrador no puede realizar apuestas' });
+  }
+
+  // Bloqueo: día 10 de junio completo + después del cierre
+  const ahora = new Date();
+  const esDeadlineHoy =
+    ahora.getFullYear() === 2026 &&
+    ahora.getMonth()    === 5    && // junio = mes 5
+    ahora.getDate()     === 10;
+
+  if (esDeadlineHoy || ahora > FECHA_CIERRE) {
     return res.status(403).json({ error: 'Las apuestas están cerradas' });
   }
 
   const { partidoId, golesLocal, golesVisita } = req.body;
   if (!partidoId || golesLocal == null || golesVisita == null) {
-    return res.status(400).json({ error: 'Faltan datos' });
+    return res.status(400).json({ error: 'Faltan datos: partidoId, golesLocal, golesVisita' });
+  }
+  if (Number(golesLocal) < 0 || Number(golesVisita) < 0) {
+    return res.status(400).json({ error: 'Los goles no pueden ser negativos' });
   }
 
   const uid = req.user.uid;
-
   try {
-    // Verificar que el usuario esté en algún grupo
     const partDoc = await db.collection('participantes').doc(uid).get();
     if (!partDoc.exists) {
       return res.status(403).json({ error: 'Primero debes unirte a un grupo' });
     }
 
-    const apuestaId = `${uid}_${partidoId}`;
-    await db.collection('apuestas').doc(apuestaId).set({
+    await db.collection('apuestas').doc(`${uid}_${partidoId}`).set({
       uid,
-      grupoId: partDoc.data().grupoId,
+      grupoId:      partDoc.data().grupoId,
       partidoId,
-      golesLocal: Number(golesLocal),
-      golesVisita: Number(golesVisita),
+      golesLocal:   Number(golesLocal),
+      golesVisita:  Number(golesVisita),
       actualizadoEn: admin.firestore.FieldValue.serverTimestamp()
-    });
+    }, { merge: true });
 
     res.json({ ok: true });
   } catch (e) {
-    res.status(500).send(e.message);
+    res.status(500).json({ error: e.message });
   }
 });
 
@@ -221,109 +275,85 @@ app.get('/api/apuestas/mias', verifyToken, async (req, res) => {
     const snap = await db.collection('apuestas')
       .where('uid', '==', req.user.uid).get();
     const apuestas = {};
-    snap.docs.forEach(d => {
-      const data = d.data();
-      apuestas[data.partidoId] = data;
-    });
+    snap.docs.forEach(d => { apuestas[d.data().partidoId] = d.data(); });
     res.json(apuestas);
   } catch (e) {
-    res.status(500).send(e.message);
+    res.status(500).json({ error: e.message });
   }
 });
 
-// ─── RESULTADOS (solo admin) ─────────────────────────────────────────────────
+// ── RESULTADOS — SOLO ADMIN ──────────────────────────────────────────────────
+//
+// ÚNICA ruta que escribe en la colección `partidos`.
+// Doble protección: verifyToken (JWT válido de Firebase) + onlyAdmin (UID exacto).
+// Un jugador que intente llamar este endpoint recibe 403 aunque esté autenticado.
+// El index.html y polla.html NUNCA llaman este endpoint — solo leen /api/data.
+//
 app.post('/api/resultados', verifyToken, onlyAdmin, async (req, res) => {
-  const { partidoId, golesLocal, golesVisita } = req.body;
+  const { partidoId, golesLocal, golesVisita, localNombre, visitaNombre } = req.body;
+
   if (!partidoId || golesLocal == null || golesVisita == null) {
-    return res.status(400).json({ error: 'Faltan datos' });
+    return res.status(400).json({ error: 'Faltan datos: partidoId, golesLocal, golesVisita' });
+  }
+  if (Number(golesLocal) < 0 || Number(golesVisita) < 0) {
+    return res.status(400).json({ error: 'Los goles no pueden ser negativos' });
   }
 
   try {
-    // Guardar resultado en el partido
-    await db.collection('partidos').doc(partidoId).update({
-      resultado_local: Number(golesLocal),
-      resultado_visita: Number(golesVisita)
-    });
+    const updateData = {
+      resultado_local:  Number(golesLocal),
+      resultado_visita: Number(golesVisita),
+      actualizadoPor:   ADMIN_UID,
+      actualizadoEn:    admin.firestore.FieldValue.serverTimestamp()
+    };
+    // En fases eliminatorias el admin puede fijar los nombres de equipos
+    if (localNombre?.trim())  updateData.local  = localNombre.trim();
+    if (visitaNombre?.trim()) updateData.visita = visitaNombre.trim();
 
-    // Recalcular puntajes para todas las apuestas de este partido
+    // set+merge: funciona aunque el partido no exista aún en Firestore
+    await db.collection('partidos').doc(partidoId).set(updateData, { merge: true });
+
+    // Recalcular puntajes de todas las apuestas de este partido
     const apuestasSnap = await db.collection('apuestas')
       .where('partidoId', '==', partidoId).get();
 
-    const batch = db.batch();
-    apuestasSnap.docs.forEach(doc => {
-      const a = doc.data();
-      const pts = calcularPuntaje(
-        { local: Number(golesLocal), visita: Number(golesVisita) },
-        { local: a.golesLocal, visita: a.golesVisita }
-      );
-      batch.update(doc.ref, { puntaje: pts });
-    });
-    await batch.commit();
+    if (apuestasSnap.size > 0) {
+      const batch = db.batch();
+      apuestasSnap.docs.forEach(docRef => {
+        const a = docRef.data();
+        const pts = calcularPuntaje(
+          { local: Number(golesLocal),  visita: Number(golesVisita) },
+          { local: a.golesLocal,        visita: a.golesVisita }
+        );
+        batch.update(docRef.ref, {
+          puntaje:       pts,
+          recalculadoEn: admin.firestore.FieldValue.serverTimestamp()
+        });
+      });
+      await batch.commit();
+    }
 
     res.json({ ok: true, apuestasActualizadas: apuestasSnap.size });
   } catch (e) {
-    res.status(500).send(e.message);
+    res.status(500).json({ error: e.message });
   }
 });
 
-// ─── SOLICITUDES (participantes con estado) ──────────────────────────────────
+// ── RANKING ──────────────────────────────────────────────────────────────────
 
-// Listar todos los participantes con su estado (solo admin)
-app.get('/api/solicitudes', verifyToken, onlyAdmin, async (req, res) => {
-  try {
-    const snap = await db.collection('participantes').get();
-    const participantes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    // Ordenar: primero pendientes, luego aprobados, luego rechazados
-    const orden = { pendiente: 0, aprobado: 1, rechazado: 2 };
-    participantes.sort((a, b) => {
-      const ea = orden[a.estado || 'pendiente'] ?? 0;
-      const eb = orden[b.estado || 'pendiente'] ?? 0;
-      return ea - eb;
-    });
-    res.json(participantes);
-  } catch (e) {
-    res.status(500).send(e.message);
-  }
-});
-
-// Cambiar estado de una solicitud (solo admin)
-app.patch('/api/solicitudes/:uid', verifyToken, onlyAdmin, async (req, res) => {
-  const { uid } = req.params;
-  const { estado } = req.body;
-  const estadosValidos = ['pendiente', 'aprobado', 'rechazado'];
-  if (!estadosValidos.includes(estado)) {
-    return res.status(400).json({ error: 'Estado inválido. Usa: pendiente, aprobado, rechazado' });
-  }
-  try {
-    await db.collection('participantes').doc(uid).update({
-      estado,
-      estadoActualizadoEn: admin.firestore.FieldValue.serverTimestamp()
-    });
-    res.json({ ok: true, uid, estado });
-  } catch (e) {
-    res.status(500).send(e.message);
-  }
-});
-
-// ─── RANKING ────────────────────────────────────────────────────────────────
+// Ranking de un grupo (público, para jugadores)
 app.get('/api/ranking/:grupoId', async (req, res) => {
   try {
     const { grupoId } = req.params;
+    const [partSnap, apSnap] = await Promise.all([
+      db.collection('participantes').where('grupoId', '==', grupoId).get(),
+      db.collection('apuestas').where('grupoId', '==', grupoId).get()
+    ]);
 
-    // Todos los participantes del grupo
-    const partSnap = await db.collection('participantes')
-      .where('grupoId', '==', grupoId).get();
-
-    // Todas las apuestas del grupo
-    const apSnap = await db.collection('apuestas')
-      .where('grupoId', '==', grupoId).get();
-
-    // Sumar puntajes por usuario
     const puntajes = {};
     partSnap.docs.forEach(d => {
       puntajes[d.data().uid] = { ...d.data(), total: 0, aciertos: 0 };
     });
-
     apSnap.docs.forEach(d => {
       const a = d.data();
       if (a.puntaje != null && puntajes[a.uid]) {
@@ -332,39 +362,42 @@ app.get('/api/ranking/:grupoId', async (req, res) => {
       }
     });
 
-    const ranking = Object.values(puntajes)
-      .sort((a, b) => b.total - a.total)
-      .map((p, i) => ({ ...p, posicion: i + 1 }));
-
-    res.json(ranking);
+    res.json(
+      Object.values(puntajes)
+        .sort((a, b) => b.total - a.total)
+        .map((p, i) => ({ ...p, posicion: i + 1 }))
+    );
   } catch (e) {
-    res.status(500).send(e.message);
+    res.status(500).json({ error: e.message });
   }
 });
 
-// Ranking de todos los grupos (para el admin)
+// Ranking global (solo admin)
 app.get('/api/ranking', verifyToken, onlyAdmin, async (req, res) => {
   try {
-    const apSnap = await db.collection('apuestas').get();
-    const partSnap = await db.collection('participantes').get();
+    const [partSnap, apSnap] = await Promise.all([
+      db.collection('participantes').get(),
+      db.collection('apuestas').get()
+    ]);
 
     const participantes = {};
     partSnap.docs.forEach(d => {
-      participantes[d.data().uid] = { ...d.data(), total: 0 };
+      participantes[d.data().uid] = { ...d.data(), total: 0, aciertos: 0 };
     });
-
     apSnap.docs.forEach(d => {
       const a = d.data();
       if (a.puntaje != null && participantes[a.uid]) {
         participantes[a.uid].total += a.puntaje;
+        if (a.puntaje > 0) participantes[a.uid].aciertos++;
       }
     });
 
     res.json(Object.values(participantes).sort((a, b) => b.total - a.total));
   } catch (e) {
-    res.status(500).send(e.message);
+    res.status(500).json({ error: e.message });
   }
 });
 
-const PORT = 3000;
+// ── Start ────────────────────────────────────────────────────────────────────
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 API corriendo en http://localhost:${PORT}`));
