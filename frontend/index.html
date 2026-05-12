@@ -174,6 +174,11 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
 
 /* ── RESPONSIVE ── */
 #open-puntaje-btn:hover{background:rgba(218,0,21,0.06);border-color:var(--red);color:var(--red);}
+.btn-hero-icon{position:relative;font-family:var(--font-display);font-weight:700;font-size:1.3rem;color:rgba(255,255,255,0.85);border:1.5px solid rgba(255,255,255,0.35);padding:10px 14px;border-radius:4px;cursor:pointer;transition:all 0.2s;background:transparent;display:inline-flex;align-items:center;justify-content:center;line-height:1;}
+.btn-hero-icon:hover{border-color:white;color:white;background:rgba(255,255,255,0.08);}
+.btn-hero-icon .tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:rgba(13,13,13,0.9);color:white;font-family:var(--font-display);font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:5px 10px;border-radius:4px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity 0.18s;}
+.btn-hero-icon .tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:rgba(13,13,13,0.9);}
+.btn-hero-icon:hover .tooltip{opacity:1;}
 
 @media(max-width:1024px){
   main{padding:28px 24px;}
@@ -334,9 +339,10 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
       <div class="hero-cta">
         <a href="polla.html" class="btn-hero"><i class="fas fa-futbol" style="font-family:'Font Awesome 6 Free';"></i> Participar ahora</a>
         <a href="#grupos" class="btn-hero-outline">Programación</a>
+        <a href="#resultados" class="btn-hero-outline">Resultados</a>
         <a href="selecciones.html" class="btn-hero-outline"><i class="fas fa-flag" style="font-family:'Font Awesome 6 Free';"></i> Selecciones</a>
-        <a id="btn-download-ics" class="btn-hero-outline" style="cursor:pointer;" title="Agregar partidos a tu calendario"><i class="fas fa-calendar-plus" style="font-family:'Font Awesome 6 Free';"></i> Bajar calendario</a>
-        <button id="open-puntaje-btn" class="btn-hero-outline"><i class="fas fa-star" style="font-family:'Font Awesome 6 Free';"></i> Reglas</button>
+        <a id="btn-download-ics" class="btn-hero-icon" style="cursor:pointer;" title="Bajar calendario">📅<span class="tooltip">Bajar Calendario</span></a>
+        <button id="open-puntaje-btn" class="btn-hero-icon">📋<span class="tooltip">Reglas de Puntaje</span></button>
       </div>
     </div>
     <div class="hero-stats">
