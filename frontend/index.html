@@ -449,8 +449,8 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
       <div class="cd-unit"><div class="cd-num" id="cd-seg">--</div><div class="cd-lbl">Seg</div></div>
     </div>
     <div class="countdown-kick">
-      <div class="cd-kick-label">Fecha y hora (Chile)</div>
-      <div class="cd-kick-info">Jueves 11 Jun · <span>16:00 hrs</span></div>
+      <div class="cd-kick-label">Hora Santiago de Chile</div>
+      <div class="cd-kick-info">Jueves 11 Jun · <span>15:00 hrs</span></div>
     </div>
   </div>
 </div>
@@ -722,12 +722,40 @@ function getVal(obj,keys){ for(const k of keys){ if(obj[k]!=null&&obj[k]!=='') r
 // Grupos
 function renderGrupos(){
   const porGrupo={};
-  globalData.partidos.forEach(m=>{
-    const pL=globalData.paises.find(p=>norm(p.nombre)===norm(m.local));
-    const pV=globalData.paises.find(p=>norm(p.nombre)===norm(m.visita));
-    const g=(pL?.grupo&&pL.grupo!=='Desconocido')?pL.grupo:pV?.grupo;
-    if(g&&g!=='Desconocido'){ if(!porGrupo[g]) porGrupo[g]=[]; porGrupo[g].push(m); }
+
+  // Usar FG_IDX como fuente autoritativa de qué partidos van en qué grupo
+  Object.entries(FG_IDX).forEach(([g, ids]) => {
+    ids.forEach(id => {
+      // Buscar en globalData.partidos por id
+      const m = globalData.partidos.find(p => p.id === id);
+      if (!m) return;
+      if (!porGrupo[g]) porGrupo[g] = [];
+      porGrupo[g].push(m);
+    });
   });
+
+  // Fallback: si globalData.partidos tiene campo grupo directamente
+  globalData.partidos.forEach(m => {
+    const g = m.grupo;
+    if (!g || g === 'Desconocido') return;
+    if (!FG_IDX[g]) return; // solo grupos A-L
+    // Solo agregar si no está ya (evitar duplicados)
+    if (!porGrupo[g]) porGrupo[g] = [];
+    if (!porGrupo[g].find(p => p.id === m.id)) {
+      porGrupo[g].push(m);
+    }
+  });
+
+  // Ordenar cada grupo por fecha + hora
+  Object.keys(porGrupo).forEach(g => {
+    porGrupo[g].sort((a, b) => {
+      const fa = String(a.fecha||''), fb = String(b.fecha||'');
+      if (fa !== fb) return fa < fb ? -1 : 1;
+      const ha = Number(a.hora||0), hb = Number(b.hora||0);
+      return ha - hb;
+    });
+  });
+
   const w=document.getElementById('grupos-wrapper'); if(!w) return;
   w.innerHTML='';
   const gs=Object.keys(porGrupo).sort();
@@ -748,7 +776,7 @@ function renderGrupos(){
             ${m.resultado_local!=null
               ? `<span class="match-vs" style="background:var(--ink);color:white;font-size:1rem;padding:4px 10px;">${m.resultado_local}–${m.resultado_visita}</span>`
               : `<span class="match-vs">VS</span>`}
-            <span class="match-date"><i class="far fa-calendar-alt"></i> ${fmtDate(m.fecha)}</span>
+            <span class="match-date"><i class="far fa-calendar-alt"></i> ${fmtDate(m.fecha)}${(()=>{ const h=horaASantiago(m.hora, m.estadio||m.sede||''); return h ? ` · <span style="color:var(--red);font-weight:700;">${h}</span> <span style="opacity:0.55;font-size:0.65rem;">Stgo.</span>` : ''; })()}</span>
           </div>
           <div class="match-team right">
             <span>${m.visita}</span>
@@ -761,7 +789,6 @@ function renderGrupos(){
         </div>
       </div>`}).join('');
     card.innerHTML=`<div class="grupo-card-head"><a href="selecciones.html#grupo-${g}" class="grupo-card-title" style="text-decoration:none;color:white;cursor:pointer;">Grupo ${g}</a><span class="grupo-card-badge" data-grupo="${g}">Tabla de posiciones</span></div><div class="grupo-card-body">${matches}</div>`;
-    // Attach click via event listener to avoid inline onclick + module scope issue
     card.querySelector('.grupo-card-badge').addEventListener('click', ()=> window._showTabla(g));
     w.appendChild(card);
     // Poblar clima en cada partido del grupo
@@ -1192,8 +1219,10 @@ document.getElementById('btn-download-ics').addEventListener('click', function()
 
 // ── COUNTDOWN ──
 (function(){
-  // 11 Jun 2026, 16:00 hora Chile (UTC-4 en invierno chileno = UTC+0 -4h → UTC 20:00)
-  const target = new Date('2026-06-11T20:00:00Z');
+  // Partido inaugural: 11 Jun 2026, 19:00 hora local Ciudad de México (UTC-5 en verano)
+  // = 11 Jun 2026 00:00 UTC → revisado: kick-off 19:00 CDT = UTC-5 → 00:00 UTC 12 jun
+  // Fuente oficial: 11 Jun 2026 19:00 local CDMX (UTC-5) = 20:00 Santiago (UTC-4)
+  const target = new Date('2026-06-11T19:00:00Z'); // 15:00 ET (UTC-4) = 15:00 Santiago (UTC-4)
   function pad(n){ return String(n).padStart(2,'0'); }
   function tick(){
     const now = new Date();
@@ -1210,7 +1239,6 @@ document.getElementById('btn-download-ics').addEventListener('click', function()
     document.getElementById('cd-horas').textContent = pad(horas);
     document.getElementById('cd-min').textContent   = pad(min);
     document.getElementById('cd-seg').textContent   = pad(seg);
-    // highlight seconds digit change
     const el = document.getElementById('cd-seg');
     el.style.color = 'var(--gold)';
     setTimeout(()=>el.style.color='', 200);
@@ -1219,7 +1247,25 @@ document.getElementById('btn-download-ics').addEventListener('click', function()
   setInterval(tick, 1000);
 })();
 
-// ── FIXTURE GRUPOS hardcodeado (fallback si Firestore no tiene grupo en partido) ──
+// ── HORA SANTIAGO ──────────────────────────────────────────────────────────
+// En junio 2026: Eastern Time (ET) = UTC-4, Santiago de Chile = UTC-4
+// → Son la misma hora. No se necesita conversión.
+// La función igual normaliza el decimal de Excel a HH:MM.
+function horaASantiago(horaDecimalOString, sedeNombre) {
+  if (!horaDecimalOString && horaDecimalOString !== 0) return null;
+  const h = horaDecimalOString;
+  // Decimal Excel (ej: 0.625 = 15:00)
+  if (typeof h === 'number' || (!isNaN(Number(h)) && String(h).match(/^0*\.\d+$|^\d+\.\d+$/))) {
+    const mins = Math.round(Number(h) * 24 * 60);
+    const hh = Math.floor(mins / 60), mm = mins % 60;
+    return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+  }
+  // Ya es string HH:MM
+  if (typeof h === 'string' && h.match(/^\d{1,2}:\d{2}/)) return h;
+  return null;
+}
+
+// ── FIXTURE GRUPOS — IDs sincronizados con Firestore ──
 const FG_IDX = {
   A:['fgA1','fgA2','fgA3','fgA4','fgA5','fgA6'],
   B:['fgB1','fgB2','fgB3','fgB4','fgB5','fgB6'],
@@ -1327,7 +1373,7 @@ function renderResPartido(p, esElim) {
     </div>
     <div class="res-center">
       ${scoreHtml}
-      <div class="res-date">${fmtFecha(p.fecha)}${fmtHora(p.hora) ? ' · ' + fmtHora(p.hora) : ''}</div>
+      <div class="res-date">${fmtFecha(p.fecha)}${(()=>{ const h=horaASantiago(p.hora, p.estadio||''); return h ? ` · <span style="color:var(--red);font-weight:700;">${h}</span> <span style="opacity:0.55;font-size:0.6rem;">Stgo.</span>` : ''; })()}</div>
       ${p.estadio ? `<span class="match-weather res-weather-badge"><span class="mw-icon">🌡️</span><span class="mw-t">…</span></span>` : ''}
     </div>
     <div class="res-team right">
