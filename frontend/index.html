@@ -86,6 +86,9 @@ main{padding:36px 40px;max-width:1400px;margin:0 auto;}
 .match-team.right{flex-direction:row-reverse;text-align:right;}
 .match-center-col{display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0;}
 .match-vs{font-family:var(--font-display);font-weight:800;font-size:0.75rem;color:var(--muted);background:var(--off);padding:3px 10px;border-radius:4px;letter-spacing:0.06em;}
+.match-score{font-family:var(--font-display);font-weight:900;font-size:1.15rem;color:white;background:var(--ink);padding:4px 12px;border-radius:4px;letter-spacing:0.04em;display:inline-flex;align-items:center;gap:4px;line-height:1;}
+.score-sep{color:rgba(255,255,255,0.4);font-size:0.9rem;}
+.grupo-card:has(.match-score) .grupo-card-head{background:linear-gradient(135deg,var(--ink) 0%,#1a2e1a 100%);}
 .match-date{font-size:0.72rem;color:var(--muted);display:flex;align-items:center;gap:4px;}
 .match-info-line{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:0.72rem;color:var(--muted);}
 .match-info-line i{color:var(--red);font-size:0.7rem;}
@@ -449,8 +452,8 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
       <div class="cd-unit"><div class="cd-num" id="cd-seg">--</div><div class="cd-lbl">Seg</div></div>
     </div>
     <div class="countdown-kick">
-      <div class="cd-kick-label">Hora Santiago de Chile</div>
-      <div class="cd-kick-info">Jueves 11 Jun · <span>15:00 hrs</span></div>
+      <div class="cd-kick-label">Fecha y hora (Chile)</div>
+      <div class="cd-kick-info">Jueves 11 Jun · <span>16:00 hrs</span></div>
     </div>
   </div>
 </div>
@@ -721,50 +724,57 @@ function getVal(obj,keys){ for(const k of keys){ if(obj[k]!=null&&obj[k]!=='') r
 
 // Grupos
 function renderGrupos(){
-  const porGrupo={};
+  const w = document.getElementById('grupos-wrapper');
+  if (!w) return;
 
-  // Usar FG_IDX como fuente autoritativa de qué partidos van en qué grupo
-  Object.entries(FG_IDX).forEach(([g, ids]) => {
-    ids.forEach(id => {
-      // Buscar en globalData.partidos por id
-      const m = globalData.partidos.find(p => p.id === id);
-      if (!m) return;
-      if (!porGrupo[g]) porGrupo[g] = [];
-      porGrupo[g].push(m);
-    });
-  });
-
-  // Fallback: si globalData.partidos tiene campo grupo directamente
+  // Agrupar partidos usando campo "grupo" directo del fixture importado,
+  // con fallback al cruce por paises (datos legacy)
+  const porGrupo = {};
   globalData.partidos.forEach(m => {
-    const g = m.grupo;
-    if (!g || g === 'Desconocido') return;
-    if (!FG_IDX[g]) return; // solo grupos A-L
-    // Solo agregar si no está ya (evitar duplicados)
-    if (!porGrupo[g]) porGrupo[g] = [];
-    if (!porGrupo[g].find(p => p.id === m.id)) {
-      porGrupo[g].push(m);
+    let g = m.grupo;
+    if (!g || g === 'Desconocido') {
+      const pL = globalData.paises.find(p => norm(p.nombre) === norm(m.local));
+      const pV = globalData.paises.find(p => norm(p.nombre) === norm(m.visita));
+      g = (pL?.grupo && pL.grupo !== 'Desconocido') ? pL.grupo : pV?.grupo;
     }
+    if (!g || g === 'Desconocido') return;
+    if (!porGrupo[g]) porGrupo[g] = [];
+    porGrupo[g].push(m);
   });
 
-  // Ordenar cada grupo por fecha + hora
-  Object.keys(porGrupo).forEach(g => {
-    porGrupo[g].sort((a, b) => {
-      const fa = String(a.fecha||''), fb = String(b.fecha||'');
-      if (fa !== fb) return fa < fb ? -1 : 1;
-      const ha = Number(a.hora||0), hb = Number(b.hora||0);
-      return ha - hb;
-    });
-  });
+  w.innerHTML = '';
+  const gs = Object.keys(porGrupo).sort();
+  const sp = document.getElementById('stat-grupos');
+  if (sp) sp.textContent = gs.length;
 
-  const w=document.getElementById('grupos-wrapper'); if(!w) return;
-  w.innerHTML='';
-  const gs=Object.keys(porGrupo).sort();
-  const sp=document.getElementById('stat-grupos'); if(sp) sp.textContent=gs.length;
-  gs.forEach(g=>{
-    const card=document.createElement('div'); card.className='grupo-card';
-    const matches=porGrupo[g].map((m,mi)=>{
-      const sede = m.estadio||m.sede||'';
-      const wbid = `gwb_${g}_${mi}`;
+  gs.forEach(g => {
+    const card = document.createElement('div');
+    card.className = 'grupo-card';
+
+    const matches = porGrupo[g].map((m, mi) => {
+      const sede   = m.estadio || m.sede || 'Estadio por confirmar';
+      const wbid   = `gwb_${g}_${mi}`;
+
+      // Hora: puede ser string "HH:MM" (fixture nuevo) o decimal Excel (legacy)
+      let horaStr = '';
+      if (m.hora != null) {
+        if (typeof m.hora === 'string' && m.hora.includes(':')) {
+          horaStr = m.hora;
+        } else if (!isNaN(m.hora)) {
+          horaStr = fmtTime(m.hora);
+        }
+      }
+
+      // Fecha: puede ser string "DD mon" o número Excel
+      const fechaStr = (typeof m.fecha === 'string' && isNaN(m.fecha))
+        ? m.fecha : fmtDate(m.fecha);
+
+      // Marcador: si el admin ya ingresó resultado, mostrarlo; si no, VS
+      const tieneRes = m.resultado_local != null && m.resultado_visita != null;
+      const scoreHtml = tieneRes
+        ? `<span class="match-score">${m.resultado_local}<span class="score-sep">–</span>${m.resultado_visita}</span>`
+        : `<span class="match-vs">VS</span>`;
+
       return `
       <div class="match-row">
         <div class="match-teams-line">
@@ -773,10 +783,10 @@ function renderGrupos(){
             <span>${m.local}</span>
           </div>
           <div class="match-center-col">
-            ${m.resultado_local!=null
-              ? `<span class="match-vs" style="background:var(--ink);color:white;font-size:1rem;padding:4px 10px;">${m.resultado_local}–${m.resultado_visita}</span>`
-              : `<span class="match-vs">VS</span>`}
-            <span class="match-date"><i class="far fa-calendar-alt"></i> ${fmtDate(m.fecha)}${(()=>{ const h=horaASantiago(m.hora, m.estadio||m.sede||''); return h ? ` · <span style="color:var(--red);font-weight:700;">${h}</span> <span style="opacity:0.55;font-size:0.65rem;">Stgo.</span>` : ''; })()}</span>
+            ${scoreHtml}
+            <span class="match-date">
+              <i class="far fa-calendar-alt"></i> ${fechaStr}${horaStr ? ' · ' + horaStr : ''}
+            </span>
           </div>
           <div class="match-team right">
             <span>${m.visita}</span>
@@ -784,16 +794,31 @@ function renderGrupos(){
           </div>
         </div>
         <div class="match-info-line">
-          <span class="match-info-left"><i class="fas fa-location-dot"></i>${sede||'Estadio por confirmar'}</span>
-          ${sede ? `<span class="match-weather" id="${wbid}"><span class="mw-icon">🌡️</span><span class="mw-t">…</span></span>` : ''}
+          <span class="match-info-left"><i class="fas fa-location-dot"></i>${sede}</span>
+          ${sede !== 'Estadio por confirmar'
+            ? `<span class="match-weather" id="${wbid}"><span class="mw-icon">🌡️</span><span class="mw-t">…</span></span>`
+            : ''}
         </div>
-      </div>`}).join('');
-    card.innerHTML=`<div class="grupo-card-head"><a href="selecciones.html#grupo-${g}" class="grupo-card-title" style="text-decoration:none;color:white;cursor:pointer;">Grupo ${g}</a><span class="grupo-card-badge" data-grupo="${g}">Tabla de posiciones</span></div><div class="grupo-card-body">${matches}</div>`;
-    card.querySelector('.grupo-card-badge').addEventListener('click', ()=> window._showTabla(g));
+      </div>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="grupo-card-head">
+        <a href="selecciones.html#grupo-${g}" class="grupo-card-title" style="text-decoration:none;color:white;cursor:pointer;">Grupo ${g}</a>
+        <span class="grupo-card-badge" data-grupo="${g}">
+          ${porGrupo[g].filter(m => m.resultado_local != null).length > 0
+            ? porGrupo[g].filter(m => m.resultado_local != null).length + ' resultados'
+            : '6 partidos'}
+        </span>
+      </div>
+      <div class="grupo-card-body">${matches}</div>`;
+
+    card.querySelector('.grupo-card-badge').addEventListener('click', () => window._showTabla(g));
     w.appendChild(card);
-    // Poblar clima en cada partido del grupo
+
+    // Clima por partido
     porGrupo[g].forEach((m, mi) => {
-      const sede = m.estadio||m.sede||'';
+      const sede = m.estadio || m.sede || '';
       if (!sede) return;
       const coords = getCoordsFromSede(sede);
       if (!coords) return;
@@ -803,7 +828,7 @@ function renderGrupos(){
         badgeEl.querySelector('.mw-icon').textContent = ww.icon;
         badgeEl.querySelector('.mw-t').textContent = `${ww.temp}°C`;
         badgeEl.title = `${ww.desc} · ${ww.humidity}% hum · ${ww.wind} km/h`;
-      }).catch(() => { badgeEl.style.display='none'; });
+      }).catch(() => { badgeEl.style.display = 'none'; });
     });
   });
 }
@@ -1219,10 +1244,8 @@ document.getElementById('btn-download-ics').addEventListener('click', function()
 
 // ── COUNTDOWN ──
 (function(){
-  // Partido inaugural: 11 Jun 2026, 19:00 hora local Ciudad de México (UTC-5 en verano)
-  // = 11 Jun 2026 00:00 UTC → revisado: kick-off 19:00 CDT = UTC-5 → 00:00 UTC 12 jun
-  // Fuente oficial: 11 Jun 2026 19:00 local CDMX (UTC-5) = 20:00 Santiago (UTC-4)
-  const target = new Date('2026-06-11T19:00:00Z'); // 15:00 ET (UTC-4) = 15:00 Santiago (UTC-4)
+  // 11 Jun 2026, 16:00 hora Chile (UTC-4 en invierno chileno = UTC+0 -4h → UTC 20:00)
+  const target = new Date('2026-06-11T20:00:00Z');
   function pad(n){ return String(n).padStart(2,'0'); }
   function tick(){
     const now = new Date();
@@ -1239,6 +1262,7 @@ document.getElementById('btn-download-ics').addEventListener('click', function()
     document.getElementById('cd-horas').textContent = pad(horas);
     document.getElementById('cd-min').textContent   = pad(min);
     document.getElementById('cd-seg').textContent   = pad(seg);
+    // highlight seconds digit change
     const el = document.getElementById('cd-seg');
     el.style.color = 'var(--gold)';
     setTimeout(()=>el.style.color='', 200);
@@ -1247,25 +1271,7 @@ document.getElementById('btn-download-ics').addEventListener('click', function()
   setInterval(tick, 1000);
 })();
 
-// ── HORA SANTIAGO ──────────────────────────────────────────────────────────
-// En junio 2026: Eastern Time (ET) = UTC-4, Santiago de Chile = UTC-4
-// → Son la misma hora. No se necesita conversión.
-// La función igual normaliza el decimal de Excel a HH:MM.
-function horaASantiago(horaDecimalOString, sedeNombre) {
-  if (!horaDecimalOString && horaDecimalOString !== 0) return null;
-  const h = horaDecimalOString;
-  // Decimal Excel (ej: 0.625 = 15:00)
-  if (typeof h === 'number' || (!isNaN(Number(h)) && String(h).match(/^0*\.\d+$|^\d+\.\d+$/))) {
-    const mins = Math.round(Number(h) * 24 * 60);
-    const hh = Math.floor(mins / 60), mm = mins % 60;
-    return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
-  }
-  // Ya es string HH:MM
-  if (typeof h === 'string' && h.match(/^\d{1,2}:\d{2}/)) return h;
-  return null;
-}
-
-// ── FIXTURE GRUPOS — IDs sincronizados con Firestore ──
+// ── FIXTURE GRUPOS hardcodeado (fallback si Firestore no tiene grupo en partido) ──
 const FG_IDX = {
   A:['fgA1','fgA2','fgA3','fgA4','fgA5','fgA6'],
   B:['fgB1','fgB2','fgB3','fgB4','fgB5','fgB6'],
@@ -1373,7 +1379,7 @@ function renderResPartido(p, esElim) {
     </div>
     <div class="res-center">
       ${scoreHtml}
-      <div class="res-date">${fmtFecha(p.fecha)}${(()=>{ const h=horaASantiago(p.hora, p.estadio||''); return h ? ` · <span style="color:var(--red);font-weight:700;">${h}</span> <span style="opacity:0.55;font-size:0.6rem;">Stgo.</span>` : ''; })()}</div>
+      <div class="res-date">${fmtFecha(p.fecha)}${fmtHora(p.hora) ? ' · ' + fmtHora(p.hora) : ''}</div>
       ${p.estadio ? `<span class="match-weather res-weather-badge"><span class="mw-icon">🌡️</span><span class="mw-t">…</span></span>` : ''}
     </div>
     <div class="res-team right">
