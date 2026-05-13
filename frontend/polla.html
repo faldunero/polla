@@ -732,13 +732,18 @@
         `;
 
         const joinBtn = div.querySelector('button');
-        if (joinBtn) {
+
+if (joinBtn) {
   console.log('Binding botón grupo', g.id, g.nombre);
   joinBtn.addEventListener('click', () => {
     console.log('CLICK botón grupo', g.id, g.nombre);
     unirseGrupo(g.id, g.nombre || 'grupo');
   });
 }
+
+        grid.appendChild(div);
+      });
+    }
 
     async function unirseGrupo(grupoId, nombreGrupo) {
   if (isCerrado()) {
