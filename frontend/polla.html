@@ -190,9 +190,25 @@
       background:var(--card);border:2px solid var(--border);border-radius:var(--radius);
       padding:24px;cursor:pointer;transition:all .22s;position:relative;overflow:hidden;
     }
+    
     .grupo-card::before{
-      content:"";position:absolute;inset:0;background:linear-gradient(135deg, rgba(245,200,66,.04), transparent);
-      opacity:0;transition:opacity .22s;
+     content:'';
+     position:absolute;
+     inset:0;
+     background:linear-gradient(135deg, rgba(245,200,66,.04), transparent);
+     opacity:0;
+     transition:opacity .22s;
+     pointer-events:none;
+   }
+
+.grupo-card .btn{
+  position:relative;
+  z-index:2;
+}
+
+    .grupo-card .btn{
+      position:relative;
+      z-index:2;
     }
     .grupo-card:hover{border-color:var(--gold);transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,.3)}
     .grupo-card:hover::before{opacity:1}
@@ -731,17 +747,17 @@
           </div>
         `;
 
-        const joinBtn = div.querySelector('button');
+       const joinBtn = div.querySelector('button');
 
-if (joinBtn) {
-  console.log('Binding botón grupo', g.id, g.nombre);
-  joinBtn.addEventListener('click', () => {
-    console.log('CLICK botón grupo', g.id, g.nombre);
-    unirseGrupo(g.id, g.nombre || 'grupo');
-  });
-}
+       if (joinBtn) {
+         console.log('Binding botón grupo', g.id, g.nombre);
+         joinBtn.addEventListener('click', () => {
+          console.log('CLICK botón grupo', g.id, g.nombre);
+          unirseGrupo(g.id, g.nombre || 'grupo');
+         });
+       }
 
-        grid.appendChild(div);
+      grid.appendChild(div);
       });
     }
 
