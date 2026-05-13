@@ -418,6 +418,25 @@ nav {
 .mpe-input:focus{outline:none;border-color:var(--gold);background:rgba(245,200,66,0.05);}
 .mpe-input option{background:#1a2238;}
 
+/* ── ESTADIOS ADMIN ─────────────────────────────────────────────── */
+.est-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-top:4px;}
+.est-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all 0.2s;position:relative;}
+.est-card:hover{border-color:#3b82f6;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3);}
+.est-card-img{height:90px;background:linear-gradient(135deg,#0f172a,#1e293b);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.est-card-img img{width:100%;height:100%;object-fit:cover;opacity:0.7;transition:opacity .2s;}
+.est-card:hover .est-card-img img{opacity:0.9;}
+.est-card-img-fallback{font-size:2rem;opacity:0.4;}
+.est-card-flag{position:absolute;top:8px;right:10px;font-size:1.2rem;}
+.est-card-body{padding:13px 15px;display:flex;align-items:center;gap:12px;}
+.est-card-info{flex:1;min-width:0;}
+.est-card-name{font-weight:700;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.est-card-meta{font-size:0.71rem;color:var(--muted);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;}
+.est-cap-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(59,130,246,0.15);color:#60a5fa;font-family:'Bebas Neue',sans-serif;font-size:0.78rem;padding:3px 8px;border-radius:5px;flex-shrink:0;}
+.est-edit-icon{color:var(--muted);font-size:0.8rem;opacity:0;transition:opacity .2s;flex-shrink:0;}
+.est-card:hover .est-edit-icon{opacity:1;}
+.est-empty{text-align:center;padding:60px 20px;color:var(--muted);}
+.est-empty i{font-size:2.2rem;margin-bottom:12px;display:block;}
+
 /* ── RESET BUTTONS ─────────────────────────────────────────────── */
 .btn-reset-partido{padding:5px 9px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:rgba(239,68,68,0.7);border-radius:7px;font-size:0.72rem;cursor:pointer;transition:all 0.18s;display:inline-flex;align-items:center;gap:4px;font-family:"DM Sans",sans-serif;}
 .btn-reset-partido:hover{background:rgba(239,68,68,0.18);color:var(--red);border-color:rgba(239,68,68,0.4);}
@@ -502,6 +521,7 @@ nav {
       <button class="tab" onclick="showTab('ranking')"><i class="fas fa-trophy"></i> Ranking global</button>
       <button class="tab" onclick="showTab('setup')"><i class="fas fa-database"></i> Setup / Importar</button>
       <button class="tab" onclick="showTab('selecciones')"><i class="fas fa-flag"></i> Selecciones</button>
+      <button class="tab" onclick="showTab('estadios')"><i class="fas fa-landmark"></i> Estadios</button>
     </div>
 
     <!-- TAB GRUPOS -->
@@ -672,6 +692,153 @@ nav {
 
       <!-- Grid de selecciones -->
       <div id="selecciones-grid"></div>
+    </div>
+
+    <!-- TAB ESTADIOS -->
+    <div id="tab-estadios" class="page">
+      <div class="section-title"><i class="fas fa-landmark"></i> Administrar Estadios</div>
+      <div class="alert alert-warn" style="margin-bottom:20px;">
+        <i class="fas fa-triangle-exclamation"></i>
+        Los cambios se guardan directamente en Firestore y se reflejan de inmediato en el sitio público.
+      </div>
+
+      <!-- Barra búsqueda + filtro país -->
+      <div style="display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap;align-items:center;">
+        <input type="text" id="est-search" class="form-input" placeholder="🔍  Buscar estadio o ciudad..." style="flex:1;min-width:200px;" oninput="filtrarEstadios()">
+        <select id="est-pais-filter" class="form-input" style="width:150px;" onchange="filtrarEstadios()">
+          <option value="">Todos los países</option>
+          <option value="USA">🇺🇸 Estados Unidos</option>
+          <option value="Mexico">🇲🇽 México</option>
+          <option value="Canada">🇨🇦 Canadá</option>
+        </select>
+        <button class="btn btn-gold" onclick="abrirModalNuevoEstadio()"><i class="fas fa-plus"></i> Nuevo estadio</button>
+      </div>
+
+      <!-- Stats -->
+      <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 18px;text-align:center;flex:1;min-width:90px;">
+          <strong id="est-stat-total" style="display:block;font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--gold);">0</strong>
+          <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Total</span>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 18px;text-align:center;flex:1;min-width:90px;">
+          <strong id="est-stat-capacidad" style="display:block;font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--blue);">0</strong>
+          <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Cap. promedio</span>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 18px;text-align:center;flex:1;min-width:90px;">
+          <strong id="est-stat-visibles" style="display:block;font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--green);">0</strong>
+          <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Visibles</span>
+        </div>
+      </div>
+
+      <!-- Grid de estadios -->
+      <div id="estadios-admin-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR ESTADIO -->
+<div id="modal-estadio-edit" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);z-index:4000;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#1a2238;border:1px solid rgba(59,130,246,0.3);border-radius:18px;width:100%;max-width:640px;max-height:92vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,0.6);animation:mpopIn .22s cubic-bezier(0.34,1.4,0.64,1);">
+    <!-- Header modal estadio -->
+    <div style="background:linear-gradient(135deg,#0f172a,#1a2238);border-bottom:1px solid rgba(255,255,255,0.08);padding:22px 26px;display:flex;align-items:center;justify-content:space-between;border-radius:18px 18px 0 0;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span id="mee-flag-preview" style="font-size:2.2rem;line-height:1;">🏟️</span>
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#60a5fa;letter-spacing:0.04em;" id="mee-title">Editar Estadio</div>
+          <div style="font-size:0.72rem;color:var(--muted);" id="mee-subtitle">Modifica los datos del estadio</div>
+        </div>
+      </div>
+      <button onclick="cerrarModalEstadio()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);border:none;cursor:pointer;color:var(--muted);font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .2s;" onmouseover="this.style.background='rgba(239,68,68,0.3)';this.style.color='white'" onmouseout="this.style.background='rgba(255,255,255,0.08)';this.style.color='var(--muted)'">✕</button>
+    </div>
+    <!-- Body modal estadio -->
+    <div style="padding:24px 26px;display:flex;flex-direction:column;gap:0;">
+      <input type="hidden" id="mee-id">
+
+      <!-- Fila 1: nombre -->
+      <div class="mpe-row">
+        <div class="mpe-group">
+          <label class="mpe-label">Nombre del estadio <span class="mpe-req">*</span></label>
+          <input type="text" id="mee-nombre" class="mpe-input" placeholder="Ej: MetLife Stadium" oninput="actualizarPreviewEstadio()">
+        </div>
+      </div>
+
+      <!-- Fila 2: ciudad + país -->
+      <div class="mpe-row">
+        <div class="mpe-group">
+          <label class="mpe-label">Ciudad <span class="mpe-req">*</span></label>
+          <input type="text" id="mee-ciudad" class="mpe-input" placeholder="Ej: East Rutherford, Nueva Jersey">
+        </div>
+        <div class="mpe-group" style="flex:0 0 160px;">
+          <label class="mpe-label">País sede <span class="mpe-req">*</span></label>
+          <select id="mee-pais" class="mpe-input">
+            <option value="">— Seleccionar —</option>
+            <option value="USA">🇺🇸 Estados Unidos</option>
+            <option value="Mexico">🇲🇽 México</option>
+            <option value="Canada">🇨🇦 Canadá</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Fila 3: capacidad + año inauguración -->
+      <div class="mpe-row">
+        <div class="mpe-group">
+          <label class="mpe-label">Capacidad (espectadores)</label>
+          <input type="number" id="mee-capacidad" class="mpe-input" placeholder="Ej: 82500" min="0">
+        </div>
+        <div class="mpe-group">
+          <label class="mpe-label">Año de inauguración</label>
+          <input type="number" id="mee-anio" class="mpe-input" placeholder="Ej: 2010" min="1800" max="2030">
+        </div>
+      </div>
+
+      <!-- Fila 4: datos relevantes -->
+      <div class="mpe-row">
+        <div class="mpe-group">
+          <label class="mpe-label">Datos relevantes / descripción</label>
+          <textarea id="mee-datos" class="mpe-input" rows="3" placeholder="Ej: Estadio más grande del torneo. Hogar de los New York Giants y Jets. Sede de la Final del Mundial 2026." style="resize:vertical;"></textarea>
+        </div>
+      </div>
+
+      <!-- Fila 5: césped + techo -->
+      <div class="mpe-row">
+        <div class="mpe-group">
+          <label class="mpe-label">Tipo de superficie</label>
+          <select id="mee-superficie" class="mpe-input">
+            <option value="">—</option>
+            <option value="Césped natural">Césped natural</option>
+            <option value="Césped híbrido">Césped híbrido</option>
+            <option value="Césped artificial">Césped artificial</option>
+          </select>
+        </div>
+        <div class="mpe-group">
+          <label class="mpe-label">Techo</label>
+          <select id="mee-techo" class="mpe-input">
+            <option value="">—</option>
+            <option value="Al aire libre">Al aire libre</option>
+            <option value="Techo retráctil">Techo retráctil</option>
+            <option value="Techo fijo">Techo fijo (cubierto)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Fila 6: partidos asignados (informativo) -->
+      <div class="mpe-row">
+        <div class="mpe-group">
+          <label class="mpe-label">Partidos asignados (número)</label>
+          <input type="number" id="mee-partidos" class="mpe-input" placeholder="Ej: 8" min="0">
+        </div>
+        <div class="mpe-group">
+          <label class="mpe-label">Nombre del equipo local (NFL/MLS)</label>
+          <input type="text" id="mee-equipo-local" class="mpe-input" placeholder="Ej: New York Giants">
+        </div>
+      </div>
+
+      <!-- Footer botones -->
+      <div style="display:flex;gap:10px;margin-top:20px;padding-top:18px;border-top:1px solid rgba(255,255,255,0.07);">
+        <button onclick="cerrarModalEstadio()" style="flex:1;padding:11px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.88rem;transition:all .2s;" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Cancelar</button>
+        <button id="mee-delete-btn" onclick="eliminarEstadioActual()" style="padding:11px 20px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--red);border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.88rem;display:flex;align-items:center;gap:7px;transition:all .2s;" onmouseover="this.style.background='rgba(239,68,68,0.22)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'"><i class="fas fa-trash"></i> Eliminar</button>
+        <button onclick="guardarEstadio()" style="flex:1;padding:11px;background:#3b82f6;color:white;border:none;border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'"><i class="fas fa-save"></i> Guardar cambios</button>
+      </div>
     </div>
   </div>
 </div>
@@ -885,6 +1052,7 @@ window.showTab = async (tab) => {
   if (tab === 'resultados')   await renderResultados();
   if (tab === 'setup')        initSetupTab();
   if (tab === 'selecciones')  await renderSelecciones();
+  if (tab === 'estadios')     await renderEstadiosAdmin();
 };
 
 // ── SOLICITUDES (directo a Firestore) ────────────────────────────────────
@@ -2717,6 +2885,224 @@ window.eliminarPaisActual = async function() {
 // Cerrar modal al click fuera
 document.getElementById('modal-pais-edit').addEventListener('click', e => {
   if(e.target === document.getElementById('modal-pais-edit')) cerrarModalPais();
+});
+
+// ── ESTADIOS ADMIN ────────────────────────────────────────────────────────
+let globalEstadios = [];
+let _estadioEditando = null;
+
+const FLAG_PAIS_EST = { 'USA':'🇺🇸', 'Mexico':'🇲🇽', 'Canada':'🇨🇦' };
+const PAIS_LABEL    = { 'USA':'Estados Unidos', 'Mexico':'México', 'Canada':'Canadá' };
+
+const IMG_MAP_ADM = {
+  'ATLANTA':'estadios/estadio_atlanta.png','MERCEDES':'estadios/estadio_atlanta.png',
+  'AZTECA':'estadios/estadio_azteca.png','CIUDAD DE MEXICO':'estadios/estadio_azteca.png',
+  'BOSTON':'estadios/estadio_boston.png','FOXBOROUGH':'estadios/estadio_boston.png','GILLETTE':'estadios/estadio_boston.png',
+  'DALLAS':'estadios/estadio_dallas.png','ARLINGTON':'estadios/estadio_dallas.png',
+  'GUADALAJARA':'estadios/estadio_guadalajara.png','AKRON':'estadios/estadio_guadalajara.png',
+  'HOUSTON':'estadios/estadio_houston.png','NRG':'estadios/estadio_houston.png',
+  'KANSAS':'estadios/estadio_kansas.png','ARROWHEAD':'estadios/estadio_kansas.png',
+  'LOS ANGELES':'estadios/estadio_los_angeles.png','INGLEWOOD':'estadios/estadio_los_angeles.png','SOFI':'estadios/estadio_los_angeles.png',
+  'MONTERREY':'estadios/estadio_monterrey.png','BBVA':'estadios/estadio_monterrey.png',
+  'MIAMI':'estadios/estadio_miami.png','HARD ROCK':'estadios/estadio_miami.png',
+  'METLIFE':'estadios/estadio_new_jersey.png','NEW JERSEY':'estadios/estadio_new_jersey.png','NEW YORK':'estadios/estadio_new_jersey.png',
+  'PHILADELPHIA':'estadios/estadio_philadelphia.png','LINCOLN':'estadios/estadio_philadelphia.png',
+  'SANTA CLARA':'estadios/estadio_san_francisco.png','LEVIS':'estadios/estadio_san_francisco.png','SAN FRANCISCO':'estadios/estadio_san_francisco.png',
+  'SEATTLE':'estadios/estadio_seattle.png','LUMEN':'estadios/estadio_seattle.png',
+  'TORONTO':'estadios/estadio_toronto.png','BMO':'estadios/estadio_toronto.png',
+  'VANCOUVER':'estadios/estadio_vancouver.png','BC PLACE':'estadios/estadio_vancouver.png',
+};
+
+function normEst(t){ return (t||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); }
+
+function getImgEst(e){
+  const n = normEst((e.nombre||'') + ' ' + (e.ciudad||''));
+  for(const [k,v] of Object.entries(IMG_MAP_ADM)){ if(n.includes(k)) return v; }
+  return null;
+}
+
+function getPaisFlag(e){
+  const p = e.pais || e.country || '';
+  if(FLAG_PAIS_EST[p]) return FLAG_PAIS_EST[p];
+  const n = normEst(e.nombre||'') + ' ' + normEst(e.ciudad||'');
+  if(n.includes('MEXICO')||n.includes('AZTECA')||n.includes('GUADALAJARA')||n.includes('MONTERREY')) return '🇲🇽';
+  if(n.includes('TORONTO')||n.includes('VANCOUVER')||n.includes('BMO')||n.includes('BC PLACE')) return '🇨🇦';
+  return '🇺🇸';
+}
+
+async function renderEstadiosAdmin() {
+  const container = document.getElementById('estadios-admin-grid');
+  container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i></div>`;
+  try {
+    const snap = await getDocs(collection(db,'estadios'));
+    globalEstadios = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
+    actualizarStatsEstadios();
+    renderGridEstadios(globalEstadios);
+  } catch(e) {
+    container.innerHTML = `<div class="est-empty"><i class="fas fa-exclamation-circle"></i><p>${e.message}</p></div>`;
+  }
+}
+
+function actualizarStatsEstadios() {
+  document.getElementById('est-stat-total').textContent = globalEstadios.length;
+  const caps = globalEstadios.map(e=>Number(e.capacidad)).filter(c=>c>0);
+  const prom = caps.length ? Math.round(caps.reduce((a,b)=>a+b,0)/caps.length) : 0;
+  document.getElementById('est-stat-capacidad').textContent = prom ? (prom/1000).toFixed(0)+'K' : '—';
+  document.getElementById('est-stat-visibles').textContent = globalEstadios.length;
+}
+
+window.filtrarEstadios = function() {
+  const q = normEst(document.getElementById('est-search').value);
+  const p = document.getElementById('est-pais-filter').value;
+  const filtered = globalEstadios.filter(e => {
+    const hayQ = !q || normEst(e.nombre).includes(q) || normEst(e.ciudad||'').includes(q);
+    const hayP = !p || (e.pais||e.country||'') === p ||
+      (p==='USA'    && getPaisFlag(e)==='🇺🇸') ||
+      (p==='Mexico' && getPaisFlag(e)==='🇲🇽') ||
+      (p==='Canada' && getPaisFlag(e)==='🇨🇦');
+    return hayQ && hayP;
+  });
+  document.getElementById('est-stat-visibles').textContent = filtered.length;
+  renderGridEstadios(filtered);
+};
+
+function renderGridEstadios(lista) {
+  const container = document.getElementById('estadios-admin-grid');
+  if(!lista.length){
+    container.innerHTML = `<div class="est-empty"><i class="fas fa-search"></i><p>No se encontraron estadios.</p></div>`;
+    return;
+  }
+  container.innerHTML = `<div class="est-grid">${lista.map(e => {
+    const img  = getImgEst(e);
+    const flag = getPaisFlag(e);
+    const cap  = e.capacidad ? Number(e.capacidad).toLocaleString('es-CL') : null;
+    return `<div class="est-card" onclick="abrirModalEditarEstadio('${e.id}')">
+      <div class="est-card-img">
+        ${img
+          ? `<img src="${img}" alt="${e.nombre}" onerror="this.style.display='none'">`
+          : `<i class="fas fa-landmark est-card-img-fallback"></i>`}
+        <span class="est-card-flag">${flag}</span>
+      </div>
+      <div class="est-card-body">
+        <div class="est-card-info">
+          <div class="est-card-name">${e.nombre}</div>
+          <div class="est-card-meta">
+            <span><i class="fas fa-city"></i> ${e.ciudad||'—'}</span>
+            ${e.superficie ? `<span>${e.superficie}</span>` : ''}
+          </div>
+        </div>
+        ${cap ? `<span class="est-cap-badge"><i class="fas fa-users"></i> ${cap}</span>` : ''}
+        <i class="fas fa-pen est-edit-icon"></i>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ── MODAL EDITAR / NUEVO ESTADIO ──────────────────────────────────────────
+window.abrirModalEditarEstadio = function(id) {
+  const e = globalEstadios.find(x=>x.id===id);
+  if(!e) return;
+  _estadioEditando = id;
+
+  document.getElementById('mee-id').value            = id;
+  document.getElementById('mee-nombre').value         = e.nombre || '';
+  document.getElementById('mee-ciudad').value         = e.ciudad || e.city || '';
+  document.getElementById('mee-pais').value           = e.pais || e.country || '';
+  document.getElementById('mee-capacidad').value      = e.capacidad || '';
+  document.getElementById('mee-anio').value           = e.anio_inauguracion || e.anio || '';
+  document.getElementById('mee-datos').value          = e.datos_relevantes || '';
+  document.getElementById('mee-superficie').value     = e.superficie || '';
+  document.getElementById('mee-techo').value          = e.techo || '';
+  document.getElementById('mee-partidos').value       = e.partidos_asignados || '';
+  document.getElementById('mee-equipo-local').value   = e.equipo_local || '';
+
+  document.getElementById('mee-flag-preview').textContent = getPaisFlag(e);
+  document.getElementById('mee-title').textContent    = 'Editar: ' + e.nombre;
+  document.getElementById('mee-subtitle').textContent = `${e.ciudad||'—'} · ID: ${id}`;
+  document.getElementById('mee-delete-btn').style.display = 'flex';
+
+  document.getElementById('modal-estadio-edit').style.display = 'flex';
+};
+
+window.abrirModalNuevoEstadio = function() {
+  _estadioEditando = null;
+  ['mee-id','mee-nombre','mee-ciudad','mee-pais','mee-capacidad','mee-anio',
+   'mee-datos','mee-superficie','mee-techo','mee-partidos','mee-equipo-local'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('mee-flag-preview').textContent = '🏟️';
+  document.getElementById('mee-title').textContent    = 'Nuevo Estadio';
+  document.getElementById('mee-subtitle').textContent = 'Completa los datos del estadio sede';
+  document.getElementById('mee-delete-btn').style.display = 'none';
+  document.getElementById('modal-estadio-edit').style.display = 'flex';
+};
+
+window.cerrarModalEstadio = function() {
+  document.getElementById('modal-estadio-edit').style.display = 'none';
+  _estadioEditando = null;
+};
+
+window.actualizarPreviewEstadio = function() {
+  const nombre = document.getElementById('mee-nombre').value;
+  const n = normEst(nombre);
+  let flag = '🏟️';
+  if(n.includes('AZTECA')||n.includes('GUADALAJARA')||n.includes('MONTERREY')||n.includes('AKRON')||n.includes('BBVA')) flag='🇲🇽';
+  else if(n.includes('TORONTO')||n.includes('VANCOUVER')||n.includes('BMO')||n.includes('BC PLACE')) flag='🇨🇦';
+  else if(nombre) flag='🇺🇸';
+  document.getElementById('mee-flag-preview').textContent = flag;
+};
+
+window.guardarEstadio = async function() {
+  const nombre = document.getElementById('mee-nombre').value.trim();
+  const ciudad = document.getElementById('mee-ciudad').value.trim();
+  const pais   = document.getElementById('mee-pais').value;
+  if(!nombre) return toast('El nombre del estadio es obligatorio', 'warn');
+  if(!ciudad) return toast('La ciudad es obligatoria', 'warn');
+
+  const payload = {
+    nombre,
+    ciudad,
+    pais:               pais || null,
+    capacidad:          document.getElementById('mee-capacidad').value ? Number(document.getElementById('mee-capacidad').value) : null,
+    anio_inauguracion:  document.getElementById('mee-anio').value ? Number(document.getElementById('mee-anio').value) : null,
+    datos_relevantes:   document.getElementById('mee-datos').value.trim() || null,
+    superficie:         document.getElementById('mee-superficie').value || null,
+    techo:              document.getElementById('mee-techo').value || null,
+    partidos_asignados: document.getElementById('mee-partidos').value ? Number(document.getElementById('mee-partidos').value) : null,
+    equipo_local:       document.getElementById('mee-equipo-local').value.trim() || null,
+    actualizadoEn:      serverTimestamp(),
+  };
+
+  Object.keys(payload).forEach(k => { if(payload[k]===null) delete payload[k]; });
+
+  try {
+    if(_estadioEditando) {
+      await updateDoc(doc(db,'estadios',_estadioEditando), payload);
+      toast(`${nombre} actualizado ✓`, 'success');
+    } else {
+      payload.creadoEn = serverTimestamp();
+      await addDoc(collection(db,'estadios'), payload);
+      toast(`${nombre} creado ✓`, 'success');
+    }
+    cerrarModalEstadio();
+    await renderEstadiosAdmin();
+  } catch(e) { toast('Error: '+e.message, 'error'); }
+};
+
+window.eliminarEstadioActual = async function() {
+  if(!_estadioEditando) return;
+  const e = globalEstadios.find(x=>x.id===_estadioEditando);
+  if(!confirm(`¿Eliminar "${e?.nombre}"? Esta acción no se puede deshacer.`)) return;
+  try {
+    await deleteDoc(doc(db,'estadios',_estadioEditando));
+    toast(`${e?.nombre} eliminado`, 'info');
+    cerrarModalEstadio();
+    await renderEstadiosAdmin();
+  } catch(e2) { toast('Error: '+e2.message, 'error'); }
+};
+
+document.getElementById('modal-estadio-edit').addEventListener('click', e => {
+  if(e.target === document.getElementById('modal-estadio-edit')) cerrarModalEstadio();
 });
 
 </script>
