@@ -392,6 +392,32 @@ nav {
 .grupo-panel{display:none;padding:14px 18px;}
 .grupo-panel.active{display:block;}
 .fase-partidos-wrap{padding:14px 18px;}
+/* ── SELECCIONES ADMIN ─────────────────────────────────────────── */
+.sel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:4px;}
+.sel-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
+.sel-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(245,200,66,0.04),transparent);opacity:0;transition:opacity .2s;pointer-events:none;}
+.sel-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3);}
+.sel-card:hover::before{opacity:1;}
+.sel-flag{font-size:2.4rem;line-height:1;flex-shrink:0;}
+.sel-info{flex:1;min-width:0;}
+.sel-name{font-weight:700;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sel-meta{font-size:0.72rem;color:var(--muted);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;}
+.sel-grupo-badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:7px;background:rgba(245,200,66,0.15);color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:0.9rem;font-weight:700;flex-shrink:0;}
+.sel-edit-icon{color:var(--muted);font-size:0.8rem;opacity:0;transition:opacity .2s;flex-shrink:0;}
+.sel-card:hover .sel-edit-icon{opacity:1;}
+.sel-empty{text-align:center;padding:60px 20px;color:var(--muted);}
+.sel-empty i{font-size:2.2rem;margin-bottom:12px;display:block;}
+/* Modal editar país */
+@keyframes mpopIn{from{transform:scale(0.92) translateY(16px);opacity:0;}to{transform:scale(1);opacity:1;}}
+#modal-pais-edit.open{display:flex!important;}
+.mpe-row{display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+.mpe-group{display:flex;flex-direction:column;gap:5px;flex:1;min-width:160px;}
+.mpe-label{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:700;}
+.mpe-req{color:var(--gold);}
+.mpe-input{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;transition:border-color 0.2s,background 0.2s;width:100%;}
+.mpe-input:focus{outline:none;border-color:var(--gold);background:rgba(245,200,66,0.05);}
+.mpe-input option{background:#1a2238;}
+
 /* ── RESET BUTTONS ─────────────────────────────────────────────── */
 .btn-reset-partido{padding:5px 9px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:rgba(239,68,68,0.7);border-radius:7px;font-size:0.72rem;cursor:pointer;transition:all 0.18s;display:inline-flex;align-items:center;gap:4px;font-family:"DM Sans",sans-serif;}
 .btn-reset-partido:hover{background:rgba(239,68,68,0.18);color:var(--red);border-color:rgba(239,68,68,0.4);}
@@ -475,6 +501,7 @@ nav {
       <button class="tab" onclick="showTab('resultados')"><i class="fas fa-futbol"></i> Resultados</button>
       <button class="tab" onclick="showTab('ranking')"><i class="fas fa-trophy"></i> Ranking global</button>
       <button class="tab" onclick="showTab('setup')"><i class="fas fa-database"></i> Setup / Importar</button>
+      <button class="tab" onclick="showTab('selecciones')"><i class="fas fa-flag"></i> Selecciones</button>
     </div>
 
     <!-- TAB GRUPOS -->
@@ -609,6 +636,152 @@ nav {
       <div class="section-title"><i class="fas fa-trophy"></i> Ranking global</div>
       <div id="ranking-global"></div>
     </div>
+
+    <!-- TAB SELECCIONES -->
+    <div id="tab-selecciones" class="page">
+      <div class="section-title"><i class="fas fa-flag"></i> Administrar Selecciones</div>
+      <div class="alert alert-warn" style="margin-bottom:20px;">
+        <i class="fas fa-triangle-exclamation"></i>
+        Los cambios se guardan directamente en Firestore y se reflejan de inmediato en el sitio público.
+      </div>
+
+      <!-- Barra de búsqueda + filtro grupo -->
+      <div style="display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap;align-items:center;">
+        <input type="text" id="sel-search" class="form-input" placeholder="🔍  Buscar selección..." style="flex:1;min-width:200px;" oninput="filtrarSelecciones()">
+        <select id="sel-grupo-filter" class="form-input" style="width:140px;" onchange="filtrarSelecciones()">
+          <option value="">Todos los grupos</option>
+        </select>
+        <button class="btn btn-gold" onclick="abrirModalNuevoPais()"><i class="fas fa-plus"></i> Nueva selección</button>
+      </div>
+
+      <!-- Stats -->
+      <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 18px;text-align:center;flex:1;min-width:90px;">
+          <strong id="sel-stat-total" style="display:block;font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--gold);">0</strong>
+          <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Total</span>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 18px;text-align:center;flex:1;min-width:90px;">
+          <strong id="sel-stat-grupos" style="display:block;font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--blue);">0</strong>
+          <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Grupos</span>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 18px;text-align:center;flex:1;min-width:90px;">
+          <strong id="sel-stat-visibles" style="display:block;font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--green);">0</strong>
+          <span style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Visibles</span>
+        </div>
+      </div>
+
+      <!-- Grid de selecciones -->
+      <div id="selecciones-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR PAÍS -->
+<div id="modal-pais-edit" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);z-index:4000;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#1a2238;border:1px solid rgba(245,200,66,0.25);border-radius:18px;width:100%;max-width:620px;max-height:92vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,0.6);animation:mpopIn .22s cubic-bezier(0.34,1.4,0.64,1);">
+    <!-- Header modal -->
+    <div style="background:linear-gradient(135deg,#111827,#1a2238);border-bottom:1px solid rgba(255,255,255,0.08);padding:22px 26px;display:flex;align-items:center;justify-content:space-between;border-radius:18px 18px 0 0;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span id="mpe-flag-preview" style="font-size:2.4rem;line-height:1;">🏳️</span>
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--gold);letter-spacing:0.04em;" id="mpe-title">Editar Selección</div>
+          <div style="font-size:0.72rem;color:var(--muted);" id="mpe-subtitle">Modifica los datos del país</div>
+        </div>
+      </div>
+      <button onclick="cerrarModalPais()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);border:none;cursor:pointer;color:var(--muted);font-size:1rem;display:flex;align-items:center;justify-content:center;transition:all .2s;" onmouseover="this.style.background='rgba(239,68,68,0.3)';this.style.color='white'" onmouseout="this.style.background='rgba(255,255,255,0.08)';this.style.color='var(--muted)'">✕</button>
+    </div>
+    <!-- Body -->
+    <div style="padding:24px 26px;display:flex;flex-direction:column;gap:0;">
+      <input type="hidden" id="mpe-id">
+
+      <!-- Fila 1 -->
+      <div class="mpe-row">
+        <div class="mpe-group">
+          <label class="mpe-label">Nombre del país <span class="mpe-req">*</span></label>
+          <input type="text" id="mpe-nombre" class="mpe-input" placeholder="Ej: Argentina" oninput="actualizarPreviewFlag()">
+        </div>
+        <div class="mpe-group" style="flex:0 0 110px;">
+          <label class="mpe-label">Grupo <span class="mpe-req">*</span></label>
+          <select id="mpe-grupo" class="mpe-input">
+            <option value="">—</option>
+            <option>A</option><option>B</option><option>C</option><option>D</option>
+            <option>E</option><option>F</option><option>G</option><option>H</option>
+            <option>I</option><option>J</option><option>K</option><option>L</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Fila 2 -->
+      <div class="mpe-row">
+        <div class="mpe-group">
+          <label class="mpe-label">Ranking FIFA</label>
+          <input type="number" id="mpe-ranking" class="mpe-input" placeholder="Ej: 3" min="1" max="220">
+        </div>
+        <div class="mpe-group">
+          <label class="mpe-label">Participaciones en Mundiales</label>
+          <input type="number" id="mpe-participaciones" class="mpe-input" placeholder="Ej: 18" min="0">
+        </div>
+      </div>
+
+      <!-- Fila 3 -->
+      <div class="mpe-row">
+        <div class="mpe-group">
+          <label class="mpe-label">Mejor posición histórica</label>
+          <input type="text" id="mpe-mejor-posicion" class="mpe-input" placeholder="Ej: Campeón (3 veces)">
+        </div>
+        <div class="mpe-group">
+          <label class="mpe-label">Sede base en el torneo</label>
+          <input type="text" id="mpe-sede" class="mpe-input" placeholder="Ej: Ciudad de México">
+        </div>
+      </div>
+
+      <!-- Fila 4 -->
+      <div class="mpe-row">
+        <div class="mpe-group">
+          <label class="mpe-label">Goleador histórico nacional</label>
+          <input type="text" id="mpe-goleador-historico" class="mpe-input" placeholder="Ej: Batistuta (56 goles)">
+        </div>
+        <div class="mpe-group">
+          <label class="mpe-label">Goleador en Mundiales</label>
+          <input type="text" id="mpe-goleador-mundiales" class="mpe-input" placeholder="Ej: Gabriel Batistuta (10)">
+        </div>
+      </div>
+
+      <!-- Fila 5 -->
+      <div class="mpe-row">
+        <div class="mpe-group">
+          <label class="mpe-label">Jugador más caro</label>
+          <input type="text" id="mpe-jugador-caro" class="mpe-input" placeholder="Ej: Julián Álvarez">
+        </div>
+        <div class="mpe-group">
+          <label class="mpe-label">Valor del plantel (USD millones)</label>
+          <input type="number" id="mpe-valor-plantel" class="mpe-input" placeholder="Ej: 850" min="0">
+        </div>
+      </div>
+
+      <!-- Fila 6 — campos extra -->
+      <div class="mpe-row">
+        <div class="mpe-group">
+          <label class="mpe-label">Confederación</label>
+          <select id="mpe-confederacion" class="mpe-input">
+            <option value="">—</option>
+            <option>CONMEBOL</option><option>UEFA</option><option>CONCACAF</option>
+            <option>CAF</option><option>AFC</option><option>OFC</option>
+          </select>
+        </div>
+        <div class="mpe-group">
+          <label class="mpe-label">Entrenador</label>
+          <input type="text" id="mpe-entrenador" class="mpe-input" placeholder="Ej: Lionel Scaloni">
+        </div>
+      </div>
+
+      <!-- Footer botones -->
+      <div style="display:flex;gap:10px;margin-top:20px;padding-top:18px;border-top:1px solid rgba(255,255,255,0.07);">
+        <button onclick="cerrarModalPais()" style="flex:1;padding:11px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.88rem;transition:all .2s;" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Cancelar</button>
+        <button id="mpe-delete-btn" onclick="eliminarPaisActual()" style="padding:11px 20px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--red);border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.88rem;display:flex;align-items:center;gap:7px;transition:all .2s;" onmouseover="this.style.background='rgba(239,68,68,0.22)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'"><i class="fas fa-trash"></i> Eliminar</button>
+        <button onclick="guardarPais()" style="flex:1;padding:11px;background:var(--gold);color:#0a0e1a;border:none;border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;" onmouseover="this.style.background='var(--gold2)'" onmouseout="this.style.background='var(--gold)'"><i class="fas fa-save"></i> Guardar cambios</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -711,6 +884,7 @@ window.showTab = async (tab) => {
   if (tab === 'solicitudes')  await renderSolicitudes();
   if (tab === 'resultados')   await renderResultados();
   if (tab === 'setup')        initSetupTab();
+  if (tab === 'selecciones')  await renderSelecciones();
 };
 
 // ── SOLICITUDES (directo a Firestore) ────────────────────────────────────
@@ -2338,6 +2512,211 @@ window.ejecutarBorrar = async () => {
 
 document.addEventListener('click', e => {
   if (e.target === document.getElementById('modal-borrar')) cerrarModalBorrar();
+});
+
+// ── SELECCIONES ───────────────────────────────────────────────────────────
+let globalPaises = [];
+let _paisEditando = null; // doc id del país en edición
+
+const FLAGS_SEL = {
+  'ARGENTINA':'🇦🇷','BRASIL':'🇧🇷','FRANCE':'🇫🇷','FRANCIA':'🇫🇷','ESPAÑA':'🇪🇸','ESPANA':'🇪🇸',
+  'ALEMANIA':'🇩🇪','ENGLAND':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','INGLATERRA':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','PORTUGAL':'🇵🇹',
+  'ESTADOS UNIDOS':'🇺🇸','USA':'🇺🇸','MEXICO':'🇲🇽','CANADA':'🇨🇦','MARRUECOS':'🇲🇦',
+  'CROACIA':'🇭🇷','PAISES BAJOS':'🇳🇱','BELGICA':'🇧🇪','URUGUAY':'🇺🇾','COLOMBIA':'🇨🇴',
+  'CHILE':'🇨🇱','ECUADOR':'🇪🇨','PERU':'🇵🇪','VENEZUELA':'🇻🇪','JAPON':'🇯🇵',
+  'COREA DEL SUR':'🇰🇷','AUSTRALIA':'🇦🇺','SENEGAL':'🇸🇳','NIGERIA':'🇳🇬','GHANA':'🇬🇭',
+  'CAMERUN':'🇨🇲','ARABIA SAUDITA':'🇸🇦','IRAN':'🇮🇷','IRAK':'🇮🇶','SUIZA':'🇨🇭',
+  'DINAMARCA':'🇩🇰','SUECIA':'🇸🇪','NORUEGA':'🇳🇴','AUSTRIA':'🇦🇹','POLONIA':'🇵🇱',
+  'SERBIA':'🇷🇸','UCRANIA':'🇺🇦','TURQUIA':'🇹🇷','GRECIA':'🇬🇷','RUMANIA':'🇷🇴',
+  'HUNGRIA':'🇭🇺','REPUBLICA CHECA':'🇨🇿','CHEQUIA':'🇨🇿','ESLOVAQUIA':'🇸🇰',
+  'ESLOVENIA':'🇸🇮','ALBANIA':'🇦🇱','GEORGIA':'🇬🇪','COSTA RICA':'🇨🇷','PANAMA':'🇵🇦',
+  'HONDURAS':'🇭🇳','EL SALVADOR':'🇸🇻','JAMAICA':'🇯🇲','BOLIVIA':'🇧🇴','PARAGUAY':'🇵🇾',
+  'NUEVA ZELANDA':'🇳🇿','INDONESIA':'🇮🇩','ARGELIA':'🇩🇿','EGIPTO':'🇪🇬','SUDAFRICA':'🇿🇦',
+  'COSTA DE MARFIL':'🇨🇮','MALI':'🇲🇱','QATAR':'🇶🇦','BOSNIA Y HERZEGOVINA':'🇧🇦',
+  'HAITI':'🇭🇹','CURAZAO':'🇨🇼','TUNEZ':'🇹🇳','CABO VERDE':'🇨🇻','JORDANIA':'🇯🇴',
+  'UZBEKISTAN':'🇺🇿','RD CONGO':'🇨🇩','ESCOCIA':'🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+};
+
+function normSel(t){ return (t||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[''`´]/g,'').trim(); }
+function getFlagSel(n){
+  const k=normSel(n);
+  if(FLAGS_SEL[k]) return FLAGS_SEL[k];
+  for(const [key,val] of Object.entries(FLAGS_SEL)){ if(k.includes(key)||key.includes(k)) return val; }
+  return '🏳️';
+}
+
+async function renderSelecciones() {
+  const container = document.getElementById('selecciones-grid');
+  container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;"></i></div>`;
+  try {
+    const snap = await getDocs(collection(db,'paises'));
+    globalPaises = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>{
+      const ga=a.grupo||'Z', gb=b.grupo||'Z';
+      if(ga!==gb) return ga.localeCompare(gb);
+      return (a.nombre||'').localeCompare(b.nombre||'');
+    });
+    actualizarStatsSelecciones();
+    poblarFiltroGrupos();
+    renderGridSelecciones(globalPaises);
+  } catch(e) {
+    container.innerHTML = `<div class="sel-empty"><i class="fas fa-exclamation-circle"></i><p>${e.message}</p></div>`;
+  }
+}
+
+function actualizarStatsSelecciones() {
+  document.getElementById('sel-stat-total').textContent = globalPaises.length;
+  const grupos = new Set(globalPaises.map(p=>p.grupo).filter(Boolean));
+  document.getElementById('sel-stat-grupos').textContent = grupos.size;
+  document.getElementById('sel-stat-visibles').textContent = globalPaises.length;
+}
+
+function poblarFiltroGrupos() {
+  const sel = document.getElementById('sel-grupo-filter');
+  const grupos = [...new Set(globalPaises.map(p=>p.grupo).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">Todos los grupos</option>' +
+    grupos.map(g=>`<option value="${g}">Grupo ${g}</option>`).join('');
+}
+
+window.filtrarSelecciones = function() {
+  const q = normSel(document.getElementById('sel-search').value);
+  const g = document.getElementById('sel-grupo-filter').value;
+  const filtered = globalPaises.filter(p => {
+    const matchQ = !q || normSel(p.nombre).includes(q);
+    const matchG = !g || p.grupo === g;
+    return matchQ && matchG;
+  });
+  document.getElementById('sel-stat-visibles').textContent = filtered.length;
+  renderGridSelecciones(filtered);
+};
+
+function renderGridSelecciones(lista) {
+  const container = document.getElementById('selecciones-grid');
+  if(!lista.length){
+    container.innerHTML = `<div class="sel-empty"><i class="fas fa-search"></i><p>No se encontraron selecciones.</p></div>`;
+    return;
+  }
+  container.innerHTML = `<div class="sel-grid">${lista.map(p=>`
+    <div class="sel-card" onclick="abrirModalEditarPais('${p.id}')">
+      <span class="sel-flag">${getFlagSel(p.nombre)}</span>
+      <div class="sel-info">
+        <div class="sel-name">${p.nombre}</div>
+        <div class="sel-meta">
+          ${p.ranking_fifa ? `<span>FIFA #${p.ranking_fifa}</span>` : ''}
+          ${p.confederacion ? `<span>${p.confederacion}</span>` : ''}
+          ${p.participaciones ? `<span>${p.participaciones} CM</span>` : ''}
+        </div>
+      </div>
+      <span class="sel-grupo-badge">${p.grupo||'?'}</span>
+      <i class="fas fa-pen sel-edit-icon"></i>
+    </div>`).join('')}</div>`;
+}
+
+// ── MODAL EDITAR / NUEVO PAÍS ─────────────────────────────────────────────
+window.abrirModalEditarPais = function(id) {
+  const p = globalPaises.find(x=>x.id===id);
+  if(!p) return;
+  _paisEditando = id;
+
+  document.getElementById('mpe-id').value           = id;
+  document.getElementById('mpe-nombre').value        = p.nombre || '';
+  document.getElementById('mpe-grupo').value         = p.grupo || '';
+  document.getElementById('mpe-ranking').value       = p.ranking_fifa || '';
+  document.getElementById('mpe-participaciones').value = p.participaciones || '';
+  document.getElementById('mpe-mejor-posicion').value = p.mejor_posicion || '';
+  document.getElementById('mpe-sede').value          = p.sede || '';
+  document.getElementById('mpe-goleador-historico').value = p.goleador_historico || '';
+  document.getElementById('mpe-goleador-mundiales').value = p.goleador_mundiales || '';
+  document.getElementById('mpe-jugador-caro').value  = p.jugador_mas_caro || '';
+  document.getElementById('mpe-valor-plantel').value = p.valor_plantel_usd || '';
+  document.getElementById('mpe-confederacion').value = p.confederacion || '';
+  document.getElementById('mpe-entrenador').value    = p.entrenador || '';
+
+  document.getElementById('mpe-flag-preview').textContent = getFlagSel(p.nombre);
+  document.getElementById('mpe-title').textContent   = 'Editar: ' + p.nombre;
+  document.getElementById('mpe-subtitle').textContent = `Grupo ${p.grupo||'?'} · ID: ${id}`;
+  document.getElementById('mpe-delete-btn').style.display = 'flex';
+
+  document.getElementById('modal-pais-edit').style.display = 'flex';
+};
+
+window.abrirModalNuevoPais = function() {
+  _paisEditando = null;
+  ['mpe-id','mpe-nombre','mpe-grupo','mpe-ranking','mpe-participaciones','mpe-mejor-posicion',
+   'mpe-sede','mpe-goleador-historico','mpe-goleador-mundiales','mpe-jugador-caro',
+   'mpe-valor-plantel','mpe-confederacion','mpe-entrenador'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('mpe-flag-preview').textContent = '🏳️';
+  document.getElementById('mpe-title').textContent   = 'Nueva Selección';
+  document.getElementById('mpe-subtitle').textContent = 'Completa los datos del país';
+  document.getElementById('mpe-delete-btn').style.display = 'none';
+  document.getElementById('modal-pais-edit').style.display = 'flex';
+};
+
+window.cerrarModalPais = function() {
+  document.getElementById('modal-pais-edit').style.display = 'none';
+  _paisEditando = null;
+};
+
+window.actualizarPreviewFlag = function() {
+  const nombre = document.getElementById('mpe-nombre').value;
+  document.getElementById('mpe-flag-preview').textContent = getFlagSel(nombre) || '🏳️';
+};
+
+window.guardarPais = async function() {
+  const nombre = document.getElementById('mpe-nombre').value.trim();
+  const grupo  = document.getElementById('mpe-grupo').value.trim();
+  if(!nombre) return toast('El nombre del país es obligatorio', 'warn');
+  if(!grupo)  return toast('Debes asignar un grupo', 'warn');
+
+  const payload = {
+    nombre,
+    grupo,
+    ranking_fifa:       document.getElementById('mpe-ranking').value ? Number(document.getElementById('mpe-ranking').value) : null,
+    participaciones:    document.getElementById('mpe-participaciones').value ? Number(document.getElementById('mpe-participaciones').value) : null,
+    mejor_posicion:     document.getElementById('mpe-mejor-posicion').value.trim() || null,
+    sede:               document.getElementById('mpe-sede').value.trim() || null,
+    goleador_historico: document.getElementById('mpe-goleador-historico').value.trim() || null,
+    goleador_mundiales: document.getElementById('mpe-goleador-mundiales').value.trim() || null,
+    jugador_mas_caro:   document.getElementById('mpe-jugador-caro').value.trim() || null,
+    valor_plantel_usd:  document.getElementById('mpe-valor-plantel').value ? Number(document.getElementById('mpe-valor-plantel').value) : null,
+    confederacion:      document.getElementById('mpe-confederacion').value || null,
+    entrenador:         document.getElementById('mpe-entrenador').value.trim() || null,
+    actualizadoEn:      serverTimestamp(),
+  };
+
+  // Limpiar nulls para no sobreescribir con null campos que ya existen
+  Object.keys(payload).forEach(k => { if(payload[k]===null) delete payload[k]; });
+
+  try {
+    if(_paisEditando) {
+      await updateDoc(doc(db,'paises',_paisEditando), payload);
+      toast(`${nombre} actualizado ✓`, 'success');
+    } else {
+      payload.creadoEn = serverTimestamp();
+      await addDoc(collection(db,'paises'), payload);
+      toast(`${nombre} creado ✓`, 'success');
+    }
+    cerrarModalPais();
+    await renderSelecciones();
+  } catch(e) { toast('Error: '+e.message, 'error'); }
+};
+
+window.eliminarPaisActual = async function() {
+  if(!_paisEditando) return;
+  const p = globalPaises.find(x=>x.id===_paisEditando);
+  if(!confirm(`¿Eliminar "${p?.nombre}"? Esta acción no se puede deshacer.`)) return;
+  try {
+    await deleteDoc(doc(db,'paises',_paisEditando));
+    toast(`${p?.nombre} eliminado`, 'info');
+    cerrarModalPais();
+    await renderSelecciones();
+  } catch(e) { toast('Error: '+e.message, 'error'); }
+};
+
+// Cerrar modal al click fuera
+document.getElementById('modal-pais-edit').addEventListener('click', e => {
+  if(e.target === document.getElementById('modal-pais-edit')) cerrarModalPais();
 });
 
 </script>
