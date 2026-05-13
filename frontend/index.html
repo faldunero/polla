@@ -727,19 +727,20 @@ function renderGrupos(){
   const w = document.getElementById('grupos-wrapper');
   if (!w) return;
 
-  // Agrupar partidos usando campo "grupo" directo del fixture importado,
-  // con fallback al cruce por paises (datos legacy)
+  // Usar FIXTURE_MAP como fuente de verdad base, enriquecer con datos de Firestore
+  // Esto resuelve el caso donde Firestore tiene docs incompletos (sin local/visita/fecha)
   const porGrupo = {};
-  globalData.partidos.forEach(m => {
-    let g = m.grupo;
-    if (!g || g === 'Desconocido') {
-      const pL = globalData.paises.find(p => norm(p.nombre) === norm(m.local));
-      const pV = globalData.paises.find(p => norm(p.nombre) === norm(m.visita));
-      g = (pL?.grupo && pL.grupo !== 'Desconocido') ? pL.grupo : pV?.grupo;
-    }
-    if (!g || g === 'Desconocido') return;
-    if (!porGrupo[g]) porGrupo[g] = [];
-    porGrupo[g].push(m);
+  const firestoreById = {};
+  globalData.partidos.forEach(m => { firestoreById[m.id] = m; });
+
+  Object.keys(FG).forEach(g => {
+    FG[g].forEach(base => {
+      const fs = firestoreById[base.id] || {};
+      // Merge: fixture garantiza local/visita/fecha/hora/estadio; Firestore aporta resultado
+      const m = { ...base, ...fs };
+      if (!porGrupo[g]) porGrupo[g] = [];
+      porGrupo[g].push(m);
+    });
   });
 
   w.innerHTML = '';
@@ -1271,7 +1272,112 @@ document.getElementById('btn-download-ics').addEventListener('click', function()
   setInterval(tick, 1000);
 })();
 
-// ── FIXTURE GRUPOS hardcodeado (fallback si Firestore no tiene grupo en partido) ──
+// ── FIXTURE GRUPOS completo — fuente de verdad local ──────────────────────────
+// Usado como base cuando Firestore tiene docs incompletos (ej: guardados antes del fix)
+const FG = {
+  A:[
+    {"id": "fgA1", "local": "Mexico", "visita": "Sudafrica", "fecha": "11 jun", "hora": "15:00", "estadio": "Estadio Azteca, Ciudad de México", "grupo": "A"},
+    {"id": "fgA2", "local": "Corea del Sur", "visita": "Chequia", "fecha": "11 jun", "hora": "22:00", "estadio": "Estadio Akron, Guadalajara", "grupo": "A"},
+    {"id": "fgA3", "local": "Chequia", "visita": "Sudafrica", "fecha": "18 jun", "hora": "12:00", "estadio": "Mercedes-Benz Stadium, Atlanta", "grupo": "A"},
+    {"id": "fgA4", "local": "Mexico", "visita": "Corea del Sur", "fecha": "18 jun", "hora": "21:00", "estadio": "Estadio Azteca, Ciudad de México", "grupo": "A"},
+    {"id": "fgA5", "local": "Sudafrica", "visita": "Corea del Sur", "fecha": "24 jun", "hora": "21:00", "estadio": "Estadio BBVA, Monterrey", "grupo": "A"},
+    {"id": "fgA6", "local": "Chequia", "visita": "Mexico", "fecha": "24 jun", "hora": "21:00", "estadio": "Estadio Azteca, Ciudad de México", "grupo": "A"},
+  ],
+  B:[
+    {"id": "fgB1", "local": "Canada", "visita": "Bosnia y Herzegovina", "fecha": "12 jun", "hora": "15:00", "estadio": "BMO Field, Toronto", "grupo": "B"},
+    {"id": "fgB2", "local": "Qatar", "visita": "Suiza", "fecha": "13 jun", "hora": "15:00", "estadio": "Levi's Stadium, San Francisco", "grupo": "B"},
+    {"id": "fgB3", "local": "Suiza", "visita": "Bosnia y Herzegovina", "fecha": "18 jun", "hora": "15:00", "estadio": "SoFi Stadium, Los Ángeles", "grupo": "B"},
+    {"id": "fgB4", "local": "Canada", "visita": "Qatar", "fecha": "18 jun", "hora": "18:00", "estadio": "BC Place, Vancouver", "grupo": "B"},
+    {"id": "fgB5", "local": "Suiza", "visita": "Canada", "fecha": "24 jun", "hora": "15:00", "estadio": "BC Place, Vancouver", "grupo": "B"},
+    {"id": "fgB6", "local": "Bosnia y Herzegovina", "visita": "Qatar", "fecha": "24 jun", "hora": "15:00", "estadio": "Lumen Field, Seattle", "grupo": "B"},
+  ],
+  C:[
+    {"id": "fgC1", "local": "Brasil", "visita": "Marruecos", "fecha": "13 jun", "hora": "18:00", "estadio": "Gillette Stadium, Boston", "grupo": "C"},
+    {"id": "fgC2", "local": "Haiti", "visita": "Escocia", "fecha": "13 jun", "hora": "21:00", "estadio": "MetLife Stadium, Nueva York", "grupo": "C"},
+    {"id": "fgC3", "local": "Escocia", "visita": "Marruecos", "fecha": "19 jun", "hora": "18:00", "estadio": "Gillette Stadium, Boston", "grupo": "C"},
+    {"id": "fgC4", "local": "Brasil", "visita": "Haiti", "fecha": "19 jun", "hora": "20:30", "estadio": "Hard Rock Stadium, Miami", "grupo": "C"},
+    {"id": "fgC5", "local": "Marruecos", "visita": "Haiti", "fecha": "24 jun", "hora": "18:00", "estadio": "Mercedes-Benz Stadium, Atlanta", "grupo": "C"},
+    {"id": "fgC6", "local": "Escocia", "visita": "Brasil", "fecha": "24 jun", "hora": "18:00", "estadio": "Hard Rock Stadium, Miami", "grupo": "C"},
+  ],
+  D:[
+    {"id": "fgD1", "local": "Estados Unidos", "visita": "Paraguay", "fecha": "12 jun", "hora": "21:00", "estadio": "SoFi Stadium, Los Ángeles", "grupo": "D"},
+    {"id": "fgD2", "local": "Australia", "visita": "Turquia", "fecha": "14 jun", "hora": "00:00", "estadio": "BC Place, Vancouver", "grupo": "D"},
+    {"id": "fgD3", "local": "Estados Unidos", "visita": "Australia", "fecha": "19 jun", "hora": "15:00", "estadio": "Levi's Stadium, San Francisco", "grupo": "D"},
+    {"id": "fgD4", "local": "Turquia", "visita": "Paraguay", "fecha": "19 jun", "hora": "23:00", "estadio": "BMO Field, Toronto", "grupo": "D"},
+    {"id": "fgD5", "local": "Turquia", "visita": "Estados Unidos", "fecha": "25 jun", "hora": "22:00", "estadio": "SoFi Stadium, Los Ángeles", "grupo": "D"},
+    {"id": "fgD6", "local": "Paraguay", "visita": "Australia", "fecha": "25 jun", "hora": "22:00", "estadio": "Levi's Stadium, San Francisco", "grupo": "D"},
+  ],
+  E:[
+    {"id": "fgE1", "local": "Alemania", "visita": "Curazao", "fecha": "14 jun", "hora": "13:00", "estadio": "Lincoln Financial Field, Filadelfia", "grupo": "E"},
+    {"id": "fgE2", "local": "Costa de Marfil", "visita": "Ecuador", "fecha": "14 jun", "hora": "19:00", "estadio": "NRG Stadium, Houston", "grupo": "E"},
+    {"id": "fgE3", "local": "Alemania", "visita": "Costa de Marfil", "fecha": "20 jun", "hora": "16:00", "estadio": "MetLife Stadium, Nueva York", "grupo": "E"},
+    {"id": "fgE4", "local": "Ecuador", "visita": "Curazao", "fecha": "20 jun", "hora": "20:00", "estadio": "Arrowhead Stadium, Kansas City", "grupo": "E"},
+    {"id": "fgE5", "local": "Curazao", "visita": "Costa de Marfil", "fecha": "25 jun", "hora": "16:00", "estadio": "Lincoln Financial Field, Filadelfia", "grupo": "E"},
+    {"id": "fgE6", "local": "Ecuador", "visita": "Alemania", "fecha": "25 jun", "hora": "16:00", "estadio": "MetLife Stadium, Nueva York", "grupo": "E"},
+  ],
+  F:[
+    {"id": "fgF1", "local": "Paises Bajos", "visita": "Japon", "fecha": "14 jun", "hora": "16:00", "estadio": "AT&T Stadium, Dallas", "grupo": "F"},
+    {"id": "fgF2", "local": "Suecia", "visita": "Tunez", "fecha": "14 jun", "hora": "22:00", "estadio": "Estadio BBVA, Monterrey", "grupo": "F"},
+    {"id": "fgF3", "local": "Paises Bajos", "visita": "Suecia", "fecha": "20 jun", "hora": "13:00", "estadio": "NRG Stadium, Houston", "grupo": "F"},
+    {"id": "fgF4", "local": "Tunez", "visita": "Japon", "fecha": "21 jun", "hora": "00:00", "estadio": "Estadio BBVA, Monterrey", "grupo": "F"},
+    {"id": "fgF5", "local": "Tunez", "visita": "Paises Bajos", "fecha": "25 jun", "hora": "19:00", "estadio": "Arrowhead Stadium, Kansas City", "grupo": "F"},
+    {"id": "fgF6", "local": "Japon", "visita": "Suecia", "fecha": "25 jun", "hora": "19:00", "estadio": "AT&T Stadium, Dallas", "grupo": "F"},
+  ],
+  G:[
+    {"id": "fgG1", "local": "Belgica", "visita": "Egipto", "fecha": "15 jun", "hora": "15:00", "estadio": "Lumen Field, Seattle", "grupo": "G"},
+    {"id": "fgG2", "local": "Iran", "visita": "Nueva Zelanda", "fecha": "15 jun", "hora": "21:00", "estadio": "SoFi Stadium, Los Ángeles", "grupo": "G"},
+    {"id": "fgG3", "local": "Belgica", "visita": "Iran", "fecha": "21 jun", "hora": "15:00", "estadio": "SoFi Stadium, Los Ángeles", "grupo": "G"},
+    {"id": "fgG4", "local": "Nueva Zelanda", "visita": "Egipto", "fecha": "21 jun", "hora": "21:00", "estadio": "BC Place, Vancouver", "grupo": "G"},
+    {"id": "fgG5", "local": "Nueva Zelanda", "visita": "Belgica", "fecha": "26 jun", "hora": "23:00", "estadio": "BC Place, Vancouver", "grupo": "G"},
+    {"id": "fgG6", "local": "Egipto", "visita": "Iran", "fecha": "26 jun", "hora": "23:00", "estadio": "Hard Rock Stadium, Miami", "grupo": "G"},
+  ],
+  H:[
+    {"id": "fgH1", "local": "Espana", "visita": "Cabo Verde", "fecha": "15 jun", "hora": "12:00", "estadio": "Mercedes-Benz Stadium, Atlanta", "grupo": "H"},
+    {"id": "fgH2", "local": "Arabia Saudita", "visita": "Uruguay", "fecha": "15 jun", "hora": "18:00", "estadio": "Hard Rock Stadium, Miami", "grupo": "H"},
+    {"id": "fgH3", "local": "Espana", "visita": "Arabia Saudita", "fecha": "21 jun", "hora": "12:00", "estadio": "Mercedes-Benz Stadium, Atlanta", "grupo": "H"},
+    {"id": "fgH4", "local": "Uruguay", "visita": "Cabo Verde", "fecha": "21 jun", "hora": "18:00", "estadio": "Hard Rock Stadium, Miami", "grupo": "H"},
+    {"id": "fgH5", "local": "Cabo Verde", "visita": "Arabia Saudita", "fecha": "26 jun", "hora": "20:00", "estadio": "NRG Stadium, Houston", "grupo": "H"},
+    {"id": "fgH6", "local": "Uruguay", "visita": "Espana", "fecha": "26 jun", "hora": "20:00", "estadio": "Estadio Akron, Guadalajara", "grupo": "H"},
+  ],
+  I:[
+    {"id": "fgI1", "local": "Francia", "visita": "Senegal", "fecha": "16 jun", "hora": "15:00", "estadio": "MetLife Stadium, Nueva York", "grupo": "I"},
+    {"id": "fgI2", "local": "Irak", "visita": "Noruega", "fecha": "16 jun", "hora": "18:00", "estadio": "Gillette Stadium, Boston", "grupo": "I"},
+    {"id": "fgI3", "local": "Francia", "visita": "Irak", "fecha": "22 jun", "hora": "17:00", "estadio": "Lincoln Financial Field, Filadelfia", "grupo": "I"},
+    {"id": "fgI4", "local": "Noruega", "visita": "Senegal", "fecha": "22 jun", "hora": "20:00", "estadio": "MetLife Stadium, Nueva York", "grupo": "I"},
+    {"id": "fgI5", "local": "Noruega", "visita": "Francia", "fecha": "26 jun", "hora": "15:00", "estadio": "Gillette Stadium, Boston", "grupo": "I"},
+    {"id": "fgI6", "local": "Senegal", "visita": "Irak", "fecha": "26 jun", "hora": "15:00", "estadio": "BMO Field, Toronto", "grupo": "I"},
+  ],
+  J:[
+    {"id": "fgJ1", "local": "Argentina", "visita": "Argelia", "fecha": "16 jun", "hora": "21:00", "estadio": "Arrowhead Stadium, Kansas City", "grupo": "J"},
+    {"id": "fgJ2", "local": "Austria", "visita": "Jordania", "fecha": "17 jun", "hora": "00:00", "estadio": "Levi's Stadium, San Francisco", "grupo": "J"},
+    {"id": "fgJ3", "local": "Argentina", "visita": "Austria", "fecha": "22 jun", "hora": "13:00", "estadio": "AT&T Stadium, Dallas", "grupo": "J"},
+    {"id": "fgJ4", "local": "Jordania", "visita": "Argelia", "fecha": "22 jun", "hora": "23:00", "estadio": "Levi's Stadium, San Francisco", "grupo": "J"},
+    {"id": "fgJ5", "local": "Argelia", "visita": "Austria", "fecha": "27 jun", "hora": "22:00", "estadio": "Arrowhead Stadium, Kansas City", "grupo": "J"},
+    {"id": "fgJ6", "local": "Jordania", "visita": "Argentina", "fecha": "27 jun", "hora": "22:00", "estadio": "AT&T Stadium, Dallas", "grupo": "J"},
+  ],
+  K:[
+    {"id": "fgK1", "local": "Portugal", "visita": "RD Congo", "fecha": "17 jun", "hora": "13:00", "estadio": "NRG Stadium, Houston", "grupo": "K"},
+    {"id": "fgK2", "local": "Uzbekistan", "visita": "Colombia", "fecha": "17 jun", "hora": "22:00", "estadio": "Estadio Azteca, Ciudad de México", "grupo": "K"},
+    {"id": "fgK3", "local": "Portugal", "visita": "Uzbekistan", "fecha": "23 jun", "hora": "13:00", "estadio": "NRG Stadium, Houston", "grupo": "K"},
+    {"id": "fgK4", "local": "Colombia", "visita": "RD Congo", "fecha": "23 jun", "hora": "22:00", "estadio": "Estadio Akron, Guadalajara", "grupo": "K"},
+    {"id": "fgK5", "local": "Colombia", "visita": "Portugal", "fecha": "27 jun", "hora": "19:30", "estadio": "Hard Rock Stadium, Miami", "grupo": "K"},
+    {"id": "fgK6", "local": "RD Congo", "visita": "Uzbekistan", "fecha": "27 jun", "hora": "19:30", "estadio": "Mercedes-Benz Stadium, Atlanta", "grupo": "K"},
+  ],
+  L:[
+    {"id": "fgL1", "local": "Inglaterra", "visita": "Croacia", "fecha": "17 jun", "hora": "16:00", "estadio": "AT&T Stadium, Dallas", "grupo": "L"},
+    {"id": "fgL2", "local": "Ghana", "visita": "Panama", "fecha": "17 jun", "hora": "19:00", "estadio": "BMO Field, Toronto", "grupo": "L"},
+    {"id": "fgL3", "local": "Inglaterra", "visita": "Ghana", "fecha": "23 jun", "hora": "16:00", "estadio": "Gillette Stadium, Boston", "grupo": "L"},
+    {"id": "fgL4", "local": "Panama", "visita": "Croacia", "fecha": "23 jun", "hora": "19:00", "estadio": "BMO Field, Toronto", "grupo": "L"},
+    {"id": "fgL5", "local": "Panama", "visita": "Inglaterra", "fecha": "27 jun", "hora": "17:00", "estadio": "MetLife Stadium, Nueva York", "grupo": "L"},
+    {"id": "fgL6", "local": "Croacia", "visita": "Ghana", "fecha": "27 jun", "hora": "17:00", "estadio": "Lincoln Financial Field, Filadelfia", "grupo": "L"},
+  ],
+};
+
+// Mapa plano id → partido para lookup O(1)
+const FIXTURE_MAP = {};
+Object.values(FG).forEach(arr => arr.forEach(p => { FIXTURE_MAP[p.id] = p; }));
+
+// ── FG_IDX — solo IDs por grupo ────────────────────────────────────────────
 const FG_IDX = {
   A:['fgA1','fgA2','fgA3','fgA4','fgA5','fgA6'],
   B:['fgB1','fgB2','fgB3','fgB4','fgB5','fgB6'],
@@ -1449,8 +1555,10 @@ async function renderResultadosAccordion() {
   // Paneles de grupos
   gruposKeys.forEach((g, i) => {
     const partidos = FG_IDX[g].map(id => {
-      // Mergear: datos base del partido + resultado de Firestore encima
-      const base = globalData.partidos?.find(p => p.id === id) || null;
+      // FIXTURE_MAP = fuente de verdad local (local, visita, fecha, hora, estadio, grupo)
+      // resCache    = datos de Firestore (puede tener resultado + puede tener datos completos)
+      // Merge: fixture base → datos Firestore → garantiza que nunca falten campos
+      const base = FIXTURE_MAP[id] || globalData.partidos?.find(p => p.id === id) || null;
       const res  = resCache[id] || null;
       if (!base && !res) return null;
       return { ...(base || {}), ...(res || {}) };
