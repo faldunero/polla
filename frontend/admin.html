@@ -531,7 +531,7 @@ nav {
         <i class="fas fa-triangle-exclamation"></i>
         <strong>Advertencia:</strong> La importación escribe directamente en Firestore. Si ya existen resultados guardados para un partido, serán sobreescritos. Úsalo solo para setup inicial o para corregir datos base.
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px;">
         <!-- Card Grupos -->
         <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:20px;">
           <div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:800;color:var(--gold);margin-bottom:4px;"><i class="fas fa-layer-group"></i> Fase de Grupos</div>
@@ -547,6 +547,34 @@ nav {
           <button class="btn btn-gold" id="import-elim-btn" onclick="importarElim()">
             <i class="fas fa-upload"></i> Importar 32 partidos
           </button>
+        </div>
+        <!-- Card Eliminar -->
+        <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.25);border-radius:12px;padding:20px;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:800;color:var(--red);margin-bottom:4px;"><i class="fas fa-trash-can"></i> Eliminar de BD</div>
+          <div style="font-size:0.78rem;color:var(--muted);margin-bottom:16px;line-height:1.5;">Elimina solo los partidos del bloque seleccionado para poder reimportar sin duplicados.</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <button class="btn" style="background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3);" onclick="confirmarBorrarFase('grupos')">
+              <i class="fas fa-trash-can"></i> Eliminar Fase de Grupos (72)
+            </button>
+            <button class="btn" style="background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3);" onclick="confirmarBorrarFase('elim')">
+              <i class="fas fa-trash-can"></i> Eliminar Fases Elim. (32)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal confirmación borrar -->
+      <div id="modal-borrar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:999;align-items:center;justify-content:center;">
+        <div style="background:#1a2238;border:1px solid rgba(239,68,68,0.4);border-radius:16px;padding:28px;max-width:420px;width:90%;box-shadow:0 24px 60px rgba(0,0,0,0.6);">
+          <div style="font-size:2rem;margin-bottom:12px;">⚠️</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:800;color:var(--red);margin-bottom:8px;">¿Eliminar toda la colección?</div>
+          <p id="modal-borrar-msg" style="color:rgba(255,255,255,0.65);font-size:0.86rem;line-height:1.6;margin-bottom:20px;"></p>
+          <div style="display:flex;gap:10px;">
+            <button class="btn" style="flex:1;background:transparent;border:1px solid var(--border);color:var(--muted);" onclick="cerrarModalBorrar()">Cancelar</button>
+            <button class="btn" style="flex:1;background:var(--red);color:white;" id="confirm-borrar-btn" onclick="ejecutarBorrar()">
+              <i class="fas fa-trash-can"></i> Sí, eliminar todo
+            </button>
+          </div>
         </div>
       </div>
       <!-- Log -->
@@ -2012,6 +2040,75 @@ window.importarElim = async () => {
   btn.innerHTML = `<i class="fas fa-check"></i> Completado (${ok}/${PARTIDOS_ELIM.length})`;
   toast(`Eliminatorias: ${ok} partidos importados`, ok === PARTIDOS_ELIM.length ? 'success' : 'warn');
 };
+
+
+// IDs exactos de cada bloque — mismos que el importador
+const IDS_GRUPOS = PARTIDOS_GRUPOS.map(p => p.id);
+const IDS_ELIM   = PARTIDOS_ELIM.map(p => p.id);
+
+let _fasePendiente = null; // 'grupos' | 'elim'
+
+window.confirmarBorrarFase = (fase) => {
+  _fasePendiente = fase;
+  const esGrupos = fase === 'grupos';
+  const ids = esGrupos ? IDS_GRUPOS : IDS_ELIM;
+  document.getElementById('modal-borrar-msg').innerHTML =
+    `Se eliminarán <strong>${ids.length} documentos</strong> de la colección <code>partidos</code>
+     correspondientes a la <strong>${esGrupos ? 'Fase de Grupos (fgA1…fgL6)' : 'Fase Eliminatoria (r32_1…fin)'}</strong>.
+     <br><br>Las apuestas de los jugadores <strong>no</strong> se tocan. Útil para reimportar un fixture corregido.`;
+  document.getElementById('modal-borrar').style.display = 'flex';
+};
+
+window.cerrarModalBorrar = () => {
+  document.getElementById('modal-borrar').style.display = 'none';
+};
+
+window.ejecutarBorrar = async () => {
+  if (!_fasePendiente) return;
+  const ids  = _fasePendiente === 'grupos' ? IDS_GRUPOS : IDS_ELIM;
+  const label = _fasePendiente === 'grupos' ? 'Fase de Grupos' : 'Fases Eliminatorias';
+  const btn  = document.getElementById('confirm-borrar-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Eliminando...';
+  cerrarModalBorrar();
+  document.getElementById('import-log').innerHTML = '';
+
+  ilog(`▶ Eliminando ${label} — ${ids.length} partidos`, 'info');
+  ilog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+  try {
+    const { getFirestore, deleteDoc, doc } =
+      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const fdb = getFirestore();
+
+    let ok = 0, err = 0;
+    for (const id of ids) {
+      try {
+        await deleteDoc(doc(fdb, 'partidos', id));
+        ilog(`✓ Eliminado: ${id}`, 'ok');
+        ok++;
+      } catch(e) {
+        ilog(`✗ ${id}: ${e.message}`, 'err');
+        err++;
+      }
+    }
+
+    ilog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    ilog(`${err === 0 ? '✅' : '⚠'} ${ok} eliminados | ${err} errores`, err === 0 ? 'ok' : 'err');
+    toast(`${label}: ${ok} partidos eliminados`, err === 0 ? 'success' : 'warn');
+  } catch(e) {
+    ilog(`✗ Error: ${e.message}`, 'err');
+    toast('Error: ' + e.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-trash-can"></i> Sí, eliminar';
+  _fasePendiente = null;
+};
+
+document.addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-borrar')) cerrarModalBorrar();
+});
 
 </script>
 </body>
