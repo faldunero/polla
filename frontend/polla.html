@@ -740,29 +740,50 @@
     }
 
     async function unirseGrupo(grupoId, nombreGrupo) {
-      if (isCerrado()) return toast('Las inscripciones están cerradas', 'warn');
+  if (isCerrado()) {
+    console.warn('Inscripciones cerradas');
+    return toast('Las inscripciones están cerradas', 'warn');
+  }
 
-      try {
-        const ref = doc(db, 'participantes', currentUser.uid);
+  console.log('CLICK unirseGrupo', {
+    grupoId,
+    nombreGrupo,
+    uid: currentUser?.uid,
+    email: currentUser?.email,
+    miParticipanteActual: miParticipante
+  });
 
-        await setDoc(ref, {
-          uid: currentUser.uid,
-          nombre: currentUser.displayName || currentUser.email || 'Usuario',
-          email: currentUser.email || '',
-          grupoId,
-          grupoNombre: nombreGrupo,
-          estado: 'pendiente',
-          unidoEn: serverTimestamp()
-        }, { merge: true });
+  try {
+    const ref = doc(db, 'participantes', currentUser.uid);
 
-        await cargarMiParticipante();
-        renderGrupos();
-        toast(`Solicitud enviada a ${nombreGrupo}`, 'success');
-      } catch (e) {
-        toast(e.message, 'error');
-      }
-    }
+    const payload = {
+      uid: currentUser.uid,
+      nombre: currentUser.displayName || currentUser.email || 'Usuario',
+      email: currentUser.email || '',
+      grupoId,
+      grupoNombre: nombreGrupo,
+      estado: 'pendiente',
+      unidoEn: serverTimestamp()
+    };
 
+    console.log('Guardando participante', payload);
+
+    await setDoc(ref, payload, { merge: true });
+
+    console.log('setDoc OK');
+
+    await cargarMiParticipante();
+
+    console.log('miParticipante luego de guardar', miParticipante);
+
+    renderGrupos();
+    toast(`Solicitud enviada a ${nombreGrupo}`, 'success');
+  } catch (e) {
+    console.error('Error al unirse al grupo:', e);
+    alert('Error al unirse al grupo: ' + (e?.message || e));
+    toast(e?.message || 'Error al unirse al grupo', 'error');
+  }
+}
     async function renderApuestas() {
       const container = document.getElementById('apuestas-content');
 
