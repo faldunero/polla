@@ -733,11 +733,12 @@
 
         const joinBtn = div.querySelector('button');
         if (joinBtn) {
-          joinBtn.addEventListener('click', () => unirseGrupo(g.id, g.nombre || 'grupo'));
-        }
-        grid.appendChild(div);
-      });
-    }
+  console.log('Binding botón grupo', g.id, g.nombre);
+  joinBtn.addEventListener('click', () => {
+    console.log('CLICK botón grupo', g.id, g.nombre);
+    unirseGrupo(g.id, g.nombre || 'grupo');
+  });
+}
 
     async function unirseGrupo(grupoId, nombreGrupo) {
   if (isCerrado()) {
