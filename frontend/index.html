@@ -1449,8 +1449,11 @@ async function renderResultadosAccordion() {
   // Paneles de grupos
   gruposKeys.forEach((g, i) => {
     const partidos = FG_IDX[g].map(id => {
-      // Preferir datos de Firestore si existen, si no usar fixture base
-      return resCache[id] || globalData.partidos?.find(p => p.id === id) || null;
+      // Mergear: datos base del partido + resultado de Firestore encima
+      const base = globalData.partidos?.find(p => p.id === id) || null;
+      const res  = resCache[id] || null;
+      if (!base && !res) return null;
+      return { ...(base || {}), ...(res || {}) };
     }).filter(Boolean);
 
     // Fallback: buscar en globalData.partidos por local+visita si no hay por id
@@ -1502,13 +1505,14 @@ async function renderResultadosAccordion() {
       html += `<div class="res-elim-group">
         <div class="res-elim-group-title">${subg.titulo}</div>`;
       subg.ids.forEach(id => {
-        const p = resCache[id] || null;
-        if (!p) {
-          // Partido no en Firestore aún — buscar info del fixture hardcodeado de admin
+        // Buscar datos base en globalData.partidos, mergear con resultado de resCache
+        const base = globalData.partidos?.find(p => p.id === id) || null;
+        const res  = resCache[id] || null;
+        if (!base && !res) {
           const fallback = {id, local:'Por confirmar', visita:'Por confirmar', fecha:'–', estadio:'–'};
           html += renderResPartido(fallback, true);
         } else {
-          html += renderResPartido(p, true);
+          html += renderResPartido({ ...(base || {}), ...(res || {}) }, true);
         }
       });
       html += `</div>`;
