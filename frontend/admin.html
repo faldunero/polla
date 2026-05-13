@@ -392,6 +392,29 @@ nav {
 .grupo-panel{display:none;padding:14px 18px;}
 .grupo-panel.active{display:block;}
 .fase-partidos-wrap{padding:14px 18px;}
+/* ── RESET BUTTONS ─────────────────────────────────────────────── */
+.btn-reset-partido{padding:5px 9px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:rgba(239,68,68,0.7);border-radius:7px;font-size:0.72rem;cursor:pointer;transition:all 0.18s;display:inline-flex;align-items:center;gap:4px;font-family:"DM Sans",sans-serif;}
+.btn-reset-partido:hover{background:rgba(239,68,68,0.18);color:var(--red);border-color:rgba(239,68,68,0.4);}
+.btn-reset-grupo{padding:5px 11px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:rgba(239,68,68,0.75);border-radius:7px;font-size:0.72rem;cursor:pointer;transition:all 0.18s;display:inline-flex;align-items:center;gap:5px;font-family:"DM Sans",sans-serif;font-weight:600;}
+.btn-reset-grupo:hover{background:rgba(239,68,68,0.18);color:var(--red);border-color:rgba(239,68,68,0.4);}
+/* Modal reset grupo */
+#modal-reset-grupo{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);z-index:3000;align-items:center;justify-content:center;padding:20px;}
+#modal-reset-grupo.open{display:flex;}
+.mrg-box{background:#1a2238;border:1px solid rgba(239,68,68,0.35);border-radius:16px;padding:28px;max-width:440px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.6);}
+.mrg-icon{font-size:2.2rem;margin-bottom:10px;}
+.mrg-title{font-family:"Bebas Neue",sans-serif;font-size:1.4rem;color:var(--red);letter-spacing:0.04em;margin-bottom:8px;}
+.mrg-desc{color:rgba(255,255,255,0.65);font-size:0.84rem;line-height:1.6;margin-bottom:14px;}
+.mrg-lista{background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:10px 14px;margin-bottom:18px;max-height:180px;overflow-y:auto;}
+.mrg-partido{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:0.8rem;color:rgba(255,255,255,0.7);}
+.mrg-partido:last-child{border-bottom:none;}
+.mrg-partido .mrg-score{background:rgba(239,68,68,0.15);color:var(--red);border-radius:5px;padding:2px 8px;font-family:"Bebas Neue",sans-serif;font-size:0.85rem;letter-spacing:0.04em;flex-shrink:0;}
+.mrg-partido .mrg-score.sin-res{background:rgba(255,255,255,0.05);color:var(--muted);}
+.mrg-footer{display:flex;gap:10px;}
+.mrg-cancel{flex:1;padding:10px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:10px;cursor:pointer;font-family:"DM Sans",sans-serif;font-size:0.85rem;transition:all 0.18s;}
+.mrg-cancel:hover{border-color:var(--gold);color:var(--gold);}
+.mrg-confirm{flex:1;padding:10px;background:var(--red);color:white;border:none;border-radius:10px;cursor:pointer;font-family:"DM Sans",sans-serif;font-weight:700;font-size:0.88rem;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:7px;}
+.mrg-confirm:hover{background:#c0392b;}
+.mrg-confirm:disabled{opacity:0.6;cursor:not-allowed;}
 </style>
 </head>
 <body>
@@ -599,7 +622,7 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChang
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import {
   getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc,
-  doc, setDoc, query, where, orderBy, writeBatch, serverTimestamp, getDoc
+  doc, setDoc, query, where, orderBy, writeBatch, serverTimestamp, getDoc, deleteField
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
@@ -865,6 +888,7 @@ window.eliminarGrupo = async (id, nombre) => {
 
 // ── RESULTADOS (directo a Firestore) ─────────────────────────────────────
 const FG = {
+const FG = {
   A:[
     {"id": "fgA1", "local": "Mexico", "visita": "Sudafrica", "fecha": "11 jun", "hora": "15:00", "estadio": "Estadio Azteca, Ciudad de México", "grupo": "A"},
     {"id": "fgA2", "local": "Corea del Sur", "visita": "Chequia", "fecha": "11 jun", "hora": "22:00", "estadio": "Estadio Akron, Guadalajara", "grupo": "A"},
@@ -1047,6 +1071,10 @@ async function renderResultados() {
     const ok   = comp === tot && tot > 0;
     html += `<button class="grupo-tab${i===0?' active':''}" data-grupo="${g}" data-fase="grupos">Grupo ${g} <span class="gtab-check">${ok?'✓':comp+'/'+tot}</span></button>`;
   });
+  // Botón reset por grupo al final de los tabs
+  html += `<button class="btn-reset-grupo" id="btn-reset-grupo-active" onclick="abrirResetGrupo()" title="Resetear todos los resultados del grupo activo">
+    <i class="fas fa-rotate-left"></i> Reset grupo
+  </button>`;
   html += `</div>`;
   gruposKeys.forEach((g, i) => {
     html += `<div class="grupo-panel${i===0?' active':''}" id="gpanel-${g}-grupos">`;
@@ -1083,6 +1111,11 @@ async function renderResultados() {
   // Botones guardar
   container.querySelectorAll('.res-save-btn').forEach(btn => {
     btn.addEventListener('click', () => guardarResultado(btn.dataset.id, btn.dataset.elim === 'true'));
+  });
+
+  // Botones reset por partido
+  container.querySelectorAll('.res-reset-btn').forEach(btn => {
+    btn.addEventListener('click', () => resetearPartido(btn.dataset.id));
   });
 }
 
@@ -1131,9 +1164,12 @@ function buildPartidoRow(p, esElim) {
       </div>
       <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0;min-width:110px;">
         <span id="badge-${p.id}" style="display:${guardado?'inline-flex':'none'};align-items:center;gap:4px;font-size:0.7rem;color:var(--green);font-weight:600;"><i class="fas fa-check-circle"></i> Guardado</span>
-        <button class="btn btn-green btn-sm res-save-btn" data-id="${p.id}" data-elim="${esElim}">
-          <i class="fas fa-save"></i> Guardar
-        </button>
+        <div style="display:flex;gap:5px;align-items:center;">
+          ${guardado ? `<button class="btn-reset-partido res-reset-btn" data-id="${p.id}" title="Borrar resultado"><i class="fas fa-rotate-left"></i></button>` : ''}
+          <button class="btn btn-green btn-sm res-save-btn" data-id="${p.id}" data-elim="${esElim}">
+            <i class="fas fa-save"></i> Guardar
+          </button>
+        </div>
       </div>
     </div>
     <div style="padding:4px 18px 10px;font-size:0.69rem;color:var(--muted);display:flex;align-items:center;gap:6px;">
@@ -1266,6 +1302,172 @@ async function renderRankingGlobal() {
   } catch(e) { container.innerHTML = `<p style="color:var(--red);">${e.message}</p>`; }
 }
 
+
+// ── RESET RESULTADO POR PARTIDO ───────────────────────────────────────────
+window.resetearPartido = async (partidoId) => {
+  const btn = document.querySelector(`.res-reset-btn[data-id="${partidoId}"]`);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; }
+
+  try {
+    // Borrar solo los campos de resultado — preservar local, visita, fecha, hora, estadio, grupo
+    await setDoc(doc(db, 'partidos', partidoId), {
+      resultado_local:  deleteField(),
+      resultado_visita: deleteField(),
+      actualizadoPor:   deleteField(),
+      actualizadoEn:    deleteField(),
+    }, { merge: true });
+
+    // Resetear puntaje de todas las apuestas de este partido
+    const apSnap = await getDocs(query(collection(db, 'apuestas'), where('partidoId', '==', partidoId)));
+    if (apSnap.size > 0) {
+      const batch = writeBatch(db);
+      apSnap.docs.forEach(d => {
+        batch.update(d.ref, { puntaje: deleteField(), recalculadoEn: deleteField() });
+      });
+      await batch.commit();
+    }
+
+    // Actualizar cache local
+    if (resCache[partidoId]) {
+      delete resCache[partidoId].resultado_local;
+      delete resCache[partidoId].resultado_visita;
+    }
+
+    // Actualizar UI del partido
+    document.getElementById(`rl-${partidoId}`).value = '';
+    document.getElementById(`rv-${partidoId}`).value = '';
+    document.getElementById(`prow-${partidoId}`)?.classList.replace('guardado', 'pendiente');
+    const badge = document.getElementById(`badge-${partidoId}`);
+    if (badge) badge.style.display = 'none';
+    // Quitar el botón reset (ya no hay resultado)
+    if (btn) btn.remove();
+
+    // Actualizar contador del tab activo
+    const tabA = document.querySelector('.grupo-tab.active');
+    if (tabA) {
+      const g = tabA.dataset.grupo;
+      if (FG[g]) {
+        const comp = FG[g].filter(p => resCache[p.id]?.resultado_local != null).length;
+        const chk  = tabA.querySelector('.gtab-check');
+        if (chk) chk.textContent = comp === FG[g].length ? '✓' : comp + '/' + FG[g].length;
+      }
+    }
+
+    toast('Resultado borrado · apuestas reseteadas', 'info');
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-rotate-left"></i>'; }
+  }
+};
+
+// ── RESET POR GRUPO ────────────────────────────────────────────────────────
+let _resetGrupoPendiente = null;
+
+window.abrirResetGrupo = function() {
+  // Detectar grupo activo
+  const tabActivo = document.querySelector('.grupo-tab.active');
+  if (!tabActivo) return toast('Selecciona un grupo primero', 'warn');
+  const g = tabActivo.dataset.grupo;
+  if (!FG[g]) return;
+
+  const partidos = FG[g];
+  const conResultado = partidos.filter(p => resCache[p.id]?.resultado_local != null);
+
+  if (conResultado.length === 0) {
+    toast(`Grupo ${g} no tiene resultados cargados`, 'info');
+    return;
+  }
+
+  _resetGrupoPendiente = g;
+
+  document.getElementById('mrg-title').textContent = `Resetear Grupo ${g}`;
+  document.getElementById('mrg-desc').innerHTML =
+    `Se borrarán <strong>${conResultado.length} resultado${conResultado.length !== 1 ? 's' : ''}</strong> del Grupo ${g}.
+     Las apuestas asociadas perderán su puntaje. Esta acción no se puede deshacer.`;
+
+  // Listar partidos con su estado
+  document.getElementById('mrg-lista').innerHTML = partidos.map(p => {
+    const r = resCache[p.id];
+    const tieneRes = r?.resultado_local != null;
+    return `<div class="mrg-partido">
+      <span style="flex:1;">${p.local} vs ${p.visita}</span>
+      <span class="mrg-score${tieneRes ? '' : ' sin-res'}">${tieneRes ? r.resultado_local + ' – ' + r.resultado_visita : 'sin resultado'}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('modal-reset-grupo').classList.add('open');
+};
+
+window.cerrarResetGrupo = function() {
+  document.getElementById('modal-reset-grupo').classList.remove('open');
+  _resetGrupoPendiente = null;
+};
+
+window.ejecutarResetGrupo = async function() {
+  const g = _resetGrupoPendiente;
+  if (!g || !FG[g]) return;
+
+  const btn = document.getElementById('mrg-confirm-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Reseteando...';
+
+  try {
+    const partidos = FG[g];
+    const idsConRes = partidos.filter(p => resCache[p.id]?.resultado_local != null).map(p => p.id);
+
+    // Borrar campos de resultado de cada partido
+    const batchP = writeBatch(db);
+    idsConRes.forEach(id => {
+      batchP.set(doc(db, 'partidos', id), {
+        resultado_local:  deleteField(),
+        resultado_visita: deleteField(),
+        actualizadoPor:   deleteField(),
+        actualizadoEn:    deleteField(),
+      }, { merge: true });
+    });
+    await batchP.commit();
+
+    // Resetear puntajes de apuestas relacionadas
+    for (const id of idsConRes) {
+      const apSnap = await getDocs(query(collection(db, 'apuestas'), where('partidoId', '==', id)));
+      if (apSnap.size > 0) {
+        const batchA = writeBatch(db);
+        apSnap.docs.forEach(d => {
+          batchA.update(d.ref, { puntaje: deleteField(), recalculadoEn: deleteField() });
+        });
+        await batchA.commit();
+      }
+      // Actualizar cache local
+      if (resCache[id]) {
+        delete resCache[id].resultado_local;
+        delete resCache[id].resultado_visita;
+      }
+    }
+
+    cerrarResetGrupo();
+    toast(`Grupo ${g}: ${idsConRes.length} resultados reseteados ✓`, 'success');
+
+    // Recargar la UI del tab
+    await renderResultados();
+    // Reactivar el tab del grupo reseteado
+    setTimeout(() => {
+      const tab = document.querySelector(`.grupo-tab[data-grupo="${g}"]`);
+      if (tab) tab.click();
+    }, 100);
+
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-rotate-left"></i> Sí, resetear';
+  }
+};
+
+// Cerrar modal al click fuera
+document.addEventListener('click', e => {
+  const modal = document.getElementById('modal-reset-grupo');
+  if (modal && e.target === modal) cerrarResetGrupo();
+});
 
 // ── UTILS ─────────────────────────────────────────────────────────────────
 const FLAGS = {
@@ -2140,5 +2342,21 @@ document.addEventListener('click', e => {
 });
 
 </script>
+
+<!-- MODAL RESET GRUPO -->
+<div id="modal-reset-grupo">
+  <div class="mrg-box">
+    <div class="mrg-icon">🔄</div>
+    <div class="mrg-title" id="mrg-title">Resetear Grupo X</div>
+    <div class="mrg-desc" id="mrg-desc">Se borrarán los resultados de los siguientes partidos. Las apuestas asociadas quedarán sin puntaje.</div>
+    <div class="mrg-lista" id="mrg-lista"></div>
+    <div class="mrg-footer">
+      <button class="mrg-cancel" onclick="cerrarResetGrupo()">Cancelar</button>
+      <button class="mrg-confirm" id="mrg-confirm-btn" onclick="ejecutarResetGrupo()">
+        <i class="fas fa-rotate-left"></i> Sí, resetear
+      </button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
