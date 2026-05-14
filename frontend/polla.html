@@ -521,17 +521,28 @@
       return FLAGS[normalizeText(nombre)] || '🏳️';
     }
 
-    function formatFecha(f) {
+    function formatFecha(f, hora) {
       if (!f) return 'Fecha por definir';
+      // ISO "2026-06-11" → parsear correctamente
       if (typeof f === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(f)) {
         const d = new Date(f + 'T12:00:00');
-        return d.toLocaleDateString('es-CL', { day:'2-digit', month:'short' });
+        const fecha = d.toLocaleDateString('es-CL', { day:'2-digit', month:'short' });
+        return hora ? `${fecha} · ${hora}` : fecha;
       }
-      const d = new Date(f);
-      if (!isNaN(d)) {
-        return d.toLocaleDateString('es-CL', { day:'2-digit', month:'short' });
+      // Ya formateado "11 jun" → devolver directo
+      if (typeof f === 'string' && /^\d{1,2}\s+\w+/.test(f)) {
+        return hora ? `${f} · ${hora}` : f;
       }
-      return String(f);
+      // Número serial Excel → convertir
+      if (typeof f === 'number' || (!isNaN(Number(f)) && String(f).match(/^\d+(\.\d+)?$/))) {
+        const serial = Math.floor(Number(f));
+        const d = new Date(Math.round((serial - 25569) * 86400 * 1000));
+        if (!isNaN(d)) {
+          const fecha = d.toLocaleDateString('es-CL', { day:'2-digit', month:'short' });
+          return hora ? `${fecha} · ${hora}` : fecha;
+        }
+      }
+      return hora ? `${String(f)} · ${hora}` : String(f);
     }
 
     function formatFechaHora(ts) {
@@ -585,11 +596,139 @@
       return 0;
     }
 
+    // Fixture completo — fuente de verdad local (orden, fechas, equipos garantizados)
+    const FIXTURE_GRUPOS = [
+      {"id":"fgA1","grupo":"A","local":"Mexico","visita":"Sudafrica","fecha":"2026-06-11","hora":"15:00","estadio":"Estadio Azteca, Ciudad de México"},
+      {"id":"fgA2","grupo":"A","local":"Corea del Sur","visita":"Chequia","fecha":"2026-06-11","hora":"22:00","estadio":"Estadio Akron, Guadalajara"},
+      {"id":"fgB1","grupo":"B","local":"Canada","visita":"Bosnia y Herzegovina","fecha":"2026-06-12","hora":"15:00","estadio":"BMO Field, Toronto"},
+      {"id":"fgD1","grupo":"D","local":"Estados Unidos","visita":"Paraguay","fecha":"2026-06-12","hora":"21:00","estadio":"SoFi Stadium, Los Ángeles"},
+      {"id":"fgB2","grupo":"B","local":"Qatar","visita":"Suiza","fecha":"2026-06-13","hora":"15:00","estadio":"Levi's Stadium, San Francisco"},
+      {"id":"fgC1","grupo":"C","local":"Brasil","visita":"Marruecos","fecha":"2026-06-13","hora":"18:00","estadio":"Gillette Stadium, Boston"},
+      {"id":"fgC2","grupo":"C","local":"Haiti","visita":"Escocia","fecha":"2026-06-13","hora":"21:00","estadio":"MetLife Stadium, Nueva York"},
+      {"id":"fgD2","grupo":"D","local":"Australia","visita":"Turquia","fecha":"2026-06-14","hora":"00:00","estadio":"BC Place, Vancouver"},
+      {"id":"fgE1","grupo":"E","local":"Alemania","visita":"Curazao","fecha":"2026-06-14","hora":"13:00","estadio":"Lincoln Financial Field, Filadelfia"},
+      {"id":"fgF1","grupo":"F","local":"Paises Bajos","visita":"Japon","fecha":"2026-06-14","hora":"16:00","estadio":"AT&T Stadium, Dallas"},
+      {"id":"fgE2","grupo":"E","local":"Costa de Marfil","visita":"Ecuador","fecha":"2026-06-14","hora":"19:00","estadio":"NRG Stadium, Houston"},
+      {"id":"fgF2","grupo":"F","local":"Suecia","visita":"Tunez","fecha":"2026-06-14","hora":"22:00","estadio":"Estadio BBVA, Monterrey"},
+      {"id":"fgH1","grupo":"H","local":"Espana","visita":"Cabo Verde","fecha":"2026-06-15","hora":"12:00","estadio":"Mercedes-Benz Stadium, Atlanta"},
+      {"id":"fgG1","grupo":"G","local":"Belgica","visita":"Egipto","fecha":"2026-06-15","hora":"15:00","estadio":"Lumen Field, Seattle"},
+      {"id":"fgH2","grupo":"H","local":"Arabia Saudita","visita":"Uruguay","fecha":"2026-06-15","hora":"18:00","estadio":"Hard Rock Stadium, Miami"},
+      {"id":"fgG2","grupo":"G","local":"Iran","visita":"Nueva Zelanda","fecha":"2026-06-15","hora":"21:00","estadio":"SoFi Stadium, Los Ángeles"},
+      {"id":"fgI1","grupo":"I","local":"Francia","visita":"Senegal","fecha":"2026-06-16","hora":"15:00","estadio":"MetLife Stadium, Nueva York"},
+      {"id":"fgI2","grupo":"I","local":"Irak","visita":"Noruega","fecha":"2026-06-16","hora":"18:00","estadio":"Gillette Stadium, Boston"},
+      {"id":"fgJ1","grupo":"J","local":"Argentina","visita":"Argelia","fecha":"2026-06-16","hora":"21:00","estadio":"Arrowhead Stadium, Kansas City"},
+      {"id":"fgJ2","grupo":"J","local":"Austria","visita":"Jordania","fecha":"2026-06-17","hora":"00:00","estadio":"Levi's Stadium, San Francisco"},
+      {"id":"fgK1","grupo":"K","local":"Portugal","visita":"RD Congo","fecha":"2026-06-17","hora":"13:00","estadio":"NRG Stadium, Houston"},
+      {"id":"fgL1","grupo":"L","local":"Inglaterra","visita":"Croacia","fecha":"2026-06-17","hora":"16:00","estadio":"AT&T Stadium, Dallas"},
+      {"id":"fgL2","grupo":"L","local":"Ghana","visita":"Panama","fecha":"2026-06-17","hora":"19:00","estadio":"BMO Field, Toronto"},
+      {"id":"fgK2","grupo":"K","local":"Uzbekistan","visita":"Colombia","fecha":"2026-06-17","hora":"22:00","estadio":"Estadio Azteca, Ciudad de México"},
+      {"id":"fgA3","grupo":"A","local":"Chequia","visita":"Sudafrica","fecha":"2026-06-18","hora":"12:00","estadio":"Mercedes-Benz Stadium, Atlanta"},
+      {"id":"fgB3","grupo":"B","local":"Suiza","visita":"Bosnia y Herzegovina","fecha":"2026-06-18","hora":"15:00","estadio":"SoFi Stadium, Los Ángeles"},
+      {"id":"fgB4","grupo":"B","local":"Canada","visita":"Qatar","fecha":"2026-06-18","hora":"18:00","estadio":"BC Place, Vancouver"},
+      {"id":"fgA4","grupo":"A","local":"Mexico","visita":"Corea del Sur","fecha":"2026-06-18","hora":"21:00","estadio":"Estadio Azteca, Ciudad de México"},
+      {"id":"fgD3","grupo":"D","local":"Estados Unidos","visita":"Australia","fecha":"2026-06-19","hora":"15:00","estadio":"Levi's Stadium, San Francisco"},
+      {"id":"fgC3","grupo":"C","local":"Escocia","visita":"Marruecos","fecha":"2026-06-19","hora":"18:00","estadio":"Gillette Stadium, Boston"},
+      {"id":"fgC4","grupo":"C","local":"Brasil","visita":"Haiti","fecha":"2026-06-19","hora":"20:30","estadio":"Hard Rock Stadium, Miami"},
+      {"id":"fgD4","grupo":"D","local":"Turquia","visita":"Paraguay","fecha":"2026-06-19","hora":"23:00","estadio":"BMO Field, Toronto"},
+      {"id":"fgF3","grupo":"F","local":"Paises Bajos","visita":"Suecia","fecha":"2026-06-20","hora":"13:00","estadio":"NRG Stadium, Houston"},
+      {"id":"fgE3","grupo":"E","local":"Alemania","visita":"Costa de Marfil","fecha":"2026-06-20","hora":"16:00","estadio":"MetLife Stadium, Nueva York"},
+      {"id":"fgE4","grupo":"E","local":"Ecuador","visita":"Curazao","fecha":"2026-06-20","hora":"20:00","estadio":"Arrowhead Stadium, Kansas City"},
+      {"id":"fgF4","grupo":"F","local":"Tunez","visita":"Japon","fecha":"2026-06-21","hora":"00:00","estadio":"Estadio BBVA, Monterrey"},
+      {"id":"fgH3","grupo":"H","local":"Espana","visita":"Arabia Saudita","fecha":"2026-06-21","hora":"12:00","estadio":"Mercedes-Benz Stadium, Atlanta"},
+      {"id":"fgG3","grupo":"G","local":"Belgica","visita":"Iran","fecha":"2026-06-21","hora":"15:00","estadio":"SoFi Stadium, Los Ángeles"},
+      {"id":"fgH4","grupo":"H","local":"Uruguay","visita":"Cabo Verde","fecha":"2026-06-21","hora":"18:00","estadio":"Hard Rock Stadium, Miami"},
+      {"id":"fgG4","grupo":"G","local":"Nueva Zelanda","visita":"Egipto","fecha":"2026-06-21","hora":"21:00","estadio":"BC Place, Vancouver"},
+      {"id":"fgJ3","grupo":"J","local":"Argentina","visita":"Austria","fecha":"2026-06-22","hora":"13:00","estadio":"AT&T Stadium, Dallas"},
+      {"id":"fgI3","grupo":"I","local":"Francia","visita":"Irak","fecha":"2026-06-22","hora":"17:00","estadio":"Lincoln Financial Field, Filadelfia"},
+      {"id":"fgI4","grupo":"I","local":"Noruega","visita":"Senegal","fecha":"2026-06-22","hora":"20:00","estadio":"MetLife Stadium, Nueva York"},
+      {"id":"fgJ4","grupo":"J","local":"Jordania","visita":"Argelia","fecha":"2026-06-22","hora":"23:00","estadio":"Levi's Stadium, San Francisco"},
+      {"id":"fgK3","grupo":"K","local":"Portugal","visita":"Uzbekistan","fecha":"2026-06-23","hora":"13:00","estadio":"NRG Stadium, Houston"},
+      {"id":"fgL3","grupo":"L","local":"Inglaterra","visita":"Ghana","fecha":"2026-06-23","hora":"16:00","estadio":"Gillette Stadium, Boston"},
+      {"id":"fgL4","grupo":"L","local":"Panama","visita":"Croacia","fecha":"2026-06-23","hora":"19:00","estadio":"BMO Field, Toronto"},
+      {"id":"fgK4","grupo":"K","local":"Colombia","visita":"RD Congo","fecha":"2026-06-23","hora":"22:00","estadio":"Estadio Akron, Guadalajara"},
+      {"id":"fgB5","grupo":"B","local":"Suiza","visita":"Canada","fecha":"2026-06-24","hora":"15:00","estadio":"BC Place, Vancouver"},
+      {"id":"fgB6","grupo":"B","local":"Bosnia y Herzegovina","visita":"Qatar","fecha":"2026-06-24","hora":"15:00","estadio":"Lumen Field, Seattle"},
+      {"id":"fgC5","grupo":"C","local":"Marruecos","visita":"Haiti","fecha":"2026-06-24","hora":"18:00","estadio":"Mercedes-Benz Stadium, Atlanta"},
+      {"id":"fgC6","grupo":"C","local":"Escocia","visita":"Brasil","fecha":"2026-06-24","hora":"18:00","estadio":"Hard Rock Stadium, Miami"},
+      {"id":"fgA5","grupo":"A","local":"Sudafrica","visita":"Corea del Sur","fecha":"2026-06-24","hora":"21:00","estadio":"Estadio BBVA, Monterrey"},
+      {"id":"fgA6","grupo":"A","local":"Chequia","visita":"Mexico","fecha":"2026-06-24","hora":"21:00","estadio":"Estadio Azteca, Ciudad de México"},
+      {"id":"fgE5","grupo":"E","local":"Curazao","visita":"Costa de Marfil","fecha":"2026-06-25","hora":"16:00","estadio":"Lincoln Financial Field, Filadelfia"},
+      {"id":"fgE6","grupo":"E","local":"Ecuador","visita":"Alemania","fecha":"2026-06-25","hora":"16:00","estadio":"MetLife Stadium, Nueva York"},
+      {"id":"fgF5","grupo":"F","local":"Tunez","visita":"Paises Bajos","fecha":"2026-06-25","hora":"19:00","estadio":"Arrowhead Stadium, Kansas City"},
+      {"id":"fgF6","grupo":"F","local":"Japon","visita":"Suecia","fecha":"2026-06-25","hora":"19:00","estadio":"AT&T Stadium, Dallas"},
+      {"id":"fgD5","grupo":"D","local":"Turquia","visita":"Estados Unidos","fecha":"2026-06-25","hora":"22:00","estadio":"SoFi Stadium, Los Ángeles"},
+      {"id":"fgD6","grupo":"D","local":"Paraguay","visita":"Australia","fecha":"2026-06-25","hora":"22:00","estadio":"Levi's Stadium, San Francisco"},
+      {"id":"fgI5","grupo":"I","local":"Noruega","visita":"Francia","fecha":"2026-06-26","hora":"15:00","estadio":"Gillette Stadium, Boston"},
+      {"id":"fgI6","grupo":"I","local":"Senegal","visita":"Irak","fecha":"2026-06-26","hora":"15:00","estadio":"BMO Field, Toronto"},
+      {"id":"fgH5","grupo":"H","local":"Cabo Verde","visita":"Arabia Saudita","fecha":"2026-06-26","hora":"20:00","estadio":"NRG Stadium, Houston"},
+      {"id":"fgH6","grupo":"H","local":"Uruguay","visita":"Espana","fecha":"2026-06-26","hora":"20:00","estadio":"Estadio Akron, Guadalajara"},
+      {"id":"fgG5","grupo":"G","local":"Nueva Zelanda","visita":"Belgica","fecha":"2026-06-26","hora":"23:00","estadio":"BC Place, Vancouver"},
+      {"id":"fgG6","grupo":"G","local":"Egipto","visita":"Iran","fecha":"2026-06-26","hora":"23:00","estadio":"Hard Rock Stadium, Miami"},
+      {"id":"fgL5","grupo":"L","local":"Panama","visita":"Inglaterra","fecha":"2026-06-27","hora":"17:00","estadio":"MetLife Stadium, Nueva York"},
+      {"id":"fgL6","grupo":"L","local":"Croacia","visita":"Ghana","fecha":"2026-06-27","hora":"17:00","estadio":"Lincoln Financial Field, Filadelfia"},
+      {"id":"fgK5","grupo":"K","local":"Colombia","visita":"Portugal","fecha":"2026-06-27","hora":"19:30","estadio":"Hard Rock Stadium, Miami"},
+      {"id":"fgK6","grupo":"K","local":"RD Congo","visita":"Uzbekistan","fecha":"2026-06-27","hora":"19:30","estadio":"Mercedes-Benz Stadium, Atlanta"},
+      {"id":"fgJ5","grupo":"J","local":"Argelia","visita":"Austria","fecha":"2026-06-27","hora":"22:00","estadio":"Arrowhead Stadium, Kansas City"},
+      {"id":"fgJ6","grupo":"J","local":"Jordania","visita":"Argentina","fecha":"2026-06-27","hora":"22:00","estadio":"AT&T Stadium, Dallas"},
+    ];
+
+    // Fixture eliminatorias
+    const FIXTURE_ELIM = [
+      {"id":"r32_1","fase":"32avos de Final","local":"1.A","visita":"2.B","fecha":"2026-07-01","hora":"16:00","estadio":"MetLife Stadium, Nueva York"},
+      {"id":"r32_2","fase":"32avos de Final","local":"1.C","visita":"2.D","fecha":"2026-07-01","hora":"20:00","estadio":"AT&T Stadium, Dallas"},
+      {"id":"r32_3","fase":"32avos de Final","local":"1.E","visita":"2.F","fecha":"2026-07-02","hora":"16:00","estadio":"SoFi Stadium, Los Ángeles"},
+      {"id":"r32_4","fase":"32avos de Final","local":"1.G","visita":"2.H","fecha":"2026-07-02","hora":"20:00","estadio":"Mercedes-Benz Stadium, Atlanta"},
+      {"id":"r32_5","fase":"32avos de Final","local":"1.I","visita":"2.J","fecha":"2026-07-03","hora":"16:00","estadio":"Gillette Stadium, Boston"},
+      {"id":"r32_6","fase":"32avos de Final","local":"1.K","visita":"2.L","fecha":"2026-07-03","hora":"20:00","estadio":"Arrowhead Stadium, Kansas City"},
+      {"id":"r32_7","fase":"32avos de Final","local":"1.B","visita":"2.A","fecha":"2026-07-04","hora":"16:00","estadio":"BC Place, Vancouver"},
+      {"id":"r32_8","fase":"32avos de Final","local":"1.D","visita":"2.C","fecha":"2026-07-04","hora":"20:00","estadio":"NRG Stadium, Houston"},
+      {"id":"r32_9","fase":"32avos de Final","local":"1.F","visita":"2.E","fecha":"2026-07-05","hora":"16:00","estadio":"BMO Field, Toronto"},
+      {"id":"r32_10","fase":"32avos de Final","local":"1.H","visita":"2.G","fecha":"2026-07-05","hora":"20:00","estadio":"Hard Rock Stadium, Miami"},
+      {"id":"r32_11","fase":"32avos de Final","local":"1.J","visita":"2.I","fecha":"2026-07-06","hora":"16:00","estadio":"Lumen Field, Seattle"},
+      {"id":"r32_12","fase":"32avos de Final","local":"1.L","visita":"2.K","fecha":"2026-07-06","hora":"20:00","estadio":"Lincoln Financial Field, Filadelfia"},
+      {"id":"r32_13","fase":"32avos de Final","local":"3er mejor 1","visita":"3er mejor 2","fecha":"2026-07-07","hora":"16:00","estadio":"AT&T Stadium, Dallas"},
+      {"id":"r32_14","fase":"32avos de Final","local":"3er mejor 3","visita":"3er mejor 4","fecha":"2026-07-07","hora":"20:00","estadio":"MetLife Stadium, Nueva York"},
+      {"id":"r32_15","fase":"32avos de Final","local":"3er mejor 5","visita":"3er mejor 6","fecha":"2026-07-08","hora":"16:00","estadio":"SoFi Stadium, Los Ángeles"},
+      {"id":"r32_16","fase":"32avos de Final","local":"3er mejor 7","visita":"3er mejor 8","fecha":"2026-07-08","hora":"20:00","estadio":"Mercedes-Benz Stadium, Atlanta"},
+      {"id":"r16_1","fase":"Octavos de Final","local":"G.32 1","visita":"G.32 2","fecha":"2026-07-11","hora":"16:00","estadio":"MetLife Stadium, Nueva York"},
+      {"id":"r16_2","fase":"Octavos de Final","local":"G.32 3","visita":"G.32 4","fecha":"2026-07-11","hora":"20:00","estadio":"AT&T Stadium, Dallas"},
+      {"id":"r16_3","fase":"Octavos de Final","local":"G.32 5","visita":"G.32 6","fecha":"2026-07-12","hora":"16:00","estadio":"SoFi Stadium, Los Ángeles"},
+      {"id":"r16_4","fase":"Octavos de Final","local":"G.32 7","visita":"G.32 8","fecha":"2026-07-12","hora":"20:00","estadio":"Mercedes-Benz Stadium, Atlanta"},
+      {"id":"r16_5","fase":"Octavos de Final","local":"G.32 9","visita":"G.32 10","fecha":"2026-07-13","hora":"16:00","estadio":"Gillette Stadium, Boston"},
+      {"id":"r16_6","fase":"Octavos de Final","local":"G.32 11","visita":"G.32 12","fecha":"2026-07-13","hora":"20:00","estadio":"Arrowhead Stadium, Kansas City"},
+      {"id":"r16_7","fase":"Octavos de Final","local":"G.32 13","visita":"G.32 14","fecha":"2026-07-14","hora":"16:00","estadio":"BC Place, Vancouver"},
+      {"id":"r16_8","fase":"Octavos de Final","local":"G.32 15","visita":"G.32 16","fecha":"2026-07-14","hora":"20:00","estadio":"NRG Stadium, Houston"},
+      {"id":"qf1","fase":"Cuartos de Final","local":"G.R16 1","visita":"G.R16 2","fecha":"2026-07-18","hora":"16:00","estadio":"MetLife Stadium, Nueva York"},
+      {"id":"qf2","fase":"Cuartos de Final","local":"G.R16 3","visita":"G.R16 4","fecha":"2026-07-18","hora":"20:00","estadio":"AT&T Stadium, Dallas"},
+      {"id":"qf3","fase":"Cuartos de Final","local":"G.R16 5","visita":"G.R16 6","fecha":"2026-07-19","hora":"16:00","estadio":"SoFi Stadium, Los Ángeles"},
+      {"id":"qf4","fase":"Cuartos de Final","local":"G.R16 7","visita":"G.R16 8","fecha":"2026-07-19","hora":"20:00","estadio":"Mercedes-Benz Stadium, Atlanta"},
+      {"id":"sf1","fase":"Semifinales","local":"G.CF 1","visita":"G.CF 2","fecha":"2026-07-22","hora":"20:00","estadio":"MetLife Stadium, Nueva York"},
+      {"id":"sf2","fase":"Semifinales","local":"G.CF 3","visita":"G.CF 4","fecha":"2026-07-23","hora":"20:00","estadio":"SoFi Stadium, Los Ángeles"},
+      {"id":"3p","fase":"Tercer Lugar","local":"Perdedor SF 1","visita":"Perdedor SF 2","fecha":"2026-07-25","hora":"16:00","estadio":"AT&T Stadium, Dallas"},
+      {"id":"fin","fase":"Gran Final","local":"Ganador SF 1","visita":"Ganador SF 2","fecha":"2026-07-26","hora":"20:00","estadio":"MetLife Stadium, Nueva York"},
+    ];
+
+    // Mapa id → partido base
+    const FIXTURE_MAP = {};
+    [...FIXTURE_GRUPOS, ...FIXTURE_ELIM].forEach(p => { FIXTURE_MAP[p.id] = p; });
+
     async function cargarPartidos() {
       const snap = await getDocs(collection(db, 'partidos'));
-      globalPartidos = snap.docs
-        .map(d => ({ id: d.id, ...d.data() }))
-        .sort((a, b) => (Number(a.numero || 0) - Number(b.numero || 0)));
+      const firestoreById = {};
+      snap.docs.forEach(d => { firestoreById[d.id] = { id: d.id, ...d.data() }; });
+
+      // Merge: fixture base (orden+fecha+equipos garantizados) + Firestore (resultado real)
+      globalPartidos = [...FIXTURE_GRUPOS, ...FIXTURE_ELIM].map(base => ({
+        ...base,
+        ...(firestoreById[base.id] || {}),
+        // Siempre usar fecha/hora/local/visita del fixture (evita datos corruptos de Firestore)
+        fecha:   base.fecha,
+        hora:    base.hora,
+        estadio: base.estadio,
+        local:   firestoreById[base.id]?.local || base.local,
+        visita:  firestoreById[base.id]?.visita || base.visita,
+      }));
+      // El orden ya viene del fixture (cronológico)
     }
 
     async function cargarGrupos() {
@@ -824,17 +963,29 @@
       const cerrado = isCerrado();
       const porFase = {};
 
+      // Orden de fases garantizado
+      const ORDEN_FASES = [
+        'Grupo A','Grupo B','Grupo C','Grupo D','Grupo E','Grupo F',
+        'Grupo G','Grupo H','Grupo I','Grupo J','Grupo K','Grupo L',
+        '32avos de Final','Octavos de Final','Cuartos de Final',
+        'Semifinales','Tercer Lugar','Gran Final'
+      ];
+
       globalPartidos.forEach(p => {
-        const fase = p.fase || p.grupo ? `Grupo ${p.grupo || ''}`.trim() : 'General';
+        // Grupos usan "Grupo X", eliminatorias usan su campo fase
         const faseKey = p.fase || (p.grupo ? `Grupo ${p.grupo}` : 'General');
         if (!porFase[faseKey]) porFase[faseKey] = [];
         porFase[faseKey].push(p);
       });
 
+      // Ordenar fases según ORDEN_FASES, luego por fecha+hora dentro de cada fase
       const ordenFases = Object.keys(porFase).sort((a, b) => {
-        const na = Math.min(...porFase[a].map(x => Number(x.numero || 9999)));
-        const nb = Math.min(...porFase[b].map(x => Number(x.numero || 9999)));
-        return na - nb;
+        const ia = ORDEN_FASES.indexOf(a);
+        const ib = ORDEN_FASES.indexOf(b);
+        if (ia !== -1 && ib !== -1) return ia - ib;
+        if (ia !== -1) return -1;
+        if (ib !== -1) return 1;
+        return a.localeCompare(b);
       });
 
       let html = '';
@@ -848,14 +999,22 @@
           <div class="partidos-fase-title"><i class="fas fa-layer-group"></i> ${fase}</div>`;
 
         porFase[fase]
-          .sort((a,b) => Number(a.numero || 0) - Number(b.numero || 0))
+          .sort((a,b) => {
+            // Ordenar por fecha ISO luego por hora
+            const fa = (a.fecha || '') + 'T' + (a.hora || '00:00');
+            const fb = (b.fecha || '') + 'T' + (b.hora || '00:00');
+            return fa.localeCompare(fb);
+          })
           .forEach(p => {
             const apuesta = misApuestas[p.id];
             const tieneApuesta = !!apuesta;
+            // resultado_local/visita = campo guardado por el admin en Firestore
+            const resLocal  = p.resultado_local  ?? p.goles_local  ?? null;
+            const resVisita = p.resultado_visita ?? p.goles_visita ?? null;
             const puntaje = apuesta?.puntaje ?? (
-              p.goles_local != null && p.goles_visita != null && tieneApuesta
+              resLocal != null && resVisita != null && tieneApuesta
                 ? calcularPuntaje(
-                    { local: p.goles_local, visita: p.goles_visita },
+                    { local: resLocal, visita: resVisita },
                     { local: apuesta.golesLocal, visita: apuesta.golesVisita }
                   )
                 : null
@@ -886,15 +1045,14 @@
 
                 <div class="partido-meta">
                   <span>
-                    <i class="far fa-calendar"></i> ${formatFecha(p.fecha)}
+                    <i class="far fa-calendar"></i> ${formatFecha(p.fecha, p.hora)}
                     ${p.estadio ? ` · <i class="fas fa-location-dot"></i> ${p.estadio}` : ''}
-                    ${p.numero ? ` · Partido ${p.numero}` : ''}
                   </span>
 
                   <div style="display:flex;align-items:center;gap:10px;">
                     ${ptsLabel ? `<span class="pts-badge ${ptsClass}">${ptsLabel}</span>` : ''}
                     ${!cerrado ? `<button class="save-btn" id="save-${p.id}" disabled>Guardar</button>` : ''}
-                    ${p.goles_local != null && p.goles_visita != null ? `<span style="color:var(--muted);font-size:.75rem;">Real: ${p.goles_local}-${p.goles_visita}</span>` : ''}
+                    ${resLocal != null && resVisita != null ? `<span style="color:var(--muted);font-size:.75rem;">Real: ${resLocal}–${resVisita}</span>` : ''}
                   </div>
                 </div>
               </div>
@@ -943,9 +1101,11 @@
         actualizadoEn: serverTimestamp()
       };
 
-      if (partido.goles_local != null && partido.goles_visita != null) {
+      const resL = partido.resultado_local  ?? partido.goles_local  ?? null;
+      const resV = partido.resultado_visita ?? partido.goles_visita ?? null;
+      if (resL != null && resV != null) {
         payload.puntaje = calcularPuntaje(
-          { local: partido.goles_local, visita: partido.goles_visita },
+          { local: resL, visita: resV },
           { local: Number(l), visita: Number(v) }
         );
       }
