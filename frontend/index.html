@@ -1039,24 +1039,34 @@ function renderEstadios(){
 }
 
 // Modal País
+function infoItem(label, value){
+  if(!value && value !== 0) return '';
+  return `<div class="info-item"><div class="info-label">${label}</div><div class="info-value">${value}</div></div>`;
+}
+
 function showPais(nombre){
   const p=globalData.paises.find(i=>norm(i.nombre)===norm(nombre)); if(!p) return;
+  const ranking = p.ranking_fifa || p.ranking_2022;
   document.getElementById('modal-body').innerHTML=`
     <div class="modal-head-red">
       <span class="modal-flag-big">${getFlag(p.nombre)}</span>
       <div class="modal-country">${p.nombre}</div>
-      <span class="modal-group-tag">Grupo ${p.grupo||'TBD'}</span>
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:8px;position:relative;">
+        <span class="modal-group-tag">Grupo ${p.grupo||'TBD'}</span>
+        ${p.confederacion ? `<span class="modal-group-tag" style="background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.9);">${p.confederacion}</span>` : ''}
+      </div>
     </div>
     <div class="modal-body-pad">
       <div class="info-grid">
-        <div class="info-item"><div class="info-label">Ranking FIFA</div><div class="info-value">#${p.ranking_fifa||p.ranking_2022||'—'}</div></div>
-        <div class="info-item"><div class="info-label">Participaciones</div><div class="info-value">${p.participaciones||'—'}</div></div>
-        <div class="info-item"><div class="info-label">Mejor posición</div><div class="info-value">${p.mejor_posicion||'—'}</div></div>
-        <div class="info-item"><div class="info-label">Sede base</div><div class="info-value">${p.sede||'—'}</div></div>
-        <div class="info-item"><div class="info-label">Goleador histórico</div><div class="info-value">${p.goleador_historico||'—'}</div></div>
-        <div class="info-item"><div class="info-label">Goleador mundiales</div><div class="info-value">${p.goleador_mundiales||'—'}</div></div>
-        <div class="info-item"><div class="info-label">Jugador más caro</div><div class="info-value">${p.jugador_mas_caro||'—'}</div></div>
-        <div class="info-item"><div class="info-label">Valor plantel</div><div class="info-value">${p.valor_plantel_usd ? 'USD $'+p.valor_plantel_usd+'M' : '—'}</div></div>
+        ${infoItem('Ranking FIFA', ranking ? '#'+ranking : '')}
+        ${infoItem('Participaciones en Mundiales', p.participaciones)}
+        ${infoItem('Mejor posición histórica', p.mejor_posicion)}
+        ${infoItem('Sede base en el torneo', p.sede)}
+        ${infoItem('Entrenador', p.entrenador)}
+        ${infoItem('Goleador histórico', p.goleador_historico)}
+        ${infoItem('Goleador en Mundiales', p.goleador_mundiales)}
+        ${infoItem('Jugador más caro', p.jugador_mas_caro)}
+        ${infoItem('Valor del plantel', p.valor_plantel_usd ? 'USD $'+Number(p.valor_plantel_usd).toLocaleString('es-CL')+'M' : '')}
       </div>
     </div>`;
   document.getElementById('paisModal').style.display='flex';
@@ -1065,15 +1075,27 @@ function showPais(nombre){
 function showStadium(e){
   const img=getStadiumImg(e), flag=getStadiumFlag(e), ciudad=e.ciudad||e.city||'N/A';
   const coords = getCityCoords(e);
+
+  const detalle = (icon, label, value) => {
+    if(!value && value !== 0) return '';
+    return `<div class="stadium-detail"><i class="${icon}"></i><span><b>${label}:</b> ${value}</span></div>`;
+  };
+
   document.getElementById('stadium-modal-body').innerHTML=`
     ${img?`<img src="${img}" class="stadium-modal-img" alt="${e.nombre}" onerror="this.style.display='none'">`:
     `<div style="height:220px;background:linear-gradient(135deg,#0D0D0D,#2A2A2A);display:flex;align-items:center;justify-content:center;"><i class="fas fa-landmark" style="font-size:2.5rem;color:#F0C040"></i></div>`}
     <div class="stadium-modal-panel">
       <div class="stadium-tag"><i class="fas fa-circle-check"></i> Sede Oficial FIFA 2026</div>
       <div class="stadium-name">${e.nombre} ${flag}</div>
-      <div class="stadium-detail"><i class="fas fa-city"></i><span><b>Ciudad:</b> ${ciudad}</span></div>
-      <div class="stadium-detail"><i class="fas fa-users"></i><span><b>Capacidad:</b> ${e.capacidad?.toLocaleString()||'N/A'} espectadores</span></div>
-      ${e.datos_relevantes?`<div class="stadium-detail"><i class="fas fa-info-circle"></i><span>${e.datos_relevantes}</span></div>`:''}
+      ${detalle('fas fa-city',        'Ciudad',            ciudad)}
+      ${detalle('fas fa-globe',       'País',              e.pais === 'USA' ? 'Estados Unidos 🇺🇸' : e.pais === 'Mexico' ? 'México 🇲🇽' : e.pais === 'Canada' ? 'Canadá 🇨🇦' : e.pais || '')}
+      ${detalle('fas fa-users',       'Capacidad',         e.capacidad ? Number(e.capacidad).toLocaleString('es-CL') + ' espectadores' : '')}
+      ${detalle('fas fa-calendar',    'Inauguración',      e.anio_inauguracion || e.anio)}
+      ${detalle('fas fa-leaf',        'Superficie',        e.superficie)}
+      ${detalle('fas fa-cloud',       'Techo',             e.techo)}
+      ${detalle('fas fa-futbol',      'Partidos asignados',e.partidos_asignados)}
+      ${detalle('fas fa-shield-halved','Equipo local',     e.equipo_local)}
+      ${detalle('fas fa-info-circle', 'Datos relevantes',  e.datos_relevantes)}
     </div>
     ${coords ? `<div class="modal-weather-bar" id="mwb_modal"><span class="mw-loading">🌡️ Cargando clima actual...</span></div>` : ''}`;
 
