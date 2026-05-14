@@ -945,140 +945,187 @@
     toast(e?.message || 'Error al unirse al grupo', 'error');
   }
 }
+    // ── CSS del acordeon (inyectado aqui por conveniencia) ────────────────
+    // ── Helpers acordeon ───────────────────────────────────────────────────
+
+    function buildApRow(p, cerrado) {
+      const apuesta   = misApuestas[p.id];
+      const tieneAp   = !!apuesta;
+      const resLocal  = p.resultado_local  ?? p.goles_local  ?? null;
+      const resVisita = p.resultado_visita ?? p.goles_visita ?? null;
+      const puntaje   = tieneAp
+        ? (apuesta.puntaje ?? (resLocal != null && resVisita != null
+            ? calcularPuntaje({local:resLocal,visita:resVisita},{local:apuesta.golesLocal,visita:apuesta.golesVisita})
+            : null))
+        : null;
+
+      const localNombre  = p.local  || 'Por confirmar';
+      const visitaNombre = p.visita || 'Por confirmar';
+      const esElimPH = !p.grupo && ['G.','1.','2.','3er','Por con','Gan','Per'].some(x => localNombre.startsWith(x));
+
+      const ptsPill   = puntaje != null
+        ? `<span class="pts-badge pts-${puntaje}">${puntaje} pt${puntaje===1?'':'s'}</span>` : '';
+      const realBadge = resLocal != null && resVisita != null
+        ? `<span class="real-badge"><i class="fas fa-check-circle"></i> ${resLocal}-${resVisita}</span>` : '';
+
+      return `<div class="ap-row${tieneAp ? ' tiene-apuesta' : ''}">
+        <div class="team-name">
+          <span style="font-size:1.3rem">${esElimPH ? '&#9647;' : getFlag(localNombre)}</span>
+          <span class="${esElimPH ? 'ph-team' : ''}">${localNombre}</span>
+        </div>
+        <div class="ap-center">
+          <div class="score-inputs">
+            <input type="number" min="0" max="20" class="score-input" id="local-${p.id}"
+              value="${tieneAp ? apuesta.golesLocal : ''}" placeholder="-" ${cerrado ? 'disabled' : ''}>
+            <span class="score-sep">-</span>
+            <input type="number" min="0" max="20" class="score-input" id="visita-${p.id}"
+              value="${tieneAp ? apuesta.golesVisita : ''}" placeholder="-" ${cerrado ? 'disabled' : ''}>
+          </div>
+          <span class="ap-fecha">${formatFecha(p.fecha, p.hora)}</span>
+        </div>
+        <div class="team-name right">
+          <span class="${esElimPH ? 'ph-team' : ''}">${visitaNombre}</span>
+          <span style="font-size:1.3rem">${esElimPH ? '&#9647;' : getFlag(visitaNombre)}</span>
+        </div>
+        <div class="partido-meta">
+          <span><i class="fas fa-location-dot"></i> ${p.estadio || 'TBD'}</span>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            ${realBadge}${ptsPill}
+            ${!cerrado ? `<button class="save-btn" id="save-${p.id}" disabled>Guardar</button>` : ''}
+          </div>
+        </div>
+      </div>`;
+    }
+
+    function buildFaseAcc(id, icon, iconClass, title, sub, comp, tot, openNow) {
+      const pct      = tot > 0 ? Math.round(comp/tot*100) : 0;
+      const badgeCls = pct===100 && tot>0 ? 'completo' : pct>0 ? 'parcial' : '';
+      const badgeTxt = pct===100 && tot>0 ? 'Completo' : comp+'/'+tot;
+      return `<div class="fase-acc" id="facc-${id}">
+        <div class="fase-acc-header${openNow?' open':''}" onclick="toggleAcc('${id}')">
+          <div class="fase-acc-left">
+            <div class="fase-acc-icon ${iconClass}"><i class="${icon}"></i></div>
+            <div><div class="fase-acc-title">${title}</div><div class="fase-acc-sub">${sub}</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="fase-acc-badge ${badgeCls}">${badgeTxt}</span>
+            <i class="fas fa-chevron-down fase-acc-chevron"></i>
+          </div>
+        </div>`;
+    }
+
+    window.toggleAcc = function(id) {
+      document.getElementById('facc-'+id)?.querySelector('.fase-acc-header')?.classList.toggle('open');
+      document.getElementById('faccB-'+id)?.classList.toggle('open');
+    };
+
+    window.switchGrupoTab = function(el, g) {
+      document.querySelectorAll('#gtabs-grupos .gtab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('[id^="gpanel-"]').forEach(p => p.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('gpanel-'+g)?.classList.add('active');
+      el.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
+    };
+
+    const FASES_ELIM_POLLA = [
+      {id:'32avos',  label:'32avos de Final',    sub:'1-8 jul · 16 partidos',    icon:'fas fa-circle-nodes',      iconClass:'fase-acc-icon-32avos',
+       ids:['r32_1','r32_2','r32_3','r32_4','r32_5','r32_6','r32_7','r32_8','r32_9','r32_10','r32_11','r32_12','r32_13','r32_14','r32_15','r32_16']},
+      {id:'octavos', label:'Octavos de Final',    sub:'11-14 jul · 8 partidos',   icon:'fas fa-shield-halved',     iconClass:'fase-acc-icon-octavos',
+       ids:['r16_1','r16_2','r16_3','r16_4','r16_5','r16_6','r16_7','r16_8']},
+      {id:'cuartos', label:'Cuartos de Final',    sub:'18-19 jul · 4 partidos',   icon:'fas fa-trophy',            iconClass:'fase-acc-icon-cuartos',
+       ids:['qf1','qf2','qf3','qf4']},
+      {id:'semis',   label:'Semifinales',          sub:'22-23 jul · 2 partidos',   icon:'fas fa-star-half-stroke',  iconClass:'fase-acc-icon-semis',
+       ids:['sf1','sf2']},
+      {id:'tercero', label:'Tercer Lugar',          sub:'25 jul',                   icon:'fas fa-medal',             iconClass:'fase-acc-icon-32avos', ids:['3p']},
+      {id:'final',   label:'Gran Final',            sub:'26 jul · MetLife Stadium', icon:'fas fa-crown',             iconClass:'fase-acc-icon-final',   ids:['fin']},
+    ];
+
+    const GRP_IDS = {
+      A:['fgA1','fgA2','fgA3','fgA4','fgA5','fgA6'], B:['fgB1','fgB2','fgB3','fgB4','fgB5','fgB6'],
+      C:['fgC1','fgC2','fgC3','fgC4','fgC5','fgC6'], D:['fgD1','fgD2','fgD3','fgD4','fgD5','fgD6'],
+      E:['fgE1','fgE2','fgE3','fgE4','fgE5','fgE6'], F:['fgF1','fgF2','fgF3','fgF4','fgF5','fgF6'],
+      G:['fgG1','fgG2','fgG3','fgG4','fgG5','fgG6'], H:['fgH1','fgH2','fgH3','fgH4','fgH5','fgH6'],
+      I:['fgI1','fgI2','fgI3','fgI4','fgI5','fgI6'], J:['fgJ1','fgJ2','fgJ3','fgJ4','fgJ5','fgJ6'],
+      K:['fgK1','fgK2','fgK3','fgK4','fgK5','fgK6'], L:['fgL1','fgL2','fgL3','fgL4','fgL5','fgL6'],
+    };
+    const GRUPOS = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+
     async function renderApuestas() {
       const container = document.getElementById('apuestas-content');
 
       if (!miParticipante) {
-        container.innerHTML = `<div class="empty-state"><i class="fas fa-lock"></i><p>Primero debes unirte a un grupo.</p></div>`;
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i><p>Primero debes unirte a un grupo.</p></div>';
         return;
       }
-
       if (miParticipante.estado !== 'aprobado') {
-        container.innerHTML = `<div class="empty-state"><i class="fas fa-hourglass-half"></i><p>Tu participación aún no está aprobada.</p></div>`;
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-hourglass-half"></i><p>Tu participacion aun no esta aprobada.</p></div>';
         return;
       }
 
       await cargarMisApuestas();
-
       const cerrado = isCerrado();
-      const porFase = {};
+      const pMap = {};
+      globalPartidos.forEach(p => { pMap[p.id] = p; });
 
-      // Orden de fases garantizado
-      const ORDEN_FASES = [
-        'Grupo A','Grupo B','Grupo C','Grupo D','Grupo E','Grupo F',
-        'Grupo G','Grupo H','Grupo I','Grupo J','Grupo K','Grupo L',
-        '32avos de Final','Octavos de Final','Cuartos de Final',
-        'Semifinales','Tercer Lugar','Gran Final'
-      ];
+      const totalGrupos = GRUPOS.reduce((s,g) => s + GRP_IDS[g].length, 0);
+      const compGrupos  = GRUPOS.reduce((s,g) => s + GRP_IDS[g].filter(id => !!misApuestas[id]).length, 0);
 
-      globalPartidos.forEach(p => {
-        // Grupos usan "Grupo X", eliminatorias usan su campo fase
-        const faseKey = p.fase || (p.grupo ? `Grupo ${p.grupo}` : 'General');
-        if (!porFase[faseKey]) porFase[faseKey] = [];
-        porFase[faseKey].push(p);
+      let html = cerrado
+        ? '<div class="cerrado-banner"><i class="fas fa-lock"></i> Apuestas cerradas - Solo visualizacion</div>'
+        : '';
+
+      // Acordeon Fase de Grupos
+      html += buildFaseAcc('grupos','fas fa-layer-group','fase-acc-icon-grupos',
+        'Fase de Grupos','12-26 jun · 12 grupos · 72 partidos', compGrupos, totalGrupos, true);
+      html += '<div class="fase-acc-body open" id="faccB-grupos">';
+      html += '<div class="grupo-tabs-scroll" id="gtabs-grupos">';
+      GRUPOS.forEach((g, i) => {
+        const comp = GRP_IDS[g].filter(id => !!misApuestas[id]).length;
+        const tot  = GRP_IDS[g].length;
+        html += '<button class="gtab'+(i===0?' active':'')+'" onclick="switchGrupoTab(this,\''+g+'\')">Grupo '+g+' <span style="font-size:.65rem;opacity:.8;">'+(comp===tot?'&#10003;':comp+'/'+tot)+'</span></button>';
+      });
+      html += '</div>';
+      GRUPOS.forEach((g, i) => {
+        html += '<div class="grupo-panel'+(i===0?' active':'')+'" id="gpanel-'+g+'"><div class="partidos-panel-wrap">';
+        GRP_IDS[g].forEach(id => {
+          const p = pMap[id] || FIXTURE_MAP[id];
+          if (p) html += buildApRow(p, cerrado);
+        });
+        html += '</div></div>';
+      });
+      html += '</div></div>';
+
+      // Acordeones fases eliminatorias
+      FASES_ELIM_POLLA.forEach(fase => {
+        const comp = fase.ids.filter(id => !!misApuestas[id]).length;
+        html += buildFaseAcc(fase.id, fase.icon, fase.iconClass, fase.label, fase.sub, comp, fase.ids.length, false);
+        html += '<div class="fase-acc-body" id="faccB-'+fase.id+'"><div class="partidos-panel-wrap">';
+        fase.ids.forEach(id => {
+          const p = pMap[id] || FIXTURE_MAP[id];
+          if (p) html += buildApRow(p, cerrado);
+        });
+        html += '</div></div></div>';
       });
 
-      // Ordenar fases según ORDEN_FASES, luego por fecha+hora dentro de cada fase
-      const ordenFases = Object.keys(porFase).sort((a, b) => {
-        const ia = ORDEN_FASES.indexOf(a);
-        const ib = ORDEN_FASES.indexOf(b);
-        if (ia !== -1 && ib !== -1) return ia - ib;
-        if (ia !== -1) return -1;
-        if (ib !== -1) return 1;
-        return a.localeCompare(b);
-      });
-
-      let html = '';
-
-      if (cerrado) {
-        html += `<div class="cerrado-banner"><i class="fas fa-lock"></i> Las apuestas están cerradas. Solo puedes ver tus predicciones.</div>`;
-      }
-
-      ordenFases.forEach(fase => {
-        html += `<div class="partidos-fase">
-          <div class="partidos-fase-title"><i class="fas fa-layer-group"></i> ${fase}</div>`;
-
-        porFase[fase]
-          .sort((a,b) => {
-            // Ordenar por fecha ISO luego por hora
-            const fa = (a.fecha || '') + 'T' + (a.hora || '00:00');
-            const fb = (b.fecha || '') + 'T' + (b.hora || '00:00');
-            return fa.localeCompare(fb);
-          })
-          .forEach(p => {
-            const apuesta = misApuestas[p.id];
-            const tieneApuesta = !!apuesta;
-            // resultado_local/visita = campo guardado por el admin en Firestore
-            const resLocal  = p.resultado_local  ?? p.goles_local  ?? null;
-            const resVisita = p.resultado_visita ?? p.goles_visita ?? null;
-            const puntaje = apuesta?.puntaje ?? (
-              resLocal != null && resVisita != null && tieneApuesta
-                ? calcularPuntaje(
-                    { local: resLocal, visita: resVisita },
-                    { local: apuesta.golesLocal, visita: apuesta.golesVisita }
-                  )
-                : null
-            );
-
-            const ptsClass = puntaje != null ? `pts-${puntaje}` : '';
-            const ptsLabel = puntaje != null ? `${puntaje} pt${puntaje === 1 ? '' : 's'}` : '';
-
-            html += `
-              <div class="partido-row ${tieneApuesta ? 'tiene-apuesta' : ''}" data-id="${p.id}">
-                <div class="team-name">
-                  <span style="font-size:1.3rem">${getFlag(p.local || p.cruce || '')}</span>
-                  ${p.local || p.cruce || 'Por definir'}
-                </div>
-
-                <div class="score-inputs">
-                  <input type="number" min="0" max="20" class="score-input" id="local-${p.id}"
-                    value="${tieneApuesta ? apuesta.golesLocal : ''}" placeholder="-" ${cerrado ? 'disabled' : ''}>
-                  <span class="score-sep">-</span>
-                  <input type="number" min="0" max="20" class="score-input" id="visita-${p.id}"
-                    value="${tieneApuesta ? apuesta.golesVisita : ''}" placeholder="-" ${cerrado ? 'disabled' : ''}>
-                </div>
-
-                <div class="team-name right">
-                  ${p.visita || 'Por definir'}
-                  <span style="font-size:1.3rem">${getFlag(p.visita || '')}</span>
-                </div>
-
-                <div class="partido-meta">
-                  <span>
-                    <i class="far fa-calendar"></i> ${formatFecha(p.fecha, p.hora)}
-                    ${p.estadio ? ` · <i class="fas fa-location-dot"></i> ${p.estadio}` : ''}
-                  </span>
-
-                  <div style="display:flex;align-items:center;gap:10px;">
-                    ${ptsLabel ? `<span class="pts-badge ${ptsClass}">${ptsLabel}</span>` : ''}
-                    ${!cerrado ? `<button class="save-btn" id="save-${p.id}" disabled>Guardar</button>` : ''}
-                    ${resLocal != null && resVisita != null ? `<span style="color:var(--muted);font-size:.75rem;">Real: ${resLocal}–${resVisita}</span>` : ''}
-                  </div>
-                </div>
-              </div>
-            `;
-          });
-
-        html += `</div>`;
-      });
-
-      container.innerHTML = html || `<div class="empty-state"><i class="fas fa-futbol"></i><p>No hay partidos cargados aún.</p></div>`;
+      container.innerHTML = html || '<div class="empty-state"><i class="fas fa-futbol"></i><p>No hay partidos cargados.</p></div>';
 
       if (!cerrado) {
-        globalPartidos.forEach(p => {
-          const l = document.getElementById(`local-${p.id}`);
-          const v = document.getElementById(`visita-${p.id}`);
-          const btn = document.getElementById(`save-${p.id}`);
-
+        const seen = new Set();
+        [...globalPartidos, ...Object.values(FIXTURE_MAP)].forEach(p => {
+          if (seen.has(p.id)) return; seen.add(p.id);
+          const l   = document.getElementById('local-'+p.id);
+          const v   = document.getElementById('visita-'+p.id);
+          const btn = document.getElementById('save-'+p.id);
           if (l && v && btn) {
-            const enable = () => { btn.disabled = false; };
-            l.addEventListener('input', enable);
-            v.addEventListener('input', enable);
-            btn.addEventListener('click', () => guardarApuesta(p));
+            const chk = () => { btn.disabled = l.value==='' || v.value===''; };
+            l.addEventListener('input', chk);
+            v.addEventListener('input', chk);
+            btn.addEventListener('click', () => guardarApuesta(pMap[p.id] || FIXTURE_MAP[p.id]));
           }
         });
       }
     }
+
 
     async function guardarApuesta(partido) {
       const l = document.getElementById(`local-${partido.id}`).value;
