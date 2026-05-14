@@ -224,46 +224,91 @@
     .badge-blue{background:rgba(59,130,246,.15);color:#60a5fa}
     .badge-green{background:rgba(34,197,94,.15);color:var(--green)}
 
-    .partidos-fase{margin-bottom:32px}
-    .partidos-fase-title{
-      font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.06em;color:var(--gold);
-      margin-bottom:14px;display:flex;align-items:center;gap:10px;
-    }
+    /* ── ACORDEÓN APUESTAS (mismo look que admin) ── */
+    .fase-block{margin-bottom:8px;border-radius:12px;overflow:hidden;border:1px solid var(--border);}
+    .fase-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--card);cursor:pointer;user-select:none;transition:background .18s;gap:12px;}
+    .fase-header:hover{background:var(--card2);}
+    .fase-header.open{background:var(--card2);border-bottom:1px solid var(--border);}
+    .fase-header-left{display:flex;align-items:center;gap:12px;}
+    .fase-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+    .fase-icon-grupos{background:rgba(245,200,66,.12);color:var(--gold);}
+    .fase-icon-elim{background:rgba(59,130,246,.12);color:#60a5fa;}
+    .fase-label{font-family:'Bebas Neue',sans-serif;font-size:1rem;font-weight:800;letter-spacing:.05em;color:var(--text);}
+    .fase-sublabel{font-size:.7rem;color:var(--muted);margin-top:1px;}
+    .fase-chevron{color:var(--muted);transition:transform .22s;font-size:.85rem;flex-shrink:0;}
+    .fase-header.open .fase-chevron{transform:rotate(180deg);}
+    .fase-progress{font-size:.7rem;font-weight:700;font-family:'Bebas Neue',sans-serif;letter-spacing:.04em;padding:3px 10px;border-radius:6px;background:rgba(255,255,255,.05);color:var(--muted);white-space:nowrap;}
+    .fase-progress.completo{background:rgba(34,197,94,.12);color:var(--green);}
+    .fase-body{display:none;}
+    .fase-body.open{display:block;}
+
+    /* Tabs de grupo */
+    .grupo-tabs-wrap{display:flex;align-items:center;gap:6px;padding:12px 16px 0;flex-wrap:wrap;border-bottom:1px solid var(--border);background:var(--bg2);}
+    .grupo-tab{font-family:'Bebas Neue',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:6px 13px;border-radius:7px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px;}
+    .grupo-tab:hover{border-color:rgba(245,200,66,.35);color:var(--gold);}
+    .grupo-tab.active{background:var(--gold);color:#0a0e1a;border-color:var(--gold);}
+    .grupo-tab .gtab-check{font-size:.6rem;opacity:.75;}
+    .grupo-panel{display:none;padding:12px 16px;}
+    .grupo-panel.active{display:block;}
+    .fase-partidos-wrap{padding:12px 16px;}
+
+    /* Partido row — nuevo diseño */
     .partido-row{
-      background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:10px;
-      display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;transition:border-color .2s;
+      background:var(--card2);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden;
+      transition:border-color .2s;
     }
-    .partido-row:hover{border-color:rgba(245,200,66,.25)}
-    .partido-row.tiene-apuesta{border-color:rgba(34,197,94,.3)}
-    .team-name{font-weight:600;font-size:.95rem;display:flex;align-items:center;gap:8px}
-    .team-name.right{justify-content:flex-end;text-align:right;flex-direction:row-reverse}
-    .score-inputs{display:flex;align-items:center;gap:8px}
+    .partido-row-inner{
+      display:grid;grid-template-columns:1fr auto 1fr auto;align-items:center;gap:12px;padding:14px 16px;
+    }
+    .partido-row.tiene-apuesta{border-color:rgba(34,197,94,.35);}
+    .partido-row.tiene-apuesta .partido-row-inner{border-left:3px solid var(--green);}
+    .partido-row:hover{border-color:rgba(245,200,66,.3);}
+    .team-name{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.9rem;color:var(--text);}
+    .team-name.right{flex-direction:row-reverse;}
+
+    /* Centro inputs */
+    .score-inputs{display:flex;flex-direction:column;align-items:center;gap:4px;}
+    .score-inputs-row{display:flex;align-items:center;gap:6px;}
     .score-input{
-      width:48px;height:48px;text-align:center;background:var(--card2);border:1px solid var(--border);
+      width:46px;height:46px;text-align:center;background:var(--card);border:1px solid var(--border);
       border-radius:10px;color:var(--text);font-size:1.2rem;font-weight:700;font-family:'DM Sans',sans-serif;transition:all .2s;
     }
-    .score-input:focus{outline:none;border-color:var(--gold);background:var(--bg2)}
-    .score-input:disabled{opacity:.45;cursor:not-allowed}
-    .score-sep{color:var(--muted);font-weight:700}
-    .partido-meta{
-      grid-column:1 / -1;display:flex;justify-content:space-between;align-items:center;font-size:.76rem;color:var(--muted);
-      margin-top:8px;padding-top:10px;border-top:1px solid var(--border);gap:10px;flex-wrap:wrap;
-    }
-    .save-btn{
-      padding:6px 16px;background:var(--gold);color:#0a0e1a;border:none;border-radius:8px;
-      font-weight:700;font-size:.78rem;cursor:pointer;transition:all .2s;
-    }
-    .save-btn:hover{background:var(--gold2)}
-    .save-btn:disabled{opacity:.4;cursor:not-allowed}
+    .score-input:focus{outline:none;border-color:var(--gold);background:var(--bg2);}
+    .score-input:disabled{opacity:.45;cursor:not-allowed;}
+    .score-sep{color:var(--muted);font-weight:800;font-size:1.1rem;}
+    .score-date{font-size:.65rem;color:var(--muted);}
 
-    .pts-badge{
-      display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:.75rem;font-weight:700;
+    /* Acciones derecha */
+    .partido-acciones{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;min-width:100px;}
+    .save-btn{
+      padding:7px 16px;background:var(--gold);color:#0a0e1a;border:none;border-radius:8px;
+      font-weight:700;font-size:.78rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;
     }
-    .pts-4{background:rgba(245,200,66,.2);color:var(--gold)}
-    .pts-3{background:rgba(59,130,246,.2);color:#60a5fa}
-    .pts-2{background:rgba(34,197,94,.2);color:var(--green)}
-    .pts-1{background:rgba(148,163,184,.2);color:#94a3b8}
-    .pts-0{background:rgba(239,68,68,.15);color:var(--red)}
+    .save-btn:hover{background:var(--gold2);}
+    .save-btn:disabled{opacity:.4;cursor:not-allowed;}
+    .save-btn.guardado{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3);}
+
+    /* Meta bar */
+    .partido-meta{
+      padding:6px 16px 10px;font-size:.67rem;color:var(--muted);
+      display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+    }
+    .partido-meta i{color:rgba(245,200,66,.5);font-size:.62rem;}
+
+    .pts-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:.75rem;font-weight:700;}
+    .pts-4{background:rgba(245,200,66,.2);color:var(--gold);}
+    .pts-3{background:rgba(59,130,246,.2);color:#60a5fa;}
+    .pts-2{background:rgba(34,197,94,.2);color:var(--green);}
+    .pts-1{background:rgba(148,163,184,.2);color:#94a3b8;}
+    .pts-0{background:rgba(239,68,68,.15);color:var(--red);}
+
+    .resultado-real{font-size:.72rem;font-weight:700;font-family:'Bebas Neue',sans-serif;letter-spacing:.04em;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:2px 9px;color:var(--muted);}
+
+    .cerrado-banner{
+      background:linear-gradient(135deg,rgba(239,68,68,.1),rgba(239,68,68,.05));
+      border:1px solid rgba(239,68,68,.3);border-radius:12px;padding:14px 20px;color:var(--red);
+      font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:10px;
+    }
 
     .ranking-table{width:100%;border-collapse:collapse;margin-top:16px}
     .ranking-table th{
@@ -521,28 +566,17 @@
       return FLAGS[normalizeText(nombre)] || '🏳️';
     }
 
-    function formatFecha(f, hora) {
+    function formatFecha(f) {
       if (!f) return 'Fecha por definir';
-      // ISO "2026-06-11" → parsear correctamente
       if (typeof f === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(f)) {
         const d = new Date(f + 'T12:00:00');
-        const fecha = d.toLocaleDateString('es-CL', { day:'2-digit', month:'short' });
-        return hora ? `${fecha} · ${hora}` : fecha;
+        return d.toLocaleDateString('es-CL', { day:'2-digit', month:'short' });
       }
-      // Ya formateado "11 jun" → devolver directo
-      if (typeof f === 'string' && /^\d{1,2}\s+\w+/.test(f)) {
-        return hora ? `${f} · ${hora}` : f;
+      const d = new Date(f);
+      if (!isNaN(d)) {
+        return d.toLocaleDateString('es-CL', { day:'2-digit', month:'short' });
       }
-      // Número serial Excel → convertir
-      if (typeof f === 'number' || (!isNaN(Number(f)) && String(f).match(/^\d+(\.\d+)?$/))) {
-        const serial = Math.floor(Number(f));
-        const d = new Date(Math.round((serial - 25569) * 86400 * 1000));
-        if (!isNaN(d)) {
-          const fecha = d.toLocaleDateString('es-CL', { day:'2-digit', month:'short' });
-          return hora ? `${fecha} · ${hora}` : fecha;
-        }
-      }
-      return hora ? `${String(f)} · ${hora}` : String(f);
+      return String(f);
     }
 
     function formatFechaHora(ts) {
@@ -596,139 +630,11 @@
       return 0;
     }
 
-    // Fixture completo — fuente de verdad local (orden, fechas, equipos garantizados)
-    const FIXTURE_GRUPOS = [
-      {"id":"fgA1","grupo":"A","local":"Mexico","visita":"Sudafrica","fecha":"2026-06-11","hora":"15:00","estadio":"Estadio Azteca, Ciudad de México"},
-      {"id":"fgA2","grupo":"A","local":"Corea del Sur","visita":"Chequia","fecha":"2026-06-11","hora":"22:00","estadio":"Estadio Akron, Guadalajara"},
-      {"id":"fgB1","grupo":"B","local":"Canada","visita":"Bosnia y Herzegovina","fecha":"2026-06-12","hora":"15:00","estadio":"BMO Field, Toronto"},
-      {"id":"fgD1","grupo":"D","local":"Estados Unidos","visita":"Paraguay","fecha":"2026-06-12","hora":"21:00","estadio":"SoFi Stadium, Los Ángeles"},
-      {"id":"fgB2","grupo":"B","local":"Qatar","visita":"Suiza","fecha":"2026-06-13","hora":"15:00","estadio":"Levi's Stadium, San Francisco"},
-      {"id":"fgC1","grupo":"C","local":"Brasil","visita":"Marruecos","fecha":"2026-06-13","hora":"18:00","estadio":"Gillette Stadium, Boston"},
-      {"id":"fgC2","grupo":"C","local":"Haiti","visita":"Escocia","fecha":"2026-06-13","hora":"21:00","estadio":"MetLife Stadium, Nueva York"},
-      {"id":"fgD2","grupo":"D","local":"Australia","visita":"Turquia","fecha":"2026-06-14","hora":"00:00","estadio":"BC Place, Vancouver"},
-      {"id":"fgE1","grupo":"E","local":"Alemania","visita":"Curazao","fecha":"2026-06-14","hora":"13:00","estadio":"Lincoln Financial Field, Filadelfia"},
-      {"id":"fgF1","grupo":"F","local":"Paises Bajos","visita":"Japon","fecha":"2026-06-14","hora":"16:00","estadio":"AT&T Stadium, Dallas"},
-      {"id":"fgE2","grupo":"E","local":"Costa de Marfil","visita":"Ecuador","fecha":"2026-06-14","hora":"19:00","estadio":"NRG Stadium, Houston"},
-      {"id":"fgF2","grupo":"F","local":"Suecia","visita":"Tunez","fecha":"2026-06-14","hora":"22:00","estadio":"Estadio BBVA, Monterrey"},
-      {"id":"fgH1","grupo":"H","local":"Espana","visita":"Cabo Verde","fecha":"2026-06-15","hora":"12:00","estadio":"Mercedes-Benz Stadium, Atlanta"},
-      {"id":"fgG1","grupo":"G","local":"Belgica","visita":"Egipto","fecha":"2026-06-15","hora":"15:00","estadio":"Lumen Field, Seattle"},
-      {"id":"fgH2","grupo":"H","local":"Arabia Saudita","visita":"Uruguay","fecha":"2026-06-15","hora":"18:00","estadio":"Hard Rock Stadium, Miami"},
-      {"id":"fgG2","grupo":"G","local":"Iran","visita":"Nueva Zelanda","fecha":"2026-06-15","hora":"21:00","estadio":"SoFi Stadium, Los Ángeles"},
-      {"id":"fgI1","grupo":"I","local":"Francia","visita":"Senegal","fecha":"2026-06-16","hora":"15:00","estadio":"MetLife Stadium, Nueva York"},
-      {"id":"fgI2","grupo":"I","local":"Irak","visita":"Noruega","fecha":"2026-06-16","hora":"18:00","estadio":"Gillette Stadium, Boston"},
-      {"id":"fgJ1","grupo":"J","local":"Argentina","visita":"Argelia","fecha":"2026-06-16","hora":"21:00","estadio":"Arrowhead Stadium, Kansas City"},
-      {"id":"fgJ2","grupo":"J","local":"Austria","visita":"Jordania","fecha":"2026-06-17","hora":"00:00","estadio":"Levi's Stadium, San Francisco"},
-      {"id":"fgK1","grupo":"K","local":"Portugal","visita":"RD Congo","fecha":"2026-06-17","hora":"13:00","estadio":"NRG Stadium, Houston"},
-      {"id":"fgL1","grupo":"L","local":"Inglaterra","visita":"Croacia","fecha":"2026-06-17","hora":"16:00","estadio":"AT&T Stadium, Dallas"},
-      {"id":"fgL2","grupo":"L","local":"Ghana","visita":"Panama","fecha":"2026-06-17","hora":"19:00","estadio":"BMO Field, Toronto"},
-      {"id":"fgK2","grupo":"K","local":"Uzbekistan","visita":"Colombia","fecha":"2026-06-17","hora":"22:00","estadio":"Estadio Azteca, Ciudad de México"},
-      {"id":"fgA3","grupo":"A","local":"Chequia","visita":"Sudafrica","fecha":"2026-06-18","hora":"12:00","estadio":"Mercedes-Benz Stadium, Atlanta"},
-      {"id":"fgB3","grupo":"B","local":"Suiza","visita":"Bosnia y Herzegovina","fecha":"2026-06-18","hora":"15:00","estadio":"SoFi Stadium, Los Ángeles"},
-      {"id":"fgB4","grupo":"B","local":"Canada","visita":"Qatar","fecha":"2026-06-18","hora":"18:00","estadio":"BC Place, Vancouver"},
-      {"id":"fgA4","grupo":"A","local":"Mexico","visita":"Corea del Sur","fecha":"2026-06-18","hora":"21:00","estadio":"Estadio Azteca, Ciudad de México"},
-      {"id":"fgD3","grupo":"D","local":"Estados Unidos","visita":"Australia","fecha":"2026-06-19","hora":"15:00","estadio":"Levi's Stadium, San Francisco"},
-      {"id":"fgC3","grupo":"C","local":"Escocia","visita":"Marruecos","fecha":"2026-06-19","hora":"18:00","estadio":"Gillette Stadium, Boston"},
-      {"id":"fgC4","grupo":"C","local":"Brasil","visita":"Haiti","fecha":"2026-06-19","hora":"20:30","estadio":"Hard Rock Stadium, Miami"},
-      {"id":"fgD4","grupo":"D","local":"Turquia","visita":"Paraguay","fecha":"2026-06-19","hora":"23:00","estadio":"BMO Field, Toronto"},
-      {"id":"fgF3","grupo":"F","local":"Paises Bajos","visita":"Suecia","fecha":"2026-06-20","hora":"13:00","estadio":"NRG Stadium, Houston"},
-      {"id":"fgE3","grupo":"E","local":"Alemania","visita":"Costa de Marfil","fecha":"2026-06-20","hora":"16:00","estadio":"MetLife Stadium, Nueva York"},
-      {"id":"fgE4","grupo":"E","local":"Ecuador","visita":"Curazao","fecha":"2026-06-20","hora":"20:00","estadio":"Arrowhead Stadium, Kansas City"},
-      {"id":"fgF4","grupo":"F","local":"Tunez","visita":"Japon","fecha":"2026-06-21","hora":"00:00","estadio":"Estadio BBVA, Monterrey"},
-      {"id":"fgH3","grupo":"H","local":"Espana","visita":"Arabia Saudita","fecha":"2026-06-21","hora":"12:00","estadio":"Mercedes-Benz Stadium, Atlanta"},
-      {"id":"fgG3","grupo":"G","local":"Belgica","visita":"Iran","fecha":"2026-06-21","hora":"15:00","estadio":"SoFi Stadium, Los Ángeles"},
-      {"id":"fgH4","grupo":"H","local":"Uruguay","visita":"Cabo Verde","fecha":"2026-06-21","hora":"18:00","estadio":"Hard Rock Stadium, Miami"},
-      {"id":"fgG4","grupo":"G","local":"Nueva Zelanda","visita":"Egipto","fecha":"2026-06-21","hora":"21:00","estadio":"BC Place, Vancouver"},
-      {"id":"fgJ3","grupo":"J","local":"Argentina","visita":"Austria","fecha":"2026-06-22","hora":"13:00","estadio":"AT&T Stadium, Dallas"},
-      {"id":"fgI3","grupo":"I","local":"Francia","visita":"Irak","fecha":"2026-06-22","hora":"17:00","estadio":"Lincoln Financial Field, Filadelfia"},
-      {"id":"fgI4","grupo":"I","local":"Noruega","visita":"Senegal","fecha":"2026-06-22","hora":"20:00","estadio":"MetLife Stadium, Nueva York"},
-      {"id":"fgJ4","grupo":"J","local":"Jordania","visita":"Argelia","fecha":"2026-06-22","hora":"23:00","estadio":"Levi's Stadium, San Francisco"},
-      {"id":"fgK3","grupo":"K","local":"Portugal","visita":"Uzbekistan","fecha":"2026-06-23","hora":"13:00","estadio":"NRG Stadium, Houston"},
-      {"id":"fgL3","grupo":"L","local":"Inglaterra","visita":"Ghana","fecha":"2026-06-23","hora":"16:00","estadio":"Gillette Stadium, Boston"},
-      {"id":"fgL4","grupo":"L","local":"Panama","visita":"Croacia","fecha":"2026-06-23","hora":"19:00","estadio":"BMO Field, Toronto"},
-      {"id":"fgK4","grupo":"K","local":"Colombia","visita":"RD Congo","fecha":"2026-06-23","hora":"22:00","estadio":"Estadio Akron, Guadalajara"},
-      {"id":"fgB5","grupo":"B","local":"Suiza","visita":"Canada","fecha":"2026-06-24","hora":"15:00","estadio":"BC Place, Vancouver"},
-      {"id":"fgB6","grupo":"B","local":"Bosnia y Herzegovina","visita":"Qatar","fecha":"2026-06-24","hora":"15:00","estadio":"Lumen Field, Seattle"},
-      {"id":"fgC5","grupo":"C","local":"Marruecos","visita":"Haiti","fecha":"2026-06-24","hora":"18:00","estadio":"Mercedes-Benz Stadium, Atlanta"},
-      {"id":"fgC6","grupo":"C","local":"Escocia","visita":"Brasil","fecha":"2026-06-24","hora":"18:00","estadio":"Hard Rock Stadium, Miami"},
-      {"id":"fgA5","grupo":"A","local":"Sudafrica","visita":"Corea del Sur","fecha":"2026-06-24","hora":"21:00","estadio":"Estadio BBVA, Monterrey"},
-      {"id":"fgA6","grupo":"A","local":"Chequia","visita":"Mexico","fecha":"2026-06-24","hora":"21:00","estadio":"Estadio Azteca, Ciudad de México"},
-      {"id":"fgE5","grupo":"E","local":"Curazao","visita":"Costa de Marfil","fecha":"2026-06-25","hora":"16:00","estadio":"Lincoln Financial Field, Filadelfia"},
-      {"id":"fgE6","grupo":"E","local":"Ecuador","visita":"Alemania","fecha":"2026-06-25","hora":"16:00","estadio":"MetLife Stadium, Nueva York"},
-      {"id":"fgF5","grupo":"F","local":"Tunez","visita":"Paises Bajos","fecha":"2026-06-25","hora":"19:00","estadio":"Arrowhead Stadium, Kansas City"},
-      {"id":"fgF6","grupo":"F","local":"Japon","visita":"Suecia","fecha":"2026-06-25","hora":"19:00","estadio":"AT&T Stadium, Dallas"},
-      {"id":"fgD5","grupo":"D","local":"Turquia","visita":"Estados Unidos","fecha":"2026-06-25","hora":"22:00","estadio":"SoFi Stadium, Los Ángeles"},
-      {"id":"fgD6","grupo":"D","local":"Paraguay","visita":"Australia","fecha":"2026-06-25","hora":"22:00","estadio":"Levi's Stadium, San Francisco"},
-      {"id":"fgI5","grupo":"I","local":"Noruega","visita":"Francia","fecha":"2026-06-26","hora":"15:00","estadio":"Gillette Stadium, Boston"},
-      {"id":"fgI6","grupo":"I","local":"Senegal","visita":"Irak","fecha":"2026-06-26","hora":"15:00","estadio":"BMO Field, Toronto"},
-      {"id":"fgH5","grupo":"H","local":"Cabo Verde","visita":"Arabia Saudita","fecha":"2026-06-26","hora":"20:00","estadio":"NRG Stadium, Houston"},
-      {"id":"fgH6","grupo":"H","local":"Uruguay","visita":"Espana","fecha":"2026-06-26","hora":"20:00","estadio":"Estadio Akron, Guadalajara"},
-      {"id":"fgG5","grupo":"G","local":"Nueva Zelanda","visita":"Belgica","fecha":"2026-06-26","hora":"23:00","estadio":"BC Place, Vancouver"},
-      {"id":"fgG6","grupo":"G","local":"Egipto","visita":"Iran","fecha":"2026-06-26","hora":"23:00","estadio":"Hard Rock Stadium, Miami"},
-      {"id":"fgL5","grupo":"L","local":"Panama","visita":"Inglaterra","fecha":"2026-06-27","hora":"17:00","estadio":"MetLife Stadium, Nueva York"},
-      {"id":"fgL6","grupo":"L","local":"Croacia","visita":"Ghana","fecha":"2026-06-27","hora":"17:00","estadio":"Lincoln Financial Field, Filadelfia"},
-      {"id":"fgK5","grupo":"K","local":"Colombia","visita":"Portugal","fecha":"2026-06-27","hora":"19:30","estadio":"Hard Rock Stadium, Miami"},
-      {"id":"fgK6","grupo":"K","local":"RD Congo","visita":"Uzbekistan","fecha":"2026-06-27","hora":"19:30","estadio":"Mercedes-Benz Stadium, Atlanta"},
-      {"id":"fgJ5","grupo":"J","local":"Argelia","visita":"Austria","fecha":"2026-06-27","hora":"22:00","estadio":"Arrowhead Stadium, Kansas City"},
-      {"id":"fgJ6","grupo":"J","local":"Jordania","visita":"Argentina","fecha":"2026-06-27","hora":"22:00","estadio":"AT&T Stadium, Dallas"},
-    ];
-
-    // Fixture eliminatorias
-    const FIXTURE_ELIM = [
-      {"id":"r32_1","fase":"32avos de Final","local":"1.A","visita":"2.B","fecha":"2026-07-01","hora":"16:00","estadio":"MetLife Stadium, Nueva York"},
-      {"id":"r32_2","fase":"32avos de Final","local":"1.C","visita":"2.D","fecha":"2026-07-01","hora":"20:00","estadio":"AT&T Stadium, Dallas"},
-      {"id":"r32_3","fase":"32avos de Final","local":"1.E","visita":"2.F","fecha":"2026-07-02","hora":"16:00","estadio":"SoFi Stadium, Los Ángeles"},
-      {"id":"r32_4","fase":"32avos de Final","local":"1.G","visita":"2.H","fecha":"2026-07-02","hora":"20:00","estadio":"Mercedes-Benz Stadium, Atlanta"},
-      {"id":"r32_5","fase":"32avos de Final","local":"1.I","visita":"2.J","fecha":"2026-07-03","hora":"16:00","estadio":"Gillette Stadium, Boston"},
-      {"id":"r32_6","fase":"32avos de Final","local":"1.K","visita":"2.L","fecha":"2026-07-03","hora":"20:00","estadio":"Arrowhead Stadium, Kansas City"},
-      {"id":"r32_7","fase":"32avos de Final","local":"1.B","visita":"2.A","fecha":"2026-07-04","hora":"16:00","estadio":"BC Place, Vancouver"},
-      {"id":"r32_8","fase":"32avos de Final","local":"1.D","visita":"2.C","fecha":"2026-07-04","hora":"20:00","estadio":"NRG Stadium, Houston"},
-      {"id":"r32_9","fase":"32avos de Final","local":"1.F","visita":"2.E","fecha":"2026-07-05","hora":"16:00","estadio":"BMO Field, Toronto"},
-      {"id":"r32_10","fase":"32avos de Final","local":"1.H","visita":"2.G","fecha":"2026-07-05","hora":"20:00","estadio":"Hard Rock Stadium, Miami"},
-      {"id":"r32_11","fase":"32avos de Final","local":"1.J","visita":"2.I","fecha":"2026-07-06","hora":"16:00","estadio":"Lumen Field, Seattle"},
-      {"id":"r32_12","fase":"32avos de Final","local":"1.L","visita":"2.K","fecha":"2026-07-06","hora":"20:00","estadio":"Lincoln Financial Field, Filadelfia"},
-      {"id":"r32_13","fase":"32avos de Final","local":"3er mejor 1","visita":"3er mejor 2","fecha":"2026-07-07","hora":"16:00","estadio":"AT&T Stadium, Dallas"},
-      {"id":"r32_14","fase":"32avos de Final","local":"3er mejor 3","visita":"3er mejor 4","fecha":"2026-07-07","hora":"20:00","estadio":"MetLife Stadium, Nueva York"},
-      {"id":"r32_15","fase":"32avos de Final","local":"3er mejor 5","visita":"3er mejor 6","fecha":"2026-07-08","hora":"16:00","estadio":"SoFi Stadium, Los Ángeles"},
-      {"id":"r32_16","fase":"32avos de Final","local":"3er mejor 7","visita":"3er mejor 8","fecha":"2026-07-08","hora":"20:00","estadio":"Mercedes-Benz Stadium, Atlanta"},
-      {"id":"r16_1","fase":"Octavos de Final","local":"G.32 1","visita":"G.32 2","fecha":"2026-07-11","hora":"16:00","estadio":"MetLife Stadium, Nueva York"},
-      {"id":"r16_2","fase":"Octavos de Final","local":"G.32 3","visita":"G.32 4","fecha":"2026-07-11","hora":"20:00","estadio":"AT&T Stadium, Dallas"},
-      {"id":"r16_3","fase":"Octavos de Final","local":"G.32 5","visita":"G.32 6","fecha":"2026-07-12","hora":"16:00","estadio":"SoFi Stadium, Los Ángeles"},
-      {"id":"r16_4","fase":"Octavos de Final","local":"G.32 7","visita":"G.32 8","fecha":"2026-07-12","hora":"20:00","estadio":"Mercedes-Benz Stadium, Atlanta"},
-      {"id":"r16_5","fase":"Octavos de Final","local":"G.32 9","visita":"G.32 10","fecha":"2026-07-13","hora":"16:00","estadio":"Gillette Stadium, Boston"},
-      {"id":"r16_6","fase":"Octavos de Final","local":"G.32 11","visita":"G.32 12","fecha":"2026-07-13","hora":"20:00","estadio":"Arrowhead Stadium, Kansas City"},
-      {"id":"r16_7","fase":"Octavos de Final","local":"G.32 13","visita":"G.32 14","fecha":"2026-07-14","hora":"16:00","estadio":"BC Place, Vancouver"},
-      {"id":"r16_8","fase":"Octavos de Final","local":"G.32 15","visita":"G.32 16","fecha":"2026-07-14","hora":"20:00","estadio":"NRG Stadium, Houston"},
-      {"id":"qf1","fase":"Cuartos de Final","local":"G.R16 1","visita":"G.R16 2","fecha":"2026-07-18","hora":"16:00","estadio":"MetLife Stadium, Nueva York"},
-      {"id":"qf2","fase":"Cuartos de Final","local":"G.R16 3","visita":"G.R16 4","fecha":"2026-07-18","hora":"20:00","estadio":"AT&T Stadium, Dallas"},
-      {"id":"qf3","fase":"Cuartos de Final","local":"G.R16 5","visita":"G.R16 6","fecha":"2026-07-19","hora":"16:00","estadio":"SoFi Stadium, Los Ángeles"},
-      {"id":"qf4","fase":"Cuartos de Final","local":"G.R16 7","visita":"G.R16 8","fecha":"2026-07-19","hora":"20:00","estadio":"Mercedes-Benz Stadium, Atlanta"},
-      {"id":"sf1","fase":"Semifinales","local":"G.CF 1","visita":"G.CF 2","fecha":"2026-07-22","hora":"20:00","estadio":"MetLife Stadium, Nueva York"},
-      {"id":"sf2","fase":"Semifinales","local":"G.CF 3","visita":"G.CF 4","fecha":"2026-07-23","hora":"20:00","estadio":"SoFi Stadium, Los Ángeles"},
-      {"id":"3p","fase":"Tercer Lugar","local":"Perdedor SF 1","visita":"Perdedor SF 2","fecha":"2026-07-25","hora":"16:00","estadio":"AT&T Stadium, Dallas"},
-      {"id":"fin","fase":"Gran Final","local":"Ganador SF 1","visita":"Ganador SF 2","fecha":"2026-07-26","hora":"20:00","estadio":"MetLife Stadium, Nueva York"},
-    ];
-
-    // Mapa id → partido base
-    const FIXTURE_MAP = {};
-    [...FIXTURE_GRUPOS, ...FIXTURE_ELIM].forEach(p => { FIXTURE_MAP[p.id] = p; });
-
     async function cargarPartidos() {
       const snap = await getDocs(collection(db, 'partidos'));
-      const firestoreById = {};
-      snap.docs.forEach(d => { firestoreById[d.id] = { id: d.id, ...d.data() }; });
-
-      // Merge: fixture base (orden+fecha+equipos garantizados) + Firestore (resultado real)
-      globalPartidos = [...FIXTURE_GRUPOS, ...FIXTURE_ELIM].map(base => ({
-        ...base,
-        ...(firestoreById[base.id] || {}),
-        // Siempre usar fecha/hora/local/visita del fixture (evita datos corruptos de Firestore)
-        fecha:   base.fecha,
-        hora:    base.hora,
-        estadio: base.estadio,
-        local:   firestoreById[base.id]?.local || base.local,
-        visita:  firestoreById[base.id]?.visita || base.visita,
-      }));
-      // El orden ya viene del fixture (cronológico)
+      globalPartidos = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (Number(a.numero || 0) - Number(b.numero || 0)));
     }
 
     async function cargarGrupos() {
@@ -945,206 +851,329 @@
     toast(e?.message || 'Error al unirse al grupo', 'error');
   }
 }
-    // ── CSS del acordeon (inyectado aqui por conveniencia) ────────────────
-    // ── Helpers acordeon ───────────────────────────────────────────────────
-
-    function buildApRow(p, cerrado) {
-      const apuesta   = misApuestas[p.id];
-      const tieneAp   = !!apuesta;
-      const resLocal  = p.resultado_local  ?? p.goles_local  ?? null;
-      const resVisita = p.resultado_visita ?? p.goles_visita ?? null;
-      const puntaje   = tieneAp
-        ? (apuesta.puntaje ?? (resLocal != null && resVisita != null
-            ? calcularPuntaje({local:resLocal,visita:resVisita},{local:apuesta.golesLocal,visita:apuesta.golesVisita})
-            : null))
-        : null;
-
-      const localNombre  = p.local  || 'Por confirmar';
-      const visitaNombre = p.visita || 'Por confirmar';
-      const esElimPH = !p.grupo && ['G.','1.','2.','3er','Por con','Gan','Per'].some(x => localNombre.startsWith(x));
-
-      const ptsPill   = puntaje != null
-        ? `<span class="pts-badge pts-${puntaje}">${puntaje} pt${puntaje===1?'':'s'}</span>` : '';
-      const realBadge = resLocal != null && resVisita != null
-        ? `<span class="real-badge"><i class="fas fa-check-circle"></i> ${resLocal}-${resVisita}</span>` : '';
-      const saveBadge = tieneAp
-        ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:.7rem;color:var(--green);font-weight:600;"><i class="fas fa-check-circle"></i> Guardado</span>`
-        : '';
-
-      return `<div class="partido-res">
-        <div class="partido-res-row ${tieneAp ? 'guardado' : 'sin-apuesta'}">
-          <div class="team-label">
-            <span style="font-size:1.1rem">${esElimPH ? '&#9647;' : getFlag(localNombre)}</span>
-            <span class="${esElimPH ? 'ph-team' : ''}" style="font-weight:600;font-size:.88rem;">${localNombre}</span>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
-            <div style="display:flex;align-items:center;gap:6px;">
-              <input type="number" min="0" max="20" class="result-input" id="local-${p.id}"
-                value="${tieneAp ? apuesta.golesLocal : ''}" placeholder="–" ${cerrado ? 'disabled' : ''}>
-              <span class="result-sep">:</span>
-              <input type="number" min="0" max="20" class="result-input" id="visita-${p.id}"
-                value="${tieneAp ? apuesta.golesVisita : ''}" placeholder="–" ${cerrado ? 'disabled' : ''}>
-            </div>
-            <span style="font-size:.67rem;color:var(--muted);">${formatFecha(p.fecha, p.hora)}</span>
-          </div>
-          <div class="team-label right">
-            <span class="${esElimPH ? 'ph-team' : ''}" style="font-weight:600;font-size:.88rem;">${visitaNombre}</span>
-            <span style="font-size:1.1rem">${esElimPH ? '&#9647;' : getFlag(visitaNombre)}</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0;min-width:110px;">
-            ${saveBadge}
-            <div style="display:flex;align-items:center;gap:6px;">
-              ${realBadge}${ptsPill}
-              ${!cerrado ? `<button class="save-btn" id="save-${p.id}" disabled>Guardar</button>` : ''}
-            </div>
-          </div>
-        </div>
-        <div class="res-meta-row">
-          <i class="fas fa-location-dot" style="color:var(--red);font-size:.62rem;"></i> ${p.estadio || 'TBD'}
-        </div>
-      </div>`;
-    }
-
-        function buildFaseAcc(id, icon, iconClass, title, sub, comp, tot, openNow) {
-      const pct      = tot > 0 ? Math.round(comp/tot*100) : 0;
-      const badgeCls = pct===100 && tot>0 ? 'completo' : pct>0 ? 'parcial' : '';
-      const badgeTxt = pct===100 && tot>0 ? 'Completo' : comp+'/'+tot;
-      return `<div class="fase-acc" id="facc-${id}">
-        <div class="fase-acc-header${openNow?' open':''}" onclick="toggleAcc('${id}')">
-          <div class="fase-acc-left">
-            <div class="fase-acc-icon ${iconClass}"><i class="${icon}"></i></div>
-            <div><div class="fase-acc-title">${title}</div><div class="fase-acc-sub">${sub}</div></div>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span class="fase-acc-badge ${badgeCls}">${badgeTxt}</span>
-            <i class="fas fa-chevron-down fase-acc-chevron"></i>
-          </div>
-        </div>`;
-    }
-
-    window.toggleAcc = function(id) {
-      document.getElementById('facc-'+id)?.querySelector('.fase-acc-header')?.classList.toggle('open');
-      document.getElementById('faccB-'+id)?.classList.toggle('open');
-    };
-
-    window.switchGrupoTab = function(el, g) {
-      document.querySelectorAll('#gtabs-grupos .gtab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('[id^="gpanel-"]').forEach(p => p.classList.remove('active'));
-      el.classList.add('active');
-      document.getElementById('gpanel-'+g)?.classList.add('active');
-      el.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
-    };
-
-    const FASES_ELIM_POLLA = [
-      {id:'32avos',  label:'32avos de Final',    sub:'1-8 jul · 16 partidos',    icon:'fas fa-circle-nodes',      iconClass:'fase-acc-icon-32avos',
-       ids:['r32_1','r32_2','r32_3','r32_4','r32_5','r32_6','r32_7','r32_8','r32_9','r32_10','r32_11','r32_12','r32_13','r32_14','r32_15','r32_16']},
-      {id:'octavos', label:'Octavos de Final',    sub:'11-14 jul · 8 partidos',   icon:'fas fa-shield-halved',     iconClass:'fase-acc-icon-octavos',
-       ids:['r16_1','r16_2','r16_3','r16_4','r16_5','r16_6','r16_7','r16_8']},
-      {id:'cuartos', label:'Cuartos de Final',    sub:'18-19 jul · 4 partidos',   icon:'fas fa-trophy',            iconClass:'fase-acc-icon-cuartos',
-       ids:['qf1','qf2','qf3','qf4']},
-      {id:'semis',   label:'Semifinales',          sub:'22-23 jul · 2 partidos',   icon:'fas fa-star-half-stroke',  iconClass:'fase-acc-icon-semis',
-       ids:['sf1','sf2']},
-      {id:'tercero', label:'Tercer Lugar',          sub:'25 jul',                   icon:'fas fa-medal',             iconClass:'fase-acc-icon-32avos', ids:['3p']},
-      {id:'final',   label:'Gran Final',            sub:'26 jul · MetLife Stadium', icon:'fas fa-crown',             iconClass:'fase-acc-icon-final',   ids:['fin']},
-    ];
-
-    const GRP_IDS = {
-      A:['fgA1','fgA2','fgA3','fgA4','fgA5','fgA6'], B:['fgB1','fgB2','fgB3','fgB4','fgB5','fgB6'],
-      C:['fgC1','fgC2','fgC3','fgC4','fgC5','fgC6'], D:['fgD1','fgD2','fgD3','fgD4','fgD5','fgD6'],
-      E:['fgE1','fgE2','fgE3','fgE4','fgE5','fgE6'], F:['fgF1','fgF2','fgF3','fgF4','fgF5','fgF6'],
-      G:['fgG1','fgG2','fgG3','fgG4','fgG5','fgG6'], H:['fgH1','fgH2','fgH3','fgH4','fgH5','fgH6'],
-      I:['fgI1','fgI2','fgI3','fgI4','fgI5','fgI6'], J:['fgJ1','fgJ2','fgJ3','fgJ4','fgJ5','fgJ6'],
-      K:['fgK1','fgK2','fgK3','fgK4','fgK5','fgK6'], L:['fgL1','fgL2','fgL3','fgL4','fgL5','fgL6'],
-    };
-    const GRUPOS = ['A','B','C','D','E','F','G','H','I','J','K','L'];
-
     async function renderApuestas() {
       const container = document.getElementById('apuestas-content');
 
       if (!miParticipante) {
-        container.innerHTML = '<div class="empty-state"><i class="fas fa-lock"></i><p>Primero debes unirte a un grupo.</p></div>';
+        container.innerHTML = `<div class="empty-state"><i class="fas fa-lock"></i><p>Primero debes unirte a un grupo.</p></div>`;
         return;
       }
       if (miParticipante.estado !== 'aprobado') {
-        container.innerHTML = '<div class="empty-state"><i class="fas fa-hourglass-half"></i><p>Tu participacion aun no esta aprobada.</p></div>';
+        container.innerHTML = `<div class="empty-state"><i class="fas fa-hourglass-half"></i><p>Tu participación aún no está aprobada.</p></div>`;
         return;
       }
 
       await cargarMisApuestas();
       const cerrado = isCerrado();
-      const pMap = {};
-      globalPartidos.forEach(p => { pMap[p.id] = p; });
 
-      const totalGrupos = GRUPOS.reduce((s,g) => s + GRP_IDS[g].length, 0);
-      const compGrupos  = GRUPOS.reduce((s,g) => s + GRP_IDS[g].filter(id => !!misApuestas[id]).length, 0);
+      // ── Fixture local (misma fuente de verdad que admin) ──────────────────
+      const FG = {
+        A:[
+          {id:'fgA1',local:'Mexico',visita:'Sudafrica',fecha:'11 jun',hora:'15:00',estadio:'Estadio Azteca, Ciudad de México',grupo:'A'},
+          {id:'fgA2',local:'Corea del Sur',visita:'Chequia',fecha:'11 jun',hora:'22:00',estadio:'Estadio Akron, Guadalajara',grupo:'A'},
+          {id:'fgA3',local:'Chequia',visita:'Sudafrica',fecha:'18 jun',hora:'12:00',estadio:'Mercedes-Benz Stadium, Atlanta',grupo:'A'},
+          {id:'fgA4',local:'Mexico',visita:'Corea del Sur',fecha:'18 jun',hora:'21:00',estadio:'Estadio Azteca, Ciudad de México',grupo:'A'},
+          {id:'fgA5',local:'Sudafrica',visita:'Corea del Sur',fecha:'24 jun',hora:'21:00',estadio:'Estadio BBVA, Monterrey',grupo:'A'},
+          {id:'fgA6',local:'Chequia',visita:'Mexico',fecha:'24 jun',hora:'21:00',estadio:'Estadio Azteca, Ciudad de México',grupo:'A'},
+        ],
+        B:[
+          {id:'fgB1',local:'Canada',visita:'Bosnia y Herzegovina',fecha:'12 jun',hora:'15:00',estadio:'BMO Field, Toronto',grupo:'B'},
+          {id:'fgB2',local:'Qatar',visita:'Suiza',fecha:'13 jun',hora:'15:00',estadio:"Levi's Stadium, San Francisco",grupo:'B'},
+          {id:'fgB3',local:'Suiza',visita:'Bosnia y Herzegovina',fecha:'18 jun',hora:'15:00',estadio:'SoFi Stadium, Los Ángeles',grupo:'B'},
+          {id:'fgB4',local:'Canada',visita:'Qatar',fecha:'18 jun',hora:'18:00',estadio:'BC Place, Vancouver',grupo:'B'},
+          {id:'fgB5',local:'Suiza',visita:'Canada',fecha:'24 jun',hora:'15:00',estadio:'BC Place, Vancouver',grupo:'B'},
+          {id:'fgB6',local:'Bosnia y Herzegovina',visita:'Qatar',fecha:'24 jun',hora:'15:00',estadio:'Lumen Field, Seattle',grupo:'B'},
+        ],
+        C:[
+          {id:'fgC1',local:'Brasil',visita:'Marruecos',fecha:'13 jun',hora:'18:00',estadio:'Gillette Stadium, Boston',grupo:'C'},
+          {id:'fgC2',local:'Haiti',visita:'Escocia',fecha:'13 jun',hora:'21:00',estadio:'MetLife Stadium, Nueva York',grupo:'C'},
+          {id:'fgC3',local:'Escocia',visita:'Marruecos',fecha:'19 jun',hora:'18:00',estadio:'Gillette Stadium, Boston',grupo:'C'},
+          {id:'fgC4',local:'Brasil',visita:'Haiti',fecha:'19 jun',hora:'20:30',estadio:'Hard Rock Stadium, Miami',grupo:'C'},
+          {id:'fgC5',local:'Marruecos',visita:'Haiti',fecha:'24 jun',hora:'18:00',estadio:'Mercedes-Benz Stadium, Atlanta',grupo:'C'},
+          {id:'fgC6',local:'Escocia',visita:'Brasil',fecha:'24 jun',hora:'18:00',estadio:'Hard Rock Stadium, Miami',grupo:'C'},
+        ],
+        D:[
+          {id:'fgD1',local:'Estados Unidos',visita:'Paraguay',fecha:'12 jun',hora:'21:00',estadio:'SoFi Stadium, Los Ángeles',grupo:'D'},
+          {id:'fgD2',local:'Australia',visita:'Turquia',fecha:'14 jun',hora:'00:00',estadio:'BC Place, Vancouver',grupo:'D'},
+          {id:'fgD3',local:'Estados Unidos',visita:'Australia',fecha:'19 jun',hora:'15:00',estadio:"Levi's Stadium, San Francisco",grupo:'D'},
+          {id:'fgD4',local:'Turquia',visita:'Paraguay',fecha:'19 jun',hora:'23:00',estadio:'BMO Field, Toronto',grupo:'D'},
+          {id:'fgD5',local:'Turquia',visita:'Estados Unidos',fecha:'25 jun',hora:'22:00',estadio:'SoFi Stadium, Los Ángeles',grupo:'D'},
+          {id:'fgD6',local:'Paraguay',visita:'Australia',fecha:'25 jun',hora:'22:00',estadio:"Levi's Stadium, San Francisco",grupo:'D'},
+        ],
+        E:[
+          {id:'fgE1',local:'Alemania',visita:'Curazao',fecha:'14 jun',hora:'13:00',estadio:'Lincoln Financial Field, Filadelfia',grupo:'E'},
+          {id:'fgE2',local:'Costa de Marfil',visita:'Ecuador',fecha:'14 jun',hora:'19:00',estadio:'NRG Stadium, Houston',grupo:'E'},
+          {id:'fgE3',local:'Alemania',visita:'Costa de Marfil',fecha:'20 jun',hora:'16:00',estadio:'MetLife Stadium, Nueva York',grupo:'E'},
+          {id:'fgE4',local:'Ecuador',visita:'Curazao',fecha:'20 jun',hora:'20:00',estadio:'Arrowhead Stadium, Kansas City',grupo:'E'},
+          {id:'fgE5',local:'Curazao',visita:'Costa de Marfil',fecha:'25 jun',hora:'16:00',estadio:'Lincoln Financial Field, Filadelfia',grupo:'E'},
+          {id:'fgE6',local:'Ecuador',visita:'Alemania',fecha:'25 jun',hora:'16:00',estadio:'MetLife Stadium, Nueva York',grupo:'E'},
+        ],
+        F:[
+          {id:'fgF1',local:'Paises Bajos',visita:'Japon',fecha:'14 jun',hora:'16:00',estadio:'AT&T Stadium, Dallas',grupo:'F'},
+          {id:'fgF2',local:'Suecia',visita:'Tunez',fecha:'14 jun',hora:'22:00',estadio:'Estadio BBVA, Monterrey',grupo:'F'},
+          {id:'fgF3',local:'Paises Bajos',visita:'Suecia',fecha:'20 jun',hora:'13:00',estadio:'NRG Stadium, Houston',grupo:'F'},
+          {id:'fgF4',local:'Tunez',visita:'Japon',fecha:'21 jun',hora:'00:00',estadio:'Estadio BBVA, Monterrey',grupo:'F'},
+          {id:'fgF5',local:'Tunez',visita:'Paises Bajos',fecha:'25 jun',hora:'19:00',estadio:'Arrowhead Stadium, Kansas City',grupo:'F'},
+          {id:'fgF6',local:'Japon',visita:'Suecia',fecha:'25 jun',hora:'19:00',estadio:'AT&T Stadium, Dallas',grupo:'F'},
+        ],
+        G:[
+          {id:'fgG1',local:'Belgica',visita:'Egipto',fecha:'15 jun',hora:'15:00',estadio:'Lumen Field, Seattle',grupo:'G'},
+          {id:'fgG2',local:'Iran',visita:'Nueva Zelanda',fecha:'15 jun',hora:'21:00',estadio:'SoFi Stadium, Los Ángeles',grupo:'G'},
+          {id:'fgG3',local:'Belgica',visita:'Iran',fecha:'21 jun',hora:'15:00',estadio:'SoFi Stadium, Los Ángeles',grupo:'G'},
+          {id:'fgG4',local:'Nueva Zelanda',visita:'Egipto',fecha:'21 jun',hora:'21:00',estadio:'BC Place, Vancouver',grupo:'G'},
+          {id:'fgG5',local:'Nueva Zelanda',visita:'Belgica',fecha:'26 jun',hora:'23:00',estadio:'BC Place, Vancouver',grupo:'G'},
+          {id:'fgG6',local:'Egipto',visita:'Iran',fecha:'26 jun',hora:'23:00',estadio:'Hard Rock Stadium, Miami',grupo:'G'},
+        ],
+        H:[
+          {id:'fgH1',local:'Espana',visita:'Cabo Verde',fecha:'15 jun',hora:'12:00',estadio:'Mercedes-Benz Stadium, Atlanta',grupo:'H'},
+          {id:'fgH2',local:'Arabia Saudita',visita:'Uruguay',fecha:'15 jun',hora:'18:00',estadio:'Hard Rock Stadium, Miami',grupo:'H'},
+          {id:'fgH3',local:'Espana',visita:'Arabia Saudita',fecha:'21 jun',hora:'12:00',estadio:'Mercedes-Benz Stadium, Atlanta',grupo:'H'},
+          {id:'fgH4',local:'Uruguay',visita:'Cabo Verde',fecha:'21 jun',hora:'18:00',estadio:'Hard Rock Stadium, Miami',grupo:'H'},
+          {id:'fgH5',local:'Cabo Verde',visita:'Arabia Saudita',fecha:'26 jun',hora:'20:00',estadio:'NRG Stadium, Houston',grupo:'H'},
+          {id:'fgH6',local:'Uruguay',visita:'Espana',fecha:'26 jun',hora:'20:00',estadio:'Estadio Akron, Guadalajara',grupo:'H'},
+        ],
+        I:[
+          {id:'fgI1',local:'Francia',visita:'Senegal',fecha:'16 jun',hora:'15:00',estadio:'MetLife Stadium, Nueva York',grupo:'I'},
+          {id:'fgI2',local:'Irak',visita:'Noruega',fecha:'16 jun',hora:'18:00',estadio:'Gillette Stadium, Boston',grupo:'I'},
+          {id:'fgI3',local:'Francia',visita:'Irak',fecha:'22 jun',hora:'17:00',estadio:'Lincoln Financial Field, Filadelfia',grupo:'I'},
+          {id:'fgI4',local:'Noruega',visita:'Senegal',fecha:'22 jun',hora:'20:00',estadio:'MetLife Stadium, Nueva York',grupo:'I'},
+          {id:'fgI5',local:'Noruega',visita:'Francia',fecha:'26 jun',hora:'15:00',estadio:'Gillette Stadium, Boston',grupo:'I'},
+          {id:'fgI6',local:'Senegal',visita:'Irak',fecha:'26 jun',hora:'15:00',estadio:'BMO Field, Toronto',grupo:'I'},
+        ],
+        J:[
+          {id:'fgJ1',local:'Argentina',visita:'Argelia',fecha:'16 jun',hora:'21:00',estadio:'Arrowhead Stadium, Kansas City',grupo:'J'},
+          {id:'fgJ2',local:'Austria',visita:'Jordania',fecha:'17 jun',hora:'00:00',estadio:"Levi's Stadium, San Francisco",grupo:'J'},
+          {id:'fgJ3',local:'Argentina',visita:'Austria',fecha:'22 jun',hora:'13:00',estadio:'AT&T Stadium, Dallas',grupo:'J'},
+          {id:'fgJ4',local:'Jordania',visita:'Argelia',fecha:'22 jun',hora:'23:00',estadio:"Levi's Stadium, San Francisco",grupo:'J'},
+          {id:'fgJ5',local:'Argelia',visita:'Austria',fecha:'27 jun',hora:'22:00',estadio:'Arrowhead Stadium, Kansas City',grupo:'J'},
+          {id:'fgJ6',local:'Jordania',visita:'Argentina',fecha:'27 jun',hora:'22:00',estadio:'AT&T Stadium, Dallas',grupo:'J'},
+        ],
+        K:[
+          {id:'fgK1',local:'Portugal',visita:'RD Congo',fecha:'17 jun',hora:'13:00',estadio:'NRG Stadium, Houston',grupo:'K'},
+          {id:'fgK2',local:'Uzbekistan',visita:'Colombia',fecha:'17 jun',hora:'22:00',estadio:'Estadio Azteca, Ciudad de México',grupo:'K'},
+          {id:'fgK3',local:'Portugal',visita:'Uzbekistan',fecha:'23 jun',hora:'13:00',estadio:'NRG Stadium, Houston',grupo:'K'},
+          {id:'fgK4',local:'Colombia',visita:'RD Congo',fecha:'23 jun',hora:'22:00',estadio:'Estadio Akron, Guadalajara',grupo:'K'},
+          {id:'fgK5',local:'Colombia',visita:'Portugal',fecha:'27 jun',hora:'19:30',estadio:'Hard Rock Stadium, Miami',grupo:'K'},
+          {id:'fgK6',local:'RD Congo',visita:'Uzbekistan',fecha:'27 jun',hora:'19:30',estadio:'Mercedes-Benz Stadium, Atlanta',grupo:'K'},
+        ],
+        L:[
+          {id:'fgL1',local:'Inglaterra',visita:'Croacia',fecha:'17 jun',hora:'16:00',estadio:'AT&T Stadium, Dallas',grupo:'L'},
+          {id:'fgL2',local:'Ghana',visita:'Panama',fecha:'17 jun',hora:'19:00',estadio:'BMO Field, Toronto',grupo:'L'},
+          {id:'fgL3',local:'Inglaterra',visita:'Ghana',fecha:'23 jun',hora:'16:00',estadio:'Gillette Stadium, Boston',grupo:'L'},
+          {id:'fgL4',local:'Panama',visita:'Croacia',fecha:'23 jun',hora:'19:00',estadio:'BMO Field, Toronto',grupo:'L'},
+          {id:'fgL5',local:'Panama',visita:'Inglaterra',fecha:'27 jun',hora:'17:00',estadio:'MetLife Stadium, Nueva York',grupo:'L'},
+          {id:'fgL6',local:'Croacia',visita:'Ghana',fecha:'27 jun',hora:'17:00',estadio:'Lincoln Financial Field, Filadelfia',grupo:'L'},
+        ],
+      };
 
-      const ahora = new Date();
-      const diasParaCierre = Math.ceil((new Date('2026-06-10T23:59:59-05:00') - ahora) / 86400000);
-      const diasParaInicio = Math.ceil((new Date('2026-06-11T20:00:00Z') - ahora) / 86400000);
+      // Enriquecer fixture con resultados reales de Firestore
+      const firestoreById = {};
+      globalPartidos.forEach(m => { firestoreById[m.id] = m; });
 
-      let html = '';
-      if (cerrado) {
-        html += '<div class="cerrado-banner"><i class="fas fa-lock"></i> <div><strong>Apuestas cerradas.</strong> Ya no puedes modificar tus predicciones.</div></div>';
-      } else if (diasParaCierre <= 1) {
-        html += `<div class="deadline-banner"><i class="fas fa-triangle-exclamation"></i><div><strong style="color:var(--red);">&#9888; Cierra HOY</strong> — Las apuestas cierran el <strong>10 de junio a las 23:59.</strong> Completa tus predicciones antes de que sea tarde.</div></div>`;
-      } else if (diasParaCierre <= 3) {
-        html += `<div class="deadline-banner"><i class="fas fa-clock"></i><div>Tienes <strong>${diasParaCierre} dias</strong> para completar tus apuestas. Cierran el <strong>10 de junio a las 23:59</strong>, 1 dia antes del Mundial.</div></div>`;
-      } else {
-        html += `<div class="deadline-banner"><i class="fas fa-calendar-clock"></i><div>Las apuestas cierran el <strong>10 de junio de 2026</strong> — 1 dia antes del inicio del Mundial. Tienes <strong>${diasParaCierre} dias</strong> para completar todas tus predicciones.</div></div>`;
+      // Fases eliminatorias
+      const FASES_ELIM = [
+        {id:'r32avos', label:'32avos de Final', sublabel:'1–8 jul · 16 partidos',
+         ids:['r32_1','r32_2','r32_3','r32_4','r32_5','r32_6','r32_7','r32_8','r32_9','r32_10','r32_11','r32_12','r32_13','r32_14','r32_15','r32_16']},
+        {id:'octavos', label:'Octavos de Final', sublabel:'11–14 jul · 8 partidos',
+         ids:['r16_1','r16_2','r16_3','r16_4','r16_5','r16_6','r16_7','r16_8']},
+        {id:'cuartos', label:'Cuartos de Final', sublabel:'18–19 jul · 4 partidos',
+         ids:['qf1','qf2','qf3','qf4']},
+        {id:'semis', label:'Semifinales', sublabel:'22–23 jul · 2 partidos',
+         ids:['sf1','sf2']},
+        {id:'tercero', label:'Tercer Lugar', sublabel:'25 jul',
+         ids:['3p']},
+        {id:'final', label:'Gran Final 🏆', sublabel:'26 jul · MetLife Stadium',
+         ids:['fin']},
+      ];
+
+      // ── Construir fila de partido ──────────────────────────────────────
+      function buildPartidoRow(base) {
+        const fs  = firestoreById[base.id] || {};
+        const p   = { ...base, ...fs };
+        const apuesta = misApuestas[p.id];
+        const tieneApuesta = !!apuesta;
+
+        const tieneReal = p.resultado_local != null && p.resultado_visita != null;
+        const puntaje = apuesta?.puntaje ?? (
+          tieneReal && tieneApuesta
+            ? calcularPuntaje(
+                { local: p.resultado_local, visita: p.resultado_visita },
+                { local: apuesta.golesLocal, visita: apuesta.golesVisita }
+              )
+            : null
+        );
+
+        const ptsClass = puntaje != null ? `pts-${puntaje}` : '';
+        const ptsLabel = puntaje != null ? `${puntaje} pt${puntaje===1?'':'s'}` : '';
+
+        const localNombre  = p.local  || 'Por definir';
+        const visitaNombre = p.visita || 'Por definir';
+        const horaStr = p.hora || '';
+        const fechaStr = p.fecha || '';
+
+        return `
+          <div class="partido-row ${tieneApuesta?'tiene-apuesta':''}" id="prow-${p.id}">
+            <div class="partido-row-inner">
+              <div class="team-name">
+                <span style="font-size:1.2rem">${getFlag(localNombre)}</span>
+                <span>${localNombre}</span>
+              </div>
+
+              <div class="score-inputs">
+                <div class="score-inputs-row">
+                  <input type="number" min="0" max="20" class="score-input" id="local-${p.id}"
+                    value="${tieneApuesta ? apuesta.golesLocal : ''}" placeholder="–" ${cerrado?'disabled':''}>
+                  <span class="score-sep">:</span>
+                  <input type="number" min="0" max="20" class="score-input" id="visita-${p.id}"
+                    value="${tieneApuesta ? apuesta.golesVisita : ''}" placeholder="–" ${cerrado?'disabled':''}>
+                </div>
+                <span class="score-date">${fechaStr}${horaStr?' · '+horaStr:''}</span>
+              </div>
+
+              <div class="team-name right">
+                <span>${visitaNombre}</span>
+                <span style="font-size:1.2rem">${getFlag(visitaNombre)}</span>
+              </div>
+
+              <div class="partido-acciones">
+                ${ptsLabel ? `<span class="pts-badge ${ptsClass}">${ptsLabel}</span>` : ''}
+                ${tieneReal ? `<span class="resultado-real">${p.resultado_local}–${p.resultado_visita}</span>` : ''}
+                ${!cerrado ? `<button class="save-btn" id="save-${p.id}" disabled><i class="fas fa-save"></i> Guardar</button>` : ''}
+                ${tieneApuesta && !ptsLabel ? `<span style="font-size:.65rem;color:var(--green);"><i class="fas fa-check"></i> Guardado</span>` : ''}
+              </div>
+            </div>
+            <div class="partido-meta">
+              <span><i class="fas fa-location-dot"></i> ${p.estadio||'TBD'}</span>
+              ${tieneReal&&tieneApuesta&&puntaje===null?`<span style="color:var(--muted);font-size:.65rem;">Puntaje pendiente</span>`:''}
+            </div>
+          </div>`;
       }
 
-      // Acordeon Fase de Grupos
-      html += buildFaseAcc('grupos','fas fa-layer-group','fase-acc-icon-grupos',
-        'Fase de Grupos','12-26 jun · 12 grupos · 72 partidos', compGrupos, totalGrupos, true);
-      html += '<div class="fase-acc-body open" id="faccB-grupos">';
-      html += '<div class="grupo-tabs-scroll" id="gtabs-grupos">';
-      GRUPOS.forEach((g, i) => {
-        const comp = GRP_IDS[g].filter(id => !!misApuestas[id]).length;
-        const tot  = GRP_IDS[g].length;
-        html += '<button class="gtab'+(i===0?' active':'')+'" onclick="switchGrupoTab(this,\''+g+'\')">Grupo '+g+' <span style="font-size:.65rem;opacity:.8;">'+(comp===tot?'&#10003;':comp+'/'+tot)+'</span></button>';
-      });
-      html += '</div>';
-      GRUPOS.forEach((g, i) => {
-        html += '<div class="grupo-panel'+(i===0?' active':'')+'" id="gpanel-'+g+'"><div class="partidos-panel-wrap">';
-        GRP_IDS[g].forEach(id => {
-          const p = pMap[id] || FIXTURE_MAP[id];
-          if (p) html += buildApRow(p, cerrado);
-        });
-        html += '</div></div>';
-      });
-      html += '</div></div>';
+      // ── Construir HTML ─────────────────────────────────────────────────
+      let html = '';
+      if(cerrado) html += `<div class="cerrado-banner"><i class="fas fa-lock"></i> Las apuestas están cerradas. Solo puedes ver tus predicciones.</div>`;
 
-      // Acordeones fases eliminatorias
-      FASES_ELIM_POLLA.forEach(fase => {
-        const comp = fase.ids.filter(id => !!misApuestas[id]).length;
-        html += buildFaseAcc(fase.id, fase.icon, fase.iconClass, fase.label, fase.sub, comp, fase.ids.length, false);
-        html += '<div class="fase-acc-body" id="faccB-'+fase.id+'"><div class="partidos-panel-wrap">';
+      // Grupos — acordeón + tabs
+      const gruposKeys = Object.keys(FG).sort();
+      const apuestasGruposTotal = gruposKeys.flatMap(g => FG[g]).filter(p => misApuestas[p.id]).length;
+      const totalGrupos = gruposKeys.flatMap(g => FG[g]).length;
+      const okG = apuestasGruposTotal === totalGrupos && totalGrupos > 0;
+
+      html += `<div class="fase-block">
+        <div class="fase-header open" id="fh-grupos" onclick="toggleFaseApuestas('grupos')">
+          <div class="fase-header-left">
+            <div class="fase-icon fase-icon-grupos"><i class="fas fa-layer-group"></i></div>
+            <div>
+              <div class="fase-label">Fase de Grupos</div>
+              <div class="fase-sublabel">12 – 26 jun · 12 grupos · 72 partidos</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="fase-progress ${okG?'completo':''}">${okG?'✓ Completo':apuestasGruposTotal+'/'+totalGrupos+' apostados'}</span>
+            <i class="fas fa-chevron-down fase-chevron"></i>
+          </div>
+        </div>
+        <div class="fase-body open" id="fb-grupos">
+          <div class="grupo-tabs-wrap" id="gtabs-grupos">`;
+
+      gruposKeys.forEach((g, i) => {
+        const apostados = FG[g].filter(p => misApuestas[p.id]).length;
+        const tot = FG[g].length;
+        const ok  = apostados === tot && tot > 0;
+        html += `<button class="grupo-tab${i===0?' active':''}" data-grupo="${g}">
+          Grupo ${g} <span class="gtab-check">${ok?'✓':apostados+'/'+tot}</span>
+        </button>`;
+      });
+
+      html += `</div>`; // close tabs-wrap
+
+      gruposKeys.forEach((g, i) => {
+        html += `<div class="grupo-panel${i===0?' active':''}" id="gpanel-${g}">`;
+        FG[g].forEach(base => { html += buildPartidoRow(base); });
+        html += `</div>`;
+      });
+
+      html += `</div></div>`; // close fase-body + fase-block
+
+      // Fases eliminatorias
+      FASES_ELIM.forEach(fase => {
+        const apostados = fase.ids.filter(id => misApuestas[id]).length;
+        const tot = fase.ids.length;
+        const ok  = apostados === tot && tot > 0;
+        html += `<div class="fase-block">
+          <div class="fase-header" id="fh-${fase.id}" onclick="toggleFaseApuestas('${fase.id}')">
+            <div class="fase-header-left">
+              <div class="fase-icon fase-icon-elim"><i class="fas fa-trophy"></i></div>
+              <div>
+                <div class="fase-label">${fase.label}</div>
+                <div class="fase-sublabel">${fase.sublabel}</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span class="fase-progress ${ok?'completo':''}">${ok?'✓ Completo':apostados+'/'+tot+' apostados'}</span>
+              <i class="fas fa-chevron-down fase-chevron"></i>
+            </div>
+          </div>
+          <div class="fase-body" id="fb-${fase.id}">
+            <div class="fase-partidos-wrap">`;
+
         fase.ids.forEach(id => {
-          const p = pMap[id] || FIXTURE_MAP[id];
-          if (p) html += buildApRow(p, cerrado);
+          const fs = firestoreById[id];
+          if(fs) html += buildPartidoRow(fs);
+          else   html += buildPartidoRow({id, local:'Por confirmar', visita:'Por confirmar', fecha:'–', estadio:'–'});
         });
-        html += '</div></div></div>';
+
+        html += `</div></div></div>`;
       });
 
-      container.innerHTML = html || '<div class="empty-state"><i class="fas fa-futbol"></i><p>No hay partidos cargados.</p></div>';
+      container.innerHTML = html || `<div class="empty-state"><i class="fas fa-futbol"></i><p>No hay partidos cargados aún.</p></div>`;
 
-      if (!cerrado) {
-        const seen = new Set();
-        [...globalPartidos, ...Object.values(FIXTURE_MAP)].forEach(p => {
-          if (seen.has(p.id)) return; seen.add(p.id);
-          const l   = document.getElementById('local-'+p.id);
-          const v   = document.getElementById('visita-'+p.id);
-          const btn = document.getElementById('save-'+p.id);
-          if (l && v && btn) {
-            const chk = () => { btn.disabled = l.value==='' || v.value===''; };
-            l.addEventListener('input', chk);
-            v.addEventListener('input', chk);
-            btn.addEventListener('click', () => guardarApuesta(pMap[p.id] || FIXTURE_MAP[p.id]));
+      // ── Eventos tabs de grupo ──────────────────────────────────────────
+      container.querySelectorAll('.grupo-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          container.querySelectorAll('.grupo-tab').forEach(t => t.classList.remove('active'));
+          container.querySelectorAll('.grupo-panel').forEach(p => p.classList.remove('active'));
+          tab.classList.add('active');
+          document.getElementById(`gpanel-${tab.dataset.grupo}`)?.classList.add('active');
+        });
+      });
+
+      // ── Eventos inputs/guardar ─────────────────────────────────────────
+      if(!cerrado) {
+        globalPartidos.forEach(p => {
+          const l   = document.getElementById(`local-${p.id}`);
+          const v   = document.getElementById(`visita-${p.id}`);
+          const btn = document.getElementById(`save-${p.id}`);
+          if(l && v && btn) {
+            const enable = () => { btn.disabled = false; };
+            l.addEventListener('input', enable);
+            v.addEventListener('input', enable);
+            btn.addEventListener('click', () => guardarApuesta(p));
+          }
+        });
+        // También bindear partidos del fixture local (grupos) que pueden no estar en globalPartidos
+        Object.values(FG).flat().forEach(base => {
+          const l   = document.getElementById(`local-${base.id}`);
+          const v   = document.getElementById(`visita-${base.id}`);
+          const btn = document.getElementById(`save-${base.id}`);
+          if(l && v && btn && !btn.dataset.bound) {
+            btn.dataset.bound = '1';
+            const enable = () => { btn.disabled = false; };
+            l.addEventListener('input', enable);
+            v.addEventListener('input', enable);
+            const merged = { ...base, ...(firestoreById[base.id]||{}) };
+            btn.addEventListener('click', () => guardarApuesta(merged));
           }
         });
       }
     }
 
+    window.toggleFaseApuestas = function(id) {
+      const h = document.getElementById('fh-' + id);
+      const b = document.getElementById('fb-' + id);
+      if(h) h.classList.toggle('open');
+      if(b) b.classList.toggle('open');
+    };
 
     async function guardarApuesta(partido) {
       const l = document.getElementById(`local-${partido.id}`).value;
@@ -1167,11 +1196,9 @@
         actualizadoEn: serverTimestamp()
       };
 
-      const resL = partido.resultado_local  ?? partido.goles_local  ?? null;
-      const resV = partido.resultado_visita ?? partido.goles_visita ?? null;
-      if (resL != null && resV != null) {
+      if (partido.resultado_local != null && partido.resultado_visita != null) {
         payload.puntaje = calcularPuntaje(
-          { local: resL, visita: resV },
+          { local: partido.resultado_local, visita: partido.resultado_visita },
           { local: Number(l), visita: Number(v) }
         );
       }
