@@ -619,7 +619,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, getDocs, collection } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, getDocs, getDoc, doc, collection } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const fbApp = initializeApp({
   apiKey:"AIzaSyAqrYCFQN8epqx9HZrd7t1Ywz9wVf2Fx5Y",
@@ -1039,15 +1039,26 @@ function renderEstadios(){
 }
 
 // Modal País
+// ── helpers modales ───────────────────────────────────────────────────────
 function infoItem(label, value){
-  if(!value && value !== 0) return '';
+  if(value === null || value === undefined || value === '' || value === false) return '';
   return `<div class="info-item"><div class="info-label">${label}</div><div class="info-value">${value}</div></div>`;
 }
 
-function showPais(nombre){
-  const p=globalData.paises.find(i=>norm(i.nombre)===norm(nombre)); if(!p) return;
+function buildModalPais(p){
   const ranking = p.ranking_fifa || p.ranking_2022;
-  document.getElementById('modal-body').innerHTML=`
+  const items = [
+    infoItem('Ranking FIFA',              ranking ? '#'+ranking : ''),
+    infoItem('Participaciones Mundiales', p.participaciones),
+    infoItem('Mejor posición histórica',  p.mejor_posicion),
+    infoItem('Sede base en el torneo',    p.sede),
+    infoItem('Entrenador',                p.entrenador),
+    infoItem('Goleador histórico',        p.goleador_historico),
+    infoItem('Goleador en Mundiales',     p.goleador_mundiales),
+    infoItem('Jugador más caro',          p.jugador_mas_caro),
+    infoItem('Valor del plantel',         p.valor_plantel_usd ? 'USD $'+Number(p.valor_plantel_usd).toLocaleString('es-CL')+'M' : ''),
+  ].join('');
+  return `
     <div class="modal-head-red">
       <span class="modal-flag-big">${getFlag(p.nombre)}</span>
       <div class="modal-country">${p.nombre}</div>
@@ -1057,68 +1068,88 @@ function showPais(nombre){
       </div>
     </div>
     <div class="modal-body-pad">
-      <div class="info-grid">
-        ${infoItem('Ranking FIFA', ranking ? '#'+ranking : '')}
-        ${infoItem('Participaciones en Mundiales', p.participaciones)}
-        ${infoItem('Mejor posición histórica', p.mejor_posicion)}
-        ${infoItem('Sede base en el torneo', p.sede)}
-        ${infoItem('Entrenador', p.entrenador)}
-        ${infoItem('Goleador histórico', p.goleador_historico)}
-        ${infoItem('Goleador en Mundiales', p.goleador_mundiales)}
-        ${infoItem('Jugador más caro', p.jugador_mas_caro)}
-        ${infoItem('Valor del plantel', p.valor_plantel_usd ? 'USD $'+Number(p.valor_plantel_usd).toLocaleString('es-CL')+'M' : '')}
-      </div>
+      ${items ? `<div class="info-grid">${items}</div>` : '<p style="color:var(--muted);font-size:0.85rem;text-align:center;padding:20px 0;">Sin información adicional registrada.</p>'}
     </div>`;
-  document.getElementById('paisModal').style.display='flex';
 }
 
-function showStadium(e){
-  const img=getStadiumImg(e), flag=getStadiumFlag(e), ciudad=e.ciudad||e.city||'N/A';
-  const coords = getCityCoords(e);
+function showPais(nombre){
+  const cached = globalData.paises.find(i=>norm(i.nombre)===norm(nombre));
+  if(!cached) return;
+  const body = document.getElementById('modal-body');
+  body.innerHTML = buildModalPais(cached);
+  document.getElementById('paisModal').style.display='flex';
+  // Fetch fresco desde Firestore
+  getDoc(doc(db,'paises',cached.id)).then(snap=>{
+    if(!snap.exists()) return;
+    const fresh={id:snap.id,...snap.data()};
+    const idx=globalData.paises.findIndex(p=>p.id===cached.id);
+    if(idx!==-1) globalData.paises[idx]=fresh;
+    body.innerHTML=buildModalPais(fresh);
+  }).catch(()=>{});
+}
 
-  const detalle = (icon, label, value) => {
-    if(!value && value !== 0) return '';
+function buildModalEstadio(e, coords){
+  const img=getStadiumImg(e), flag=getStadiumFlag(e);
+  const ciudad=e.ciudad||e.city||'';
+  const paisLabel=e.pais==='USA'?'Estados Unidos 🇺🇸':e.pais==='Mexico'?'México 🇲🇽':e.pais==='Canada'?'Canadá 🇨🇦':(e.pais||'');
+  const det=(icon,label,value)=>{
+    if(value===null||value===undefined||value==='') return '';
     return `<div class="stadium-detail"><i class="${icon}"></i><span><b>${label}:</b> ${value}</span></div>`;
   };
-
-  document.getElementById('stadium-modal-body').innerHTML=`
+  return `
     ${img?`<img src="${img}" class="stadium-modal-img" alt="${e.nombre}" onerror="this.style.display='none'">`:
     `<div style="height:220px;background:linear-gradient(135deg,#0D0D0D,#2A2A2A);display:flex;align-items:center;justify-content:center;"><i class="fas fa-landmark" style="font-size:2.5rem;color:#F0C040"></i></div>`}
     <div class="stadium-modal-panel">
       <div class="stadium-tag"><i class="fas fa-circle-check"></i> Sede Oficial FIFA 2026</div>
       <div class="stadium-name">${e.nombre} ${flag}</div>
-      ${detalle('fas fa-city',        'Ciudad',            ciudad)}
-      ${detalle('fas fa-globe',       'País',              e.pais === 'USA' ? 'Estados Unidos 🇺🇸' : e.pais === 'Mexico' ? 'México 🇲🇽' : e.pais === 'Canada' ? 'Canadá 🇨🇦' : e.pais || '')}
-      ${detalle('fas fa-users',       'Capacidad',         e.capacidad ? Number(e.capacidad).toLocaleString('es-CL') + ' espectadores' : '')}
-      ${detalle('fas fa-calendar',    'Inauguración',      e.anio_inauguracion || e.anio)}
-      ${detalle('fas fa-leaf',        'Superficie',        e.superficie)}
-      ${detalle('fas fa-cloud',       'Techo',             e.techo)}
-      ${detalle('fas fa-futbol',      'Partidos asignados',e.partidos_asignados)}
-      ${detalle('fas fa-shield-halved','Equipo local',     e.equipo_local)}
-      ${detalle('fas fa-info-circle', 'Datos relevantes',  e.datos_relevantes)}
+      ${det('fas fa-city',         'Ciudad',             ciudad)}
+      ${det('fas fa-globe',        'País',               paisLabel)}
+      ${det('fas fa-users',        'Capacidad',          e.capacidad?Number(e.capacidad).toLocaleString('es-CL')+' espectadores':'')}
+      ${det('fas fa-calendar',     'Inauguración',       e.anio_inauguracion||e.anio||'')}
+      ${det('fas fa-leaf',         'Superficie',         e.superficie||'')}
+      ${det('fas fa-cloud',        'Techo',              e.techo||'')}
+      ${det('fas fa-futbol',       'Partidos asignados', e.partidos_asignados||'')}
+      ${det('fas fa-shield-halved','Equipo local',       e.equipo_local||'')}
+      ${det('fas fa-info-circle',  'Datos relevantes',   e.datos_relevantes||'')}
     </div>
-    ${coords ? `<div class="modal-weather-bar" id="mwb_modal"><span class="mw-loading">🌡️ Cargando clima actual...</span></div>` : ''}`;
+    ${coords?`<div class="modal-weather-bar" id="mwb_modal"><span class="mw-loading">🌡️ Cargando clima actual...</span></div>`:''}`;
+}
 
-  if (coords) {
-    fetchWeather(coords.lat, coords.lon, coords.key).then(w => {
-      const bar = document.getElementById('mwb_modal');
-      if (!bar) return;
-      bar.innerHTML = `
-        <div class="mw-cond">
-          <span class="mw-cond-icon">${w.icon}</span>
-          <div><div class="mw-label">Condición actual</div><div class="mw-val">${w.desc}</div></div>
-        </div>
-        <div class="mw-item"><div class="mw-label">🌡️ Temp.</div><div class="mw-val">${w.temp}°C</div></div>
-        <div class="mw-item"><div class="mw-label">💧 Humedad</div><div class="mw-val">${w.humidity}%</div></div>
-        <div class="mw-item"><div class="mw-label">💨 Viento</div><div class="mw-val">${w.wind} km/h</div></div>
-      `;
-    }).catch(() => {
-      const bar = document.getElementById('mwb_modal');
-      if (bar) bar.innerHTML = '<span class="mw-loading">Sin datos de clima</span>';
-    });
-  }
+function loadWeatherBar(coords){
+  if(!coords) return;
+  fetchWeather(coords.lat,coords.lon,coords.key).then(w=>{
+    const bar=document.getElementById('mwb_modal');
+    if(!bar) return;
+    bar.innerHTML=`
+      <div class="mw-cond"><span class="mw-cond-icon">${w.icon}</span>
+        <div><div class="mw-label">Condición actual</div><div class="mw-val">${w.desc}</div></div>
+      </div>
+      <div class="mw-item"><div class="mw-label">🌡️ Temp.</div><div class="mw-val">${w.temp}°C</div></div>
+      <div class="mw-item"><div class="mw-label">💧 Humedad</div><div class="mw-val">${w.humidity}%</div></div>
+      <div class="mw-item"><div class="mw-label">💨 Viento</div><div class="mw-val">${w.wind} km/h</div></div>`;
+  }).catch(()=>{
+    const bar=document.getElementById('mwb_modal');
+    if(bar) bar.innerHTML='<span class="mw-loading">Sin datos de clima</span>';
+  });
+}
 
+function showStadium(e){
+  const coords=getCityCoords(e);
+  const body=document.getElementById('stadium-modal-body');
+  body.innerHTML=buildModalEstadio(e,coords);
   document.getElementById('stadiumModal').style.display='flex';
+  loadWeatherBar(coords);
+  // Fetch fresco desde Firestore si tiene ID
+  if(e.id){
+    getDoc(doc(db,'estadios',e.id)).then(snap=>{
+      if(!snap.exists()) return;
+      const fresh={id:snap.id,...snap.data()};
+      const idx=globalData.estadios.findIndex(s=>s.id===e.id);
+      if(idx!==-1) globalData.estadios[idx]=fresh;
+      body.innerHTML=buildModalEstadio(fresh,coords);
+      loadWeatherBar(coords);
+    }).catch(()=>{});
+  }
 }
 
 // Tabla de Posiciones
