@@ -254,24 +254,11 @@ nav {
 .ranking-table th { text-align: left; padding: 10px 16px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); border-bottom: 1px solid var(--border); }
 .ranking-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
 .ranking-table tr:last-child td { border-bottom: none; }
-.ranking-table tr:hover td { background: var(--card2); }
 .pos-badge { width: 28px; height: 28px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; }
 .pos-1 { background: rgba(245,200,66,0.2); color: var(--gold); }
 .pos-2 { background: rgba(148,163,184,0.2); color: #94a3b8; }
 .pos-3 { background: rgba(205,127,50,0.2); color: #cd7f32; }
 .pos-n { background: var(--card2); color: var(--muted); }
-
-/* ── RANKING FILTROS ── */
-.rk-filter-btn{font-family:'Bebas Neue',sans-serif;font-size:0.82rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;transition:all 0.18s;display:inline-flex;align-items:center;gap:7px;}
-.rk-filter-btn:hover{border-color:rgba(245,200,66,0.4);color:var(--gold);}
-.rk-filter-btn.active{background:var(--gold);color:#0a0e1a;border-color:var(--gold);}
-.rk-grupo-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:16px;}
-.rk-grupo-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--card2);border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap;}
-.rk-grupo-nombre{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.05em;color:var(--gold);}
-.rk-grupo-meta{font-size:0.72rem;color:var(--muted);}
-.rk-bar-wrap{display:flex;align-items:center;gap:8px;}
-.rk-bar{flex:1;height:5px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;max-width:90px;}
-.rk-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));border-radius:999px;transition:width 0.5s ease;}
 
 /* ── SOLICITUDES ── */
 .badge-yellow  { background: rgba(245,200,66,0.15); color: var(--gold); border: 1px solid rgba(245,200,66,0.3); }
@@ -405,27 +392,6 @@ nav {
 .grupo-panel{display:none;padding:14px 18px;}
 .grupo-panel.active{display:block;}
 .fase-partidos-wrap{padding:14px 18px;}
-/* ── CARGA MASIVA EXCEL ──────────────────────────────────────────── */
-.col-pill{display:inline-flex;align-items:center;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:5px;padding:3px 9px;font-size:0.68rem;font-family:monospace;color:var(--text);}
-.col-pill.req{background:rgba(245,200,66,0.1);border-color:rgba(245,200,66,0.3);color:var(--gold);}
-#bulk-dropzone:hover{border-color:var(--gold)!important;background:rgba(245,200,66,0.06)!important;}
-/* Tabla preview bulk */
-#bulk-preview-table th{background:#111827;color:var(--muted);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;padding:8px 12px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.08);white-space:nowrap;}
-#bulk-preview-table td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--text);vertical-align:top;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-#bulk-preview-table tr:hover td{background:rgba(255,255,255,0.03);}
-#bulk-preview-table tr.row-error td{background:rgba(239,68,68,0.07);}
-#bulk-preview-table tr.row-error td:first-child{border-left:3px solid var(--red);}
-#bulk-preview-table tr.row-ok td:first-child{border-left:3px solid var(--green);}
-.bulk-badge-ok{display:inline-flex;align-items:center;gap:4px;background:rgba(34,197,94,0.12);color:var(--green);border-radius:5px;padding:2px 8px;font-size:0.65rem;font-weight:700;}
-.bulk-badge-err{display:inline-flex;align-items:center;gap:4px;background:rgba(239,68,68,0.12);color:var(--red);border-radius:5px;padding:2px 8px;font-size:0.65rem;font-weight:700;}
-.bulk-badge-new{display:inline-flex;align-items:center;gap:4px;background:rgba(59,130,246,0.12);color:#60a5fa;border-radius:5px;padding:2px 8px;font-size:0.65rem;font-weight:700;}
-
-.btn-green { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
-.btn-green:hover { background: rgba(34,197,94,0.25); }
-.sim-fs-log-ok  { color: #4ade80; }
-.sim-fs-log-err { color: #f87171; }
-.sim-fs-log-inf { color: #93c5fd; }
-
 /* ── SELECCIONES ADMIN ─────────────────────────────────────────── */
 .sel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:4px;}
 .sel-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
@@ -470,40 +436,6 @@ nav {
 .est-card:hover .est-edit-icon{opacity:1;}
 .est-empty{text-align:center;padding:60px 20px;color:var(--muted);}
 .est-empty i{font-size:2.2rem;margin-bottom:12px;display:block;}
-
-/* ── SIMULADOR ──────────────────────────────────────────────────── */
-.sim-stab{font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:600;padding:8px 16px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .18s;}
-.sim-stab:hover{color:var(--text);}
-.sim-stab.active{color:var(--gold);border-bottom-color:var(--gold);}
-.sim-grupos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
-.sim-grupo-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
-.sim-grupo-head{padding:12px 16px;background:var(--card2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-.sim-grupo-name{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;}
-.sim-usr-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);}
-.sim-usr-row:last-child{border-bottom:none;}
-.sim-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
-.sim-partido-card{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:8px;}
-.sim-partido-inner{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;}
-.sim-team{display:flex;align-items:center;gap:7px;font-size:0.88rem;font-weight:600;}
-.sim-team.right{flex-direction:row-reverse;}
-.sim-score{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.04em;padding:4px 14px;border-radius:8px;background:var(--card);min-width:72px;text-align:center;}
-.sim-score.jugado{background:var(--gold);color:#0a0e1a;}
-.sim-meta{font-size:0.67rem;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:flex;justify-content:space-between;}
-.sim-rk-table{width:100%;border-collapse:collapse;}
-.sim-rk-table th{font-size:0.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;font-weight:400;}
-.sim-rk-table td{padding:11px 12px;border-bottom:1px solid var(--border);font-size:0.88rem;}
-.sim-rk-table tr:last-child td{border-bottom:none;}
-.sim-rk-table tr:hover td{background:var(--card2);}
-.sim-bar{width:80px;height:4px;background:rgba(255,255,255,.07);border-radius:999px;overflow:hidden;display:inline-block;}
-.sim-bar-fill{height:100%;background:var(--gold);border-radius:999px;transition:width .5s ease;}
-.sim-clas-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;}
-.sim-clas-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
-.sim-clas-head{padding:10px 16px;background:var(--card2);border-bottom:1px solid var(--border);font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.04em;color:var(--gold);display:flex;align-items:center;gap:8px;}
-.sim-clas-slot{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);font-size:.85rem;}
-.sim-clas-slot:last-child{border-bottom:none;}
-.sim-clas-slot.top{background:rgba(34,197,94,.06);}
-.sim-notice{text-align:center;padding:48px 20px;color:var(--muted);}
-.sim-notice i{font-size:2rem;margin-bottom:12px;display:block;opacity:.4;}
 
 /* ── RESET BUTTONS ─────────────────────────────────────────────── */
 .btn-reset-partido{padding:5px 9px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:rgba(239,68,68,0.7);border-radius:7px;font-size:0.72rem;cursor:pointer;transition:all 0.18s;display:inline-flex;align-items:center;gap:4px;font-family:"DM Sans",sans-serif;}
@@ -588,9 +520,9 @@ nav {
       <button class="tab" onclick="showTab('resultados')"><i class="fas fa-futbol"></i> Resultados</button>
       <button class="tab" onclick="showTab('ranking')"><i class="fas fa-trophy"></i> Ranking global</button>
       <button class="tab" onclick="showTab('setup')"><i class="fas fa-database"></i> Setup / Importar</button>
+      <button class="tab" onclick="showTab('backup')"><i class="fas fa-shield-halved"></i> Backup / Restore</button>
       <button class="tab" onclick="showTab('selecciones')"><i class="fas fa-flag"></i> Selecciones</button>
       <button class="tab" onclick="showTab('estadios')"><i class="fas fa-landmark"></i> Estadios</button>
-      <button class="tab" onclick="showTab('simulador')"><i class="fas fa-flask"></i> Simulador</button>
     </div>
 
     <!-- TAB GRUPOS -->
@@ -720,17 +652,85 @@ nav {
       <div id="import-log" style="display:none;background:#0a0e1a;border:1px solid var(--border);border-radius:10px;padding:16px;font-family:monospace;font-size:0.75rem;line-height:1.9;max-height:55vh;overflow-y:auto;">
       </div>
     </div>
-    <!-- TAB RANKING -->
-    <div id="tab-ranking" class="page">
-      <div class="section-title"><i class="fas fa-trophy"></i> Ranking</div>
-
-      <!-- Filtros -->
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px;">
-        <span style="font-size:0.78rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Vista:</span>
-        <div id="rk-filtros" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+    <!-- TAB BACKUP / RESTORE -->
+    <div id="tab-backup" class="page">
+      <div class="section-title"><i class="fas fa-shield-halved"></i> Backup &amp; Restore
+        <span style="font-size:0.78rem;font-weight:400;color:var(--muted);font-family:'DM Sans',sans-serif;margin-left:10px;">Exporta e importa toda la base de datos en formato JSON.</span>
       </div>
 
-      <!-- Contenido ranking -->
+      <!-- Stats última backup -->
+      <div id="backup-stats" style="display:none;background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:12px 18px;margin-bottom:20px;font-size:0.84rem;color:var(--green);display:flex;align-items:center;gap:10px;">
+        <i class="fas fa-check-circle"></i><span id="backup-stats-msg"></span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+
+        <!-- BACKUP -->
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:22px;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--gold);letter-spacing:0.04em;margin-bottom:6px;"><i class="fas fa-download"></i> Crear backup</div>
+          <p style="font-size:0.8rem;color:var(--muted);line-height:1.6;margin-bottom:16px;">Descarga un archivo <code style="background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;">.json</code> con todas las colecciones: paises, partidos, estadios, grupos, participantes y apuestas.</p>
+
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;">
+              <input type="checkbox" id="bk-paises" checked style="accent-color:var(--gold)"> Paises
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;">
+              <input type="checkbox" id="bk-partidos" checked style="accent-color:var(--gold)"> Partidos
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;">
+              <input type="checkbox" id="bk-estadios" checked style="accent-color:var(--gold)"> Estadios
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;">
+              <input type="checkbox" id="bk-grupos" checked style="accent-color:var(--gold)"> Grupos
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;">
+              <input type="checkbox" id="bk-participantes" checked style="accent-color:var(--gold)"> Participantes
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;">
+              <input type="checkbox" id="bk-apuestas" checked style="accent-color:var(--gold)"> Apuestas
+            </label>
+          </div>
+
+          <button class="btn btn-gold" id="btn-backup" onclick="crearBackup()">
+            <i class="fas fa-download"></i> Descargar backup
+          </button>
+        </div>
+
+        <!-- RESTORE -->
+        <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:12px;padding:22px;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--red);letter-spacing:0.04em;margin-bottom:6px;"><i class="fas fa-upload"></i> Restaurar backup</div>
+          <div class="alert alert-warn" style="margin-bottom:14px;font-size:0.78rem;">
+            <i class="fas fa-triangle-exclamation"></i>
+            <strong>Peligro:</strong> El restore sobreescribe los datos actuales con <code>setDoc</code>. Las colecciones no se borran primero — los documentos del backup reemplazan los existentes con el mismo ID.
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <label style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);display:block;margin-bottom:6px;">Archivo de backup (.json)</label>
+            <input type="file" id="restore-file" accept=".json" onchange="cargarArchivoRestore(this)"
+              style="font-size:0.82rem;color:var(--text);background:var(--card);border:1px dashed var(--border);border-radius:8px;padding:10px;width:100%;cursor:pointer;">
+          </div>
+
+          <div id="restore-preview" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px;font-size:0.78rem;">
+            <div style="font-weight:700;color:var(--text);margin-bottom:8px;">Vista previa del backup:</div>
+            <div id="restore-preview-content"></div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;" id="restore-col-checks" style="display:none;">
+          </div>
+
+          <button class="btn btn-danger" id="btn-restore" onclick="ejecutarRestore()" disabled>
+            <i class="fas fa-upload"></i> Restaurar seleccionados
+          </button>
+        </div>
+      </div>
+
+      <!-- Log de operacion -->
+      <div id="backup-log" style="display:none;background:#0a0e1a;border:1px solid var(--border);border-radius:10px;padding:16px;font-family:monospace;font-size:0.75rem;line-height:1.9;max-height:40vh;overflow-y:auto;"></div>
+    </div>
+
+    <!-- TAB RANKING -->
+    <div id="tab-ranking" class="page">
+      <div class="section-title"><i class="fas fa-trophy"></i> Ranking global</div>
       <div id="ranking-global"></div>
     </div>
 
@@ -769,67 +769,6 @@ nav {
 
       <!-- Grid de selecciones -->
       <div id="selecciones-grid"></div>
-
-      <!-- ── CARGA MASIVA EXCEL ── -->
-      <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border);">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--gold);letter-spacing:0.04em;margin-bottom:6px;">
-          <i class="fas fa-file-excel"></i> Carga masiva desde Excel
-        </div>
-        <div style="font-size:0.76rem;color:var(--muted);margin-bottom:16px;line-height:1.6;">
-          Sube un <strong style="color:var(--text);">.xlsx</strong> con una fila por selección. La primera fila debe ser el encabezado.
-          Cada registro se escribe con <strong style="color:var(--text);">setDoc</strong> — sobreescribe completamente el documento si ya existe
-          (usa el campo <code style="background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:4px;">nombre</code> como clave única).
-        </div>
-
-        <!-- Columnas esperadas -->
-        <div style="background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px 16px;margin-bottom:18px;font-size:0.72rem;color:var(--muted);line-height:2;">
-          <span style="color:var(--text);font-weight:700;display:block;margin-bottom:6px;">Columnas del Excel (encabezado exacto):</span>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;">
-            <span class="col-pill req">nombre *</span>
-            <span class="col-pill req">grupo *</span>
-            <span class="col-pill">confederacion</span>
-            <span class="col-pill">ranking_fifa</span>
-            <span class="col-pill">participaciones</span>
-            <span class="col-pill">mejor_posicion</span>
-            <span class="col-pill">entrenador</span>
-            <span class="col-pill">sede</span>
-            <span class="col-pill">goleador_historico</span>
-            <span class="col-pill">goleador_mundiales</span>
-            <span class="col-pill">jugador_mas_caro</span>
-            <span class="col-pill">valor_plantel_usd</span>
-          </div>
-          <div style="margin-top:8px;"><span style="color:var(--red);font-weight:700;">*</span> obligatorios · Las columnas extra se ignoran · Las celdas vacías no se escriben en BD</div>
-        </div>
-
-        <!-- Drop zone -->
-        <div id="bulk-dropzone" onclick="document.getElementById('bulk-file-input').click()"
-          style="border:2px dashed rgba(245,200,66,0.3);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;background:rgba(245,200,66,0.03);"
-          ondragover="event.preventDefault();this.style.borderColor='var(--gold)';this.style.background='rgba(245,200,66,0.07)'"
-          ondragleave="this.style.borderColor='rgba(245,200,66,0.3)';this.style.background='rgba(245,200,66,0.03)'"
-          ondrop="event.preventDefault();this.style.borderColor='rgba(245,200,66,0.3)';this.style.background='rgba(245,200,66,0.03)';handleBulkFile(event.dataTransfer.files[0])">
-          <i class="fas fa-file-excel" style="font-size:2.2rem;color:rgba(245,200,66,0.5);margin-bottom:10px;display:block;"></i>
-          <div style="font-weight:700;color:var(--text);margin-bottom:4px;">Arrastra el archivo aquí o haz clic para seleccionar</div>
-          <div style="font-size:0.75rem;color:var(--muted);">Solo archivos .xlsx · Máximo 5 MB</div>
-          <input type="file" id="bulk-file-input" accept=".xlsx" style="display:none;" onchange="handleBulkFile(this.files[0])">
-        </div>
-
-        <!-- Feedback archivo -->
-        <div id="bulk-file-info" style="display:none;margin-top:12px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;">
-          <i class="fas fa-file-excel" style="color:var(--green);font-size:1.3rem;flex-shrink:0;"></i>
-          <div style="flex:1;">
-            <div id="bulk-file-name" style="font-weight:700;font-size:0.88rem;"></div>
-            <div id="bulk-file-meta" style="font-size:0.72rem;color:var(--muted);margin-top:2px;"></div>
-          </div>
-          <button onclick="limpiarBulkFile()" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:4px;" title="Quitar archivo">✕</button>
-        </div>
-        <div id="bulk-parse-error" style="display:none;margin-top:10px;" class="alert alert-error"></div>
-
-        <!-- Botón preview -->
-        <button id="bulk-preview-btn" onclick="abrirPreviewBulkExcel()" disabled
-          style="margin-top:14px;padding:11px 24px;background:var(--gold);color:#0a0e1a;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.9rem;cursor:pointer;display:inline-flex;align-items:center;gap:9px;opacity:0.4;transition:all .2s;">
-          <i class="fas fa-eye"></i> Vista previa · Confirmar carga
-        </button>
-      </div>
     </div>
 
     <!-- TAB ESTADIOS -->
@@ -870,78 +809,6 @@ nav {
 
       <!-- Grid de estadios -->
       <div id="estadios-admin-grid"></div>
-    </div>
-
-    <!-- TAB SIMULADOR -->
-    <div id="tab-simulador" class="page">
-      <div class="section-title"><i class="fas fa-flask"></i> Simulador · Fase de Grupos</div>
-
-      <!-- Alerta publicado -->
-      <div id="sim-alert-publicado" style="display:none;" class="alert alert-warn">
-        <i class="fas fa-triangle-exclamation"></i>
-        <strong>Resultados simulados activos en Firestore.</strong> El sitio público (index.html) está mostrando estos datos ficticios. Limpia antes de usar datos reales.
-      </div>
-
-      <div class="alert alert-info" style="margin-bottom:20px;">
-        <i class="fas fa-info-circle"></i>
-        Genera datos ficticios, simula jornadas y <strong>publícalos a Firestore</strong> para ver cómo se comporta todo el sistema en vivo. Usa "Limpiar Firestore" para dejar todo como estaba.
-      </div>
-
-      <!-- Top bar stats -->
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 16px;text-align:center;min-width:100px;">
-            <strong id="sim-st-partidos" style="display:block;font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--gold);">0/30</strong>
-            <span style="font-size:0.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Partidos</span>
-          </div>
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 16px;text-align:center;min-width:100px;">
-            <strong id="sim-st-jornada" style="display:block;font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--blue);">0/3</strong>
-            <span style="font-size:0.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Jornada</span>
-          </div>
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 16px;text-align:center;min-width:100px;">
-            <strong id="sim-st-apuestas" style="display:block;font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--green);">175</strong>
-            <span style="font-size:0.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Apuestas</span>
-          </div>
-          <div id="sim-fs-badge" style="display:none;background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.3);border-radius:10px;padding:10px 16px;text-align:center;min-width:100px;">
-            <strong style="display:block;font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--gold);" id="sim-fs-count">0</strong>
-            <span style="font-size:0.66rem;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;">En Firestore</span>
-          </div>
-        </div>
-
-        <!-- Botones acción -->
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-          <button class="btn btn-outline btn-sm" onclick="simReset()"><i class="fas fa-rotate-left"></i> Reiniciar</button>
-          <button class="btn btn-gold" id="sim-btn-avanzar" onclick="simAvanzar()"><i class="fas fa-play"></i> Simular jornada 1</button>
-          <button class="btn btn-green btn-sm" id="sim-btn-publicar" onclick="simPublicarFirestore()" disabled style="opacity:.4;background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3);">
-            <i class="fas fa-cloud-upload-alt"></i> Publicar en Firestore
-          </button>
-          <button class="btn btn-danger btn-sm" id="sim-btn-limpiar" onclick="simLimpiarFirestore()" disabled style="opacity:.4;">
-            <i class="fas fa-broom"></i> Limpiar Firestore
-          </button>
-        </div>
-      </div>
-
-      <!-- Barra de progreso -->
-      <div style="background:rgba(255,255,255,0.06);border-radius:999px;height:6px;overflow:hidden;margin-bottom:6px;">
-        <div id="sim-prog-bar" style="height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));border-radius:999px;width:0%;transition:width .4s ease;"></div>
-      </div>
-      <div id="sim-prog-label" style="font-size:0.68rem;color:var(--muted);margin-bottom:20px;">0 de 30 partidos completados</div>
-
-      <!-- Log Firestore (oculto hasta que se use) -->
-      <div id="sim-fs-log" style="display:none;background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-family:monospace;font-size:0.72rem;max-height:140px;overflow-y:auto;margin-bottom:16px;line-height:1.8;"></div>
-
-      <!-- Sub-tabs -->
-      <div style="display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:20px;">
-        <button class="sim-stab active" data-stab="grupos" onclick="simShowTab(this,'grupos')">⚽ Grupos</button>
-        <button class="sim-stab" data-stab="partidos" onclick="simShowTab(this,'partidos')">📅 Partidos</button>
-        <button class="sim-stab" data-stab="ranking" onclick="simShowTab(this,'ranking')">🏆 Ranking</button>
-        <button class="sim-stab" data-stab="clasificados" onclick="simShowTab(this,'clasificados')">✅ Clasificados</button>
-      </div>
-
-      <div id="sim-v-grupos" class="sim-view" style="display:block;"></div>
-      <div id="sim-v-partidos" class="sim-view" style="display:none;"></div>
-      <div id="sim-v-ranking" class="sim-view" style="display:none;"></div>
-      <div id="sim-v-clasificados" class="sim-view" style="display:none;"></div>
     </div>
   </div>
 </div>
@@ -1050,64 +917,6 @@ nav {
         <button onclick="guardarEstadio()" style="flex:1;padding:11px;background:#3b82f6;color:white;border:none;border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'"><i class="fas fa-save"></i> Guardar cambios</button>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- MODAL PREVIEW CARGA MASIVA EXCEL -->
-<div id="modal-bulk-preview" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:5000;align-items:center;justify-content:center;padding:16px;">
-  <div style="background:#1a2238;border:1px solid rgba(245,200,66,0.25);border-radius:18px;width:100%;max-width:900px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,0.7);animation:mpopIn .22s cubic-bezier(0.34,1.4,0.64,1);">
-    <!-- Header -->
-    <div style="background:linear-gradient(135deg,#111827,#1a2238);border-bottom:1px solid rgba(255,255,255,0.08);padding:20px 26px;display:flex;align-items:center;justify-content:space-between;border-radius:18px 18px 0 0;flex-shrink:0;">
-      <div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--gold);letter-spacing:0.04em;"><i class="fas fa-table"></i> Vista previa — Carga masiva</div>
-        <div id="bulk-preview-subtitle" style="font-size:0.72rem;color:var(--muted);margin-top:2px;"></div>
-      </div>
-      <button onclick="cerrarPreviewBulk()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);border:none;cursor:pointer;color:var(--muted);font-size:1rem;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='rgba(239,68,68,0.3)';this.style.color='white'" onmouseout="this.style.background='rgba(255,255,255,0.08)';this.style.color='var(--muted)'">✕</button>
-    </div>
-
-    <!-- Alertas -->
-    <div id="bulk-preview-alerts" style="padding:0 26px;flex-shrink:0;"></div>
-
-    <!-- Tabla preview -->
-    <div style="overflow:auto;flex:1;padding:16px 26px;">
-      <table id="bulk-preview-table" style="width:100%;border-collapse:collapse;font-size:0.78rem;">
-        <thead id="bulk-preview-thead" style="position:sticky;top:0;z-index:1;"></thead>
-        <tbody id="bulk-preview-tbody"></tbody>
-      </table>
-    </div>
-
-    <!-- Footer -->
-    <div style="border-top:1px solid rgba(255,255,255,0.08);padding:16px 26px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;flex-shrink:0;">
-      <div id="bulk-preview-stats" style="font-size:0.8rem;color:var(--muted);"></div>
-      <div style="display:flex;gap:10px;">
-        <button onclick="cerrarPreviewBulk()" style="padding:10px 22px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.88rem;transition:all .2s;" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Cancelar</button>
-        <button id="bulk-confirm-btn" onclick="ejecutarCargaMasiva()"
-          style="padding:10px 26px;background:var(--red);color:white;border:none;border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.88rem;display:flex;align-items:center;gap:8px;transition:all .2s;"
-          onmouseover="this.style.background='#b91c1c'" onmouseout="this.style.background='var(--red)'">
-          <i class="fas fa-bolt"></i> Confirmar y cargar a Firestore
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL PROGRESO CARGA MASIVA -->
-<div id="modal-bulk-progress" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:6000;align-items:center;justify-content:center;padding:16px;">
-  <div style="background:#1a2238;border:1px solid rgba(245,200,66,0.2);border-radius:18px;width:100%;max-width:480px;padding:32px;box-shadow:0 32px 80px rgba(0,0,0,0.7);text-align:center;">
-    <div style="font-size:2.5rem;margin-bottom:14px;" id="bulk-prog-icon">⚡</div>
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--gold);letter-spacing:0.04em;margin-bottom:8px;">Cargando selecciones...</div>
-    <div id="bulk-prog-text" style="font-size:0.82rem;color:var(--muted);margin-bottom:20px;"></div>
-    <!-- Barra de progreso -->
-    <div style="background:rgba(255,255,255,0.07);border-radius:999px;height:8px;overflow:hidden;margin-bottom:10px;">
-      <div id="bulk-prog-bar" style="height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));border-radius:999px;width:0%;transition:width .3s ease;"></div>
-    </div>
-    <div id="bulk-prog-count" style="font-size:0.72rem;color:var(--muted);"></div>
-    <!-- Log de errores (oculto hasta que haya algo) -->
-    <div id="bulk-prog-log" style="display:none;margin-top:16px;background:rgba(0,0,0,0.3);border-radius:8px;padding:10px 12px;max-height:120px;overflow-y:auto;text-align:left;font-size:0.7rem;font-family:monospace;color:var(--red);line-height:1.8;"></div>
-    <!-- Botón cerrar (aparece al terminar) -->
-    <button id="bulk-prog-close" onclick="cerrarProgresoBulk()" style="display:none;margin-top:18px;padding:10px 28px;background:var(--gold);color:#0a0e1a;border:none;border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.9rem;">
-      <i class="fas fa-check"></i> Listo
-    </button>
   </div>
 </div>
 
@@ -1867,187 +1676,48 @@ window.toggleFaseRes = (id) => {
 };
 
 // ── RANKING GLOBAL (directo a Firestore) ──────────────────────────────────
-// ── RANKING GLOBAL ────────────────────────────────────────────────────────
-let _rkData = null; // cache: { grupos: {id: {nombre, participantes: [{...}]}}, todos: [{...}] }
-let _rkFiltro = 'todos'; // 'todos' | grupoId
-
 async function renderRankingGlobal() {
-  const container  = document.getElementById('ranking-global');
-  const filtrosEl  = document.getElementById('rk-filtros');
-  container.innerHTML = '<p style="color:var(--muted);padding:20px 0;"><i class="fas fa-spinner fa-spin"></i> Cargando ranking...</p>';
-  filtrosEl.innerHTML = '';
-
+  const container = document.getElementById('ranking-global');
+  container.innerHTML = '<p style="color:var(--muted);">Cargando...</p>';
   try {
-    // Cargar datos frescos
-    const [partSnap, apSnap, grSnap] = await Promise.all([
+    const [partSnap, apSnap] = await Promise.all([
       getDocs(collection(db, 'participantes')),
-      getDocs(collection(db, 'apuestas')),
-      getDocs(collection(db, 'grupos'))
+      getDocs(collection(db, 'apuestas'))
     ]);
-
-    // Mapa de grupos
-    const gruposMap = {}; // grupoId → { id, nombre }
-    grSnap.docs.forEach(d => { gruposMap[d.id] = { id: d.id, nombre: d.data().nombre || d.id }; });
-
-    // Acumular puntajes por participante
     const participantes = {};
     partSnap.docs.forEach(d => {
-      const p = d.data();
-      participantes[p.uid] = {
-        uid:        p.uid,
-        nombre:     p.nombre || p.email || 'Jugador',
-        email:      p.email || '',
-        grupoId:    p.grupoId || '',
-        grupoNombre:p.grupoNombre || gruposMap[p.grupoId]?.nombre || '—',
-        estado:     p.estado || 'pendiente',
-        total:      0,
-        aciertos:   0,
-        apuestas:   0,
-      };
+      participantes[d.data().uid] = { ...d.data(), total: 0, aciertos: 0 };
     });
-
     apSnap.docs.forEach(d => {
       const a = d.data();
-      if(!participantes[a.uid]) return;
-      participantes[a.uid].apuestas++;
-      if(a.puntaje != null){
-        participantes[a.uid].total += Number(a.puntaje);
-        if(a.puntaje > 0) participantes[a.uid].aciertos++;
+      if (a.puntaje != null && participantes[a.uid]) {
+        participantes[a.uid].total += a.puntaje;
+        if (a.puntaje > 0) participantes[a.uid].aciertos++;
       }
     });
-
-    // Solo aprobados para el ranking
-    const aprobados = Object.values(participantes).filter(p => p.estado === 'aprobado');
-
-    // Agrupar por grupo
-    const porGrupo = {};
-    aprobados.forEach(p => {
-      if(!porGrupo[p.grupoId]) porGrupo[p.grupoId] = { nombre: p.grupoNombre, jugadores: [] };
-      porGrupo[p.grupoId].jugadores.push(p);
-    });
-    // Ordenar dentro de cada grupo
-    Object.values(porGrupo).forEach(g => {
-      g.jugadores.sort((a,b) => b.total - a.total || b.aciertos - a.aciertos || a.nombre.localeCompare(b.nombre));
-    });
-    // Ranking total combinado
-    const todos = [...aprobados].sort((a,b) => b.total - a.total || b.aciertos - a.aciertos || a.nombre.localeCompare(b.nombre));
-
-    _rkData = { porGrupo, todos };
-
-    // ── Construir filtros ──
-    const gruposOrdenados = Object.entries(porGrupo).sort((a,b) => a[1].nombre.localeCompare(b[1].nombre));
-
-    let botonesHtml = `<button class="rk-filter-btn active" data-filtro="todos" onclick="setRkFiltro('todos')">
-      <i class="fas fa-globe"></i> Ranking Total
-    </button>`;
-    gruposOrdenados.forEach(([gid, g]) => {
-      botonesHtml += `<button class="rk-filter-btn" data-filtro="${gid}" onclick="setRkFiltro('${gid}')">
-        <i class="fas fa-users"></i> ${g.nombre}
-      </button>`;
-    });
-    filtrosEl.innerHTML = botonesHtml;
-
-    _rkFiltro = 'todos';
-    renderRankingVista();
-
-  } catch(e) {
-    container.innerHTML = `<p style="color:var(--red);">${e.message}</p>`;
-  }
-}
-
-window.setRkFiltro = function(filtro) {
-  _rkFiltro = filtro;
-  document.querySelectorAll('.rk-filter-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.filtro === filtro);
-  });
-  renderRankingVista();
-};
-
-function buildTablaGrupo(jugadores, grupoNombre, grupoId, mostrarGrupo) {
-  if(!jugadores.length) return '';
-  const maxPts = jugadores[0]?.total || 1;
-
-  let html = '';
-  if(mostrarGrupo){
-    html += `<div class="rk-grupo-card">
-      <div class="rk-grupo-header">
-        <div>
-          <div class="rk-grupo-nombre"><i class="fas fa-users" style="font-size:0.85rem;opacity:0.7;margin-right:6px;"></i>${grupoNombre}</div>
-          <div class="rk-grupo-meta">${jugadores.length} participante${jugadores.length!==1?'s':''} · Competencia independiente</div>
-        </div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--gold);letter-spacing:0.04em;">
-          ${jugadores[0]?.total ?? 0} <span style="font-size:0.8rem;color:var(--muted);">pts líder</span>
-        </div>
-      </div>`;
-  }
-
-  html += `<table class="ranking-table"><thead><tr>
-    <th style="width:44px;">#</th>
-    <th>Jugador</th>
-    ${mostrarGrupo ? '' : '<th>Grupo</th>'}
-    <th>Email</th>
-    <th style="text-align:center;">Apuestas</th>
-    <th style="text-align:center;">Aciertos</th>
-    <th>Puntos</th>
-  </tr></thead><tbody>`;
-
-  jugadores.forEach((r, i) => {
-    const pos = i + 1;
-    const posClass = pos===1?'pos-1':pos===2?'pos-2':pos===3?'pos-3':'pos-n';
-    const pct = maxPts ? Math.round((r.total/maxPts)*100) : 0;
-    const medalla = pos===1?'🥇':pos===2?'🥈':pos===3?'🥉':'';
-    html += `<tr>
-      <td><span class="pos-badge ${posClass}">${pos}</span></td>
-      <td style="font-weight:600;">${medalla?medalla+' ':''}${r.nombre}</td>
-      ${mostrarGrupo ? '' : `<td style="color:var(--muted);font-size:0.82rem;">${r.grupoNombre}</td>`}
-      <td style="color:var(--muted);font-size:0.78rem;">${r.email}</td>
-      <td style="text-align:center;color:var(--muted);font-size:0.85rem;">${r.apuestas}</td>
-      <td style="text-align:center;color:var(--muted);font-size:0.85rem;">${r.aciertos}</td>
-      <td>
-        <div class="rk-bar-wrap">
-          <span style="font-weight:700;font-size:1.05rem;color:var(--gold);min-width:32px;">${r.total}</span>
-          <div class="rk-bar"><div class="rk-bar-fill" style="width:${pct}%"></div></div>
-        </div>
-      </td>
-    </tr>`;
-  });
-
-  html += '</tbody></table>';
-  if(mostrarGrupo) html += '</div>';
-  return html;
-}
-
-function renderRankingVista() {
-  const container = document.getElementById('ranking-global');
-  if(!_rkData){ container.innerHTML=''; return; }
-
-  if(_rkFiltro === 'todos'){
-    // Vista global: todos juntos indicando su grupo
-    if(!_rkData.todos.length){
-      container.innerHTML='<p style="color:var(--muted);">Sin participantes aprobados.</p>';
+    const ranking = Object.values(participantes).sort((a, b) => b.total - a.total);
+    if (!ranking.length) {
+      container.innerHTML = '<p style="color:var(--muted);">Aún no hay apuestas registradas.</p>';
       return;
     }
-    // Encabezado resumen por grupo
-    const grupos = Object.entries(_rkData.porGrupo).sort((a,b)=>a[1].nombre.localeCompare(b[1].nombre));
-    let resumen = `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">`;
-    grupos.forEach(([gid, g]) => {
-      const lider = g.jugadores[0];
-      resumen += `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;flex:1;min-width:160px;cursor:pointer;transition:all .18s;" onclick="setRkFiltro('${gid}')" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:0.85rem;color:var(--muted);letter-spacing:0.06em;margin-bottom:4px;">${g.nombre}</div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--gold);">${lider?.total ?? 0} <span style="font-size:0.7rem;color:var(--muted);">pts</span></div>
-        <div style="font-size:0.7rem;color:var(--muted);margin-top:2px;">🥇 ${lider?.nombre ?? '—'}</div>
-        <div style="font-size:0.65rem;color:var(--muted);margin-top:1px;">${g.jugadores.length} jugador${g.jugadores.length!==1?'es':''}</div>
-      </div>`;
+    let html = `<table class="ranking-table"><thead><tr>
+      <th>#</th><th>Jugador</th><th>Grupo</th><th>Email</th><th>Aciertos</th><th>Puntos</th>
+    </tr></thead><tbody>`;
+    ranking.forEach((r, i) => {
+      const pos = i + 1;
+      const posClass = pos <= 3 ? `pos-${pos}` : 'pos-n';
+      html += `<tr>
+        <td><span class="pos-badge ${posClass}">${pos}</span></td>
+        <td style="font-weight:600;">${r.nombre || r.email}</td>
+        <td style="color:var(--muted);font-size:0.85rem;">${r.grupoNombre || '–'}</td>
+        <td style="color:var(--muted);font-size:0.82rem;">${r.email}</td>
+        <td style="color:var(--muted);font-size:0.85rem;">${r.aciertos}</td>
+        <td style="font-weight:700;font-size:1.05rem;color:var(--gold);">${r.total}</td>
+      </tr>`;
     });
-    resumen += '</div>';
-
-    container.innerHTML = resumen + buildTablaGrupo(_rkData.todos, '', '', false);
-  } else {
-    // Vista de un grupo específico
-    const g = _rkData.porGrupo[_rkFiltro];
-    if(!g){ container.innerHTML='<p style="color:var(--muted);">Grupo no encontrado.</p>'; return; }
-    container.innerHTML = buildTablaGrupo(g.jugadores, g.nombre, _rkFiltro, true);
-  }
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  } catch(e) { container.innerHTML = `<p style="color:var(--red);">${e.message}</p>`; }
 }
 
 
@@ -3512,739 +3182,158 @@ document.getElementById('modal-estadio-edit').addEventListener('click', e => {
   if(e.target === document.getElementById('modal-estadio-edit')) cerrarModalEstadio();
 });
 
-// ── CARGA MASIVA EXCEL — SELECCIONES ─────────────────────────────────────
-// SheetJS cargado desde CDN
-let _bulkSheetJS = null;
-let _bulkParsedRows = [];   // filas parseadas listas para mostrar en preview
-let _bulkValidRows  = [];   // filas sin errores listas para escribir
 
-const BULK_COLS = [
-  { key:'nombre',            label:'Nombre',            required:true,  type:'string'  },
-  { key:'grupo',             label:'Grupo',             required:true,  type:'string'  },
-  { key:'confederacion',     label:'Confederación',     required:false, type:'string'  },
-  { key:'ranking_fifa',      label:'Ranking FIFA',      required:false, type:'number'  },
-  { key:'participaciones',   label:'Participaciones',   required:false, type:'number'  },
-  { key:'mejor_posicion',    label:'Mejor posición',    required:false, type:'string'  },
-  { key:'entrenador',        label:'Entrenador',        required:false, type:'string'  },
-  { key:'sede',              label:'Sede base',         required:false, type:'string'  },
-  { key:'goleador_historico',label:'Goleador histórico',required:false, type:'string'  },
-  { key:'goleador_mundiales',label:'Goleador mundiales',required:false, type:'string'  },
-  { key:'jugador_mas_caro',  label:'Jugador más caro',  required:false, type:'string'  },
-  { key:'valor_plantel_usd', label:'Valor plantel USD', required:false, type:'number'  },
-];
 
-async function getSheetJS(){
-  if(_bulkSheetJS) return _bulkSheetJS;
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-    s.onload  = () => { _bulkSheetJS = window.XLSX; resolve(window.XLSX); };
-    s.onerror = () => reject(new Error('No se pudo cargar SheetJS'));
-    document.head.appendChild(s);
-  });
+// ── BACKUP / RESTORE ─────────────────────────────────────────────────────
+
+const COLECCIONES_BACKUP = ['paises','partidos','estadios','grupos','participantes','apuestas'];
+
+function blog(msg, tipo) {
+  const el = document.getElementById('backup-log');
+  if (!el) return;
+  el.style.display = 'block';
+  const color = tipo === 'ok' ? '#4ade80' : tipo === 'err' ? '#f87171' : tipo === 'warn' ? '#f5c842' : '#94a3b8';
+  el.innerHTML += '<div style="color:' + color + '">' + msg + '</div>';
+  el.scrollTop = el.scrollHeight;
 }
 
-window.handleBulkFile = async function(file) {
-  const errEl  = document.getElementById('bulk-parse-error');
-  const infoEl = document.getElementById('bulk-file-info');
-  const btn    = document.getElementById('bulk-preview-btn');
-  errEl.style.display  = 'none';
-  infoEl.style.display = 'none';
-  btn.disabled = true; btn.style.opacity = '0.4';
-  _bulkParsedRows = []; _bulkValidRows = [];
+window.crearBackup = async () => {
+  const btn = document.getElementById('btn-backup');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exportando...';
+  const logEl = document.getElementById('backup-log');
+  if (logEl) { logEl.style.display = 'block'; logEl.innerHTML = ''; }
+  blog('Iniciando backup...', 'info');
 
-  if(!file) return;
-  if(!file.name.endsWith('.xlsx')){
-    errEl.textContent = '❌ El archivo debe ser .xlsx';
-    errEl.style.display = 'flex'; return;
-  }
-  if(file.size > 5*1024*1024){
-    errEl.textContent = '❌ El archivo supera 5 MB';
-    errEl.style.display = 'flex'; return;
-  }
+  const seleccionadas = COLECCIONES_BACKUP.filter(c => {
+    const el = document.getElementById('bk-' + c);
+    return el ? el.checked : true;
+  });
 
-  try {
-    const XLSX = await getSheetJS();
-    const buf  = await file.arrayBuffer();
-    const wb   = XLSX.read(buf, { type:'array' });
-    const ws   = wb.Sheets[wb.SheetNames[0]];
-    const raw  = XLSX.utils.sheet_to_json(ws, { defval:'' });
+  const backup = { version: '1.0', timestamp: new Date().toISOString(), proyecto: 'polla-495421-ab029', colecciones: {} };
+  let totalDocs = 0;
 
-    if(!raw.length){ throw new Error('El archivo está vacío o no tiene filas de datos.'); }
-
-    // Normalizar claves del Excel (trim + lowercase por si el usuario puso espacios)
-    const rows = raw.map((r, i) => {
-      const norm = {};
-      Object.keys(r).forEach(k => { norm[k.trim()] = r[k]; });
-      const out = { _fila: i+2, _errores: [] };
-      BULK_COLS.forEach(col => {
-        let val = norm[col.key];
-        // Intentar con variantes (sin acento, uppercase)
-        if(val === undefined || val === '') {
-          const altKey = Object.keys(norm).find(k => k.toLowerCase().replace(/\s/g,'') === col.key.toLowerCase().replace(/\s/g,''));
-          if(altKey) val = norm[altKey];
-        }
-        if(col.required && (val === undefined || val === '' || val === null)){
-          out._errores.push(`"${col.key}" es obligatorio`);
-          out[col.key] = '';
-          return;
-        }
-        if(val === undefined || val === '' || val === null){ out[col.key] = null; return; }
-        if(col.type === 'number'){
-          const n = Number(val);
-          out[col.key] = isNaN(n) ? null : n;
-        } else {
-          out[col.key] = String(val).trim() || null;
-        }
-      });
-      return out;
-    });
-
-    _bulkParsedRows = rows;
-    _bulkValidRows  = rows.filter(r => r._errores.length === 0);
-
-    // Mostrar info del archivo
-    document.getElementById('bulk-file-name').textContent = file.name;
-    document.getElementById('bulk-file-meta').textContent =
-      `${rows.length} filas leídas · ${_bulkValidRows.length} válidas · ${rows.length - _bulkValidRows.length} con errores · ${(file.size/1024).toFixed(0)} KB`;
-    infoEl.style.display = 'flex';
-
-    if(_bulkValidRows.length > 0){
-      btn.disabled = false; btn.style.opacity = '1';
-    } else {
-      errEl.textContent = '❌ No hay filas válidas. Revisa que las columnas "nombre" y "grupo" estén completas.';
-      errEl.style.display = 'flex';
-    }
-  } catch(e) {
-    errEl.innerHTML = `<i class="fas fa-circle-xmark"></i> Error al leer el Excel: ${e.message}`;
-    errEl.style.display = 'flex';
-  }
-  // Reset input para permitir volver a cargar el mismo archivo
-  document.getElementById('bulk-file-input').value = '';
-};
-
-window.limpiarBulkFile = function(){
-  document.getElementById('bulk-file-info').style.display  = 'none';
-  document.getElementById('bulk-parse-error').style.display = 'none';
-  const btn = document.getElementById('bulk-preview-btn');
-  btn.disabled = true; btn.style.opacity = '0.4';
-  _bulkParsedRows = []; _bulkValidRows = [];
-};
-
-window.abrirPreviewBulkExcel = function(){
-  if(!_bulkParsedRows.length) return;
-  const total   = _bulkParsedRows.length;
-  const validos = _bulkValidRows.length;
-  const errores = total - validos;
-
-  document.getElementById('bulk-preview-subtitle').textContent =
-    `${total} filas · ${validos} válidas · ${errores} con errores`;
-
-  // Alertas
-  const alertsEl = document.getElementById('bulk-preview-alerts');
-  let alerts = '';
-  if(errores > 0)
-    alerts += `<div class="alert alert-warn" style="margin:12px 0 0;"><i class="fas fa-triangle-exclamation"></i> ${errores} fila${errores>1?'s':''} con errores serán <strong>ignoradas</strong>. Solo se cargarán las ${validos} válidas.</div>`;
-  alerts += `<div class="alert alert-error" style="margin:12px 0 0;"><i class="fas fa-triangle-exclamation"></i> <strong>Atención:</strong> Esta operación sobreescribe completamente los documentos existentes en Firestore. No se puede deshacer.</div>`;
-  alertsEl.innerHTML = alerts;
-
-  // Tabla
-  const thead = document.getElementById('bulk-preview-thead');
-  const tbody  = document.getElementById('bulk-preview-tbody');
-
-  const visibleCols = BULK_COLS.filter(c => _bulkParsedRows.some(r => r[c.key] !== null && r[c.key] !== ''));
-  thead.innerHTML = `<tr>
-    <th style="width:40px;">#</th>
-    <th>Estado</th>
-    ${visibleCols.map(c=>`<th>${c.label}</th>`).join('')}
-    ${errores>0?'<th>Errores</th>':''}
-  </tr>`;
-
-  tbody.innerHTML = _bulkParsedRows.map(r => {
-    const ok = r._errores.length === 0;
-    const badge = ok
-      ? `<td><span class="bulk-badge-ok"><i class="fas fa-check"></i> OK</span></td>`
-      : `<td><span class="bulk-badge-err"><i class="fas fa-xmark"></i> Error</span></td>`;
-    const cells = visibleCols.map(c => {
-      const v = r[c.key];
-      return `<td title="${v ?? ''}">${v ?? '<span style="color:rgba(255,255,255,0.2);">—</span>'}</td>`;
-    }).join('');
-    const errCell = errores>0
-      ? `<td style="color:var(--red);font-size:0.68rem;max-width:200px;white-space:normal;">${r._errores.join(', ')||''}</td>`
-      : '';
-    return `<tr class="${ok?'row-ok':'row-error'}"><td style="color:var(--muted);font-size:0.72rem;">${r._fila}</td>${badge}${cells}${errCell}</tr>`;
-  }).join('');
-
-  document.getElementById('bulk-preview-stats').textContent =
-    `Se escribirán ${validos} seleccion${validos!==1?'es':''} en Firestore (colección "paises")`;
-
-  document.getElementById('modal-bulk-preview').style.display = 'flex';
-};
-
-window.cerrarPreviewBulk = function(){
-  document.getElementById('modal-bulk-preview').style.display = 'none';
-};
-
-window.ejecutarCargaMasiva = async function(){
-  if(!_bulkValidRows.length) return;
-  cerrarPreviewBulk();
-
-  const progModal  = document.getElementById('modal-bulk-progress');
-  const progBar    = document.getElementById('bulk-prog-bar');
-  const progText   = document.getElementById('bulk-prog-text');
-  const progCount  = document.getElementById('bulk-prog-count');
-  const progLog    = document.getElementById('bulk-prog-log');
-  const progClose  = document.getElementById('bulk-prog-close');
-  const progIcon   = document.getElementById('bulk-prog-icon');
-
-  progModal.style.display = 'flex';
-  progBar.style.width = '0%';
-  progLog.style.display = 'none'; progLog.innerHTML = '';
-  progClose.style.display = 'none';
-  progIcon.textContent = '⚡';
-
-  const total = _bulkValidRows.length;
-  let ok = 0, err = 0;
-
-  for(let i = 0; i < total; i++){
-    const row = _bulkValidRows[i];
-    progText.textContent  = `Escribiendo: ${row.nombre}`;
-    progCount.textContent = `${i+1} de ${total}`;
-    progBar.style.width   = `${Math.round(((i+1)/total)*100)}%`;
-
-    // Construir payload limpio (sin campos internos ni nulls)
-    const payload = { actualizadoEn: serverTimestamp() };
-    BULK_COLS.forEach(col => {
-      if(row[col.key] !== null && row[col.key] !== undefined && row[col.key] !== '')
-        payload[col.key] = row[col.key];
-    });
-
-    // Buscar si ya existe un doc con este nombre para usar su ID
+  for (const col of seleccionadas) {
     try {
-      const existing = globalPaises.find(p => normSel(p.nombre) === normSel(row.nombre));
-      if(existing){
-        // Sobreescribir completamente (setDoc sin merge)
-        await setDoc(doc(db, 'paises', existing.id), payload);
-      } else {
-        // Crear nuevo documento
-        payload.creadoEn = serverTimestamp();
-        await addDoc(collection(db, 'paises'), payload);
-      }
-      ok++;
+      blog('  Exportando ' + col + '...');
+      const snap = await getDocs(collection(db, col));
+      backup.colecciones[col] = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
+      totalDocs += snap.docs.length;
+      blog('  OK ' + col + ': ' + snap.docs.length + ' documentos', 'ok');
     } catch(e) {
-      err++;
-      progLog.style.display = 'block';
-      progLog.innerHTML += `✗ Fila ${row._fila} (${row.nombre}): ${e.message}\n`;
+      blog('  ERROR ' + col + ': ' + e.message, 'err');
     }
   }
 
-  // Finalizado
-  progBar.style.width   = '100%';
-  progIcon.textContent  = err === 0 ? '✅' : '⚠️';
-  progText.textContent  = err === 0
-    ? `¡Carga completada! ${ok} seleccion${ok!==1?'es':''} escritas en Firestore.`
-    : `Completado con ${err} error${err!==1?'es':''}. ${ok} exitosas.`;
-  progCount.textContent = '';
-  progClose.style.display = 'inline-flex';
+  blog('Total: ' + totalDocs + ' docs en ' + seleccionadas.length + ' colecciones', 'ok');
 
-  // Refrescar grid
-  await renderSelecciones();
+  const json = JSON.stringify(backup, (key, val) => {
+    if (val && typeof val === 'object' && val._seconds !== undefined) return new Date(val._seconds * 1000).toISOString();
+    return val;
+  }, 2);
+
+  const fecha = new Date().toISOString().slice(0,10);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'polla-backup-' + fecha + '.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+
+  toast('Backup descargado: ' + totalDocs + ' docs', 'success');
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-download"></i> Descargar backup';
 };
 
-window.cerrarProgresoBulk = function(){
-  document.getElementById('modal-bulk-progress').style.display = 'none';
-  limpiarBulkFile();
-};
+let _restoreData = null;
 
-// ── SIMULADOR ──────────────────────────────────────────────────────────────
-const SIM_GRUPOS_NOMBRES = ['Los Cracks','El Asado','Trabajo FC','Primos Unidos','La Peña'];
-const SIM_GRUPOS_COLORS  = ['#f5c842','#3b82f6','#22c55e','#f97316','#a855f7'];
-const SIM_AVATAR_COLORS  = ['#f5c842','#3b82f6','#22c55e','#ef4444','#a855f7','#06b6d4','#f97316'];
-const SIM_NOMBRES = [
-  'Sebastián','Camila','Matías','Valentina','Felipe','Isidora','Rodrigo',
-  'Catalina','Gonzalo','Paula','Tomás','Francisca','Diego','Sofía','Andrés',
-  'Josefa','Cristóbal','Antonia','Javier','Ignacia','Maximiliano','Constanza',
-  'Roberto','Daniela','Eduardo','Javiera','Lucas','Bárbara','Alejandro','Natalia',
-  'Nicolás','Fernanda','Ricardo','Pilar','Marco','Claudia'
-];
-
-const SIM_PARTIDOS_BASE = [
-  // Jornada 1
-  {id:'A1',local:'🇲🇽 México',visita:'🇿🇦 Sudáfrica',fecha:'11 jun',hora:'15:00',estadio:'Azteca, México',grupo:'A',jornada:1},
-  {id:'A2',local:'🇰🇷 Corea del Sur',visita:'🇨🇿 Chequia',fecha:'11 jun',hora:'22:00',estadio:'Akron, Guadalajara',grupo:'A',jornada:1},
-  {id:'B1',local:'🇨🇦 Canadá',visita:'🇧🇦 Bosnia',fecha:'12 jun',hora:'15:00',estadio:'BMO Field, Toronto',grupo:'B',jornada:1},
-  {id:'B2',local:'🇶🇦 Qatar',visita:'🇨🇭 Suiza',fecha:'13 jun',hora:'15:00',estadio:"Levi's, San Francisco",grupo:'B',jornada:1},
-  {id:'C1',local:'🇧🇷 Brasil',visita:'🇲🇦 Marruecos',fecha:'13 jun',hora:'18:00',estadio:'Gillette, Boston',grupo:'C',jornada:1},
-  {id:'C2',local:'🇭🇹 Haití',visita:'🏴󠁧󠁢󠁳󠁣󠁴󠁿 Escocia',fecha:'13 jun',hora:'21:00',estadio:'MetLife, Nueva York',grupo:'C',jornada:1},
-  {id:'D1',local:'🇺🇸 Estados Unidos',visita:'🇵🇾 Paraguay',fecha:'12 jun',hora:'21:00',estadio:'SoFi, Los Ángeles',grupo:'D',jornada:1},
-  {id:'D2',local:'🇦🇺 Australia',visita:'🇹🇷 Turquía',fecha:'14 jun',hora:'00:00',estadio:'BC Place, Vancouver',grupo:'D',jornada:1},
-  {id:'E1',local:'🇩🇪 Alemania',visita:'🇨🇼 Curazao',fecha:'14 jun',hora:'13:00',estadio:'Lincoln, Filadelfia',grupo:'E',jornada:1},
-  {id:'E2',local:'🇨🇮 Costa de Marfil',visita:'🇪🇨 Ecuador',fecha:'14 jun',hora:'19:00',estadio:'NRG, Houston',grupo:'E',jornada:1},
-  // Jornada 2
-  {id:'A3',local:'🇨🇿 Chequia',visita:'🇿🇦 Sudáfrica',fecha:'18 jun',hora:'12:00',estadio:'Mercedes-Benz, Atlanta',grupo:'A',jornada:2},
-  {id:'A4',local:'🇲🇽 México',visita:'🇰🇷 Corea del Sur',fecha:'18 jun',hora:'21:00',estadio:'Azteca, México',grupo:'A',jornada:2},
-  {id:'B3',local:'🇨🇭 Suiza',visita:'🇧🇦 Bosnia',fecha:'18 jun',hora:'15:00',estadio:'SoFi, Los Ángeles',grupo:'B',jornada:2},
-  {id:'B4',local:'🇨🇦 Canadá',visita:'🇶🇦 Qatar',fecha:'18 jun',hora:'18:00',estadio:'BC Place, Vancouver',grupo:'B',jornada:2},
-  {id:'C3',local:'🏴󠁧󠁢󠁳󠁣󠁴󠁿 Escocia',visita:'🇲🇦 Marruecos',fecha:'19 jun',hora:'18:00',estadio:'Gillette, Boston',grupo:'C',jornada:2},
-  {id:'C4',local:'🇧🇷 Brasil',visita:'🇭🇹 Haití',fecha:'19 jun',hora:'20:30',estadio:'Hard Rock, Miami',grupo:'C',jornada:2},
-  {id:'D3',local:'🇺🇸 Estados Unidos',visita:'🇦🇺 Australia',fecha:'19 jun',hora:'15:00',estadio:"Levi's, San Francisco",grupo:'D',jornada:2},
-  {id:'D4',local:'🇹🇷 Turquía',visita:'🇵🇾 Paraguay',fecha:'19 jun',hora:'23:00',estadio:'BMO, Toronto',grupo:'D',jornada:2},
-  {id:'E3',local:'🇩🇪 Alemania',visita:'🇨🇮 Costa de Marfil',fecha:'20 jun',hora:'16:00',estadio:'MetLife, Nueva York',grupo:'E',jornada:2},
-  {id:'E4',local:'🇪🇨 Ecuador',visita:'🇨🇼 Curazao',fecha:'20 jun',hora:'20:00',estadio:'Arrowhead, Kansas City',grupo:'E',jornada:2},
-  // Jornada 3
-  {id:'A5',local:'🇿🇦 Sudáfrica',visita:'🇰🇷 Corea del Sur',fecha:'24 jun',hora:'21:00',estadio:'BBVA, Monterrey',grupo:'A',jornada:3},
-  {id:'A6',local:'🇨🇿 Chequia',visita:'🇲🇽 México',fecha:'24 jun',hora:'21:00',estadio:'Azteca, México',grupo:'A',jornada:3},
-  {id:'B5',local:'🇨🇭 Suiza',visita:'🇨🇦 Canadá',fecha:'24 jun',hora:'15:00',estadio:'BC Place, Vancouver',grupo:'B',jornada:3},
-  {id:'B6',local:'🇧🇦 Bosnia',visita:'🇶🇦 Qatar',fecha:'24 jun',hora:'15:00',estadio:'Lumen, Seattle',grupo:'B',jornada:3},
-  {id:'C5',local:'🇲🇦 Marruecos',visita:'🇭🇹 Haití',fecha:'24 jun',hora:'18:00',estadio:'Mercedes-Benz, Atlanta',grupo:'C',jornada:3},
-  {id:'C6',local:'🏴󠁧󠁢󠁳󠁣󠁴󠁿 Escocia',visita:'🇧🇷 Brasil',fecha:'24 jun',hora:'18:00',estadio:'Hard Rock, Miami',grupo:'C',jornada:3},
-  {id:'D5',local:'🇹🇷 Turquía',visita:'🇺🇸 Estados Unidos',fecha:'25 jun',hora:'22:00',estadio:'SoFi, Los Ángeles',grupo:'D',jornada:3},
-  {id:'D6',local:'🇵🇾 Paraguay',visita:'🇦🇺 Australia',fecha:'25 jun',hora:'22:00',estadio:"Levi's, San Francisco",grupo:'D',jornada:3},
-  {id:'E5',local:'🇨🇼 Curazao',visita:'🇨🇮 Costa de Marfil',fecha:'25 jun',hora:'16:00',estadio:'Lincoln, Filadelfia',grupo:'E',jornada:3},
-  {id:'E6',local:'🇪🇨 Ecuador',visita:'🇩🇪 Alemania',fecha:'25 jun',hora:'16:00',estadio:'MetLife, Nueva York',grupo:'E',jornada:3},
-];
-
-const SIM_EQUIPOS = {
-  A:['🇲🇽 México','🇰🇷 Corea del Sur','🇨🇿 Chequia','🇿🇦 Sudáfrica'],
-  B:['🇨🇦 Canadá','🇨🇭 Suiza','🇧🇦 Bosnia','🇶🇦 Qatar'],
-  C:['🇧🇷 Brasil','🇲🇦 Marruecos','🏴󠁧󠁢󠁳󠁣󠁴󠁿 Escocia','🇭🇹 Haití'],
-  D:['🇺🇸 Estados Unidos','🇹🇷 Turquía','🇦🇺 Australia','🇵🇾 Paraguay'],
-  E:['🇩🇪 Alemania','🇨🇮 Costa de Marfil','🇪🇨 Ecuador','🇨🇼 Curazao'],
-};
-
-let SIM = {};
-
-function simRnd(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
-
-function simCalcPts(real, apuesta){
-  const rl=real.l, rv=real.v, al=apuesta.l, av=apuesta.v;
-  if(al===rl && av===rv && rl!==rv) return 4;
-  if(al===rl && av===rv && rl===rv) return 2;
-  const gr=rl>rv?'L':rl<rv?'V':'E';
-  const ga=al>av?'L':al<av?'V':'E';
-  if(gr===ga && gr!=='E') return 3;
-  if(gr==='E' && ga==='E') return 1;
-  return 0;
-}
-
-function simInit(){
-  const usedNames=new Set();
-  function pickName(){ let n; do{ n=SIM_NOMBRES[simRnd(0,SIM_NOMBRES.length-1)]; }while(usedNames.has(n)); usedNames.add(n); return n; }
-
-  SIM = {
-    jornada: 0,
-    partidos: SIM_PARTIDOS_BASE.map(p=>({...p, resultado:null})),
-    grupos: SIM_GRUPOS_NOMBRES.map((nombre,gi)=>({
-      id:'g'+gi, nombre, color:SIM_GRUPOS_COLORS[gi],
-      usuarios: Array.from({length:7},(_,ui)=>{
-        const name=pickName();
-        return {
-          id:`g${gi}u${ui}`, nombre:name,
-          iniciales:name.slice(0,2).toUpperCase(),
-          color:SIM_AVATAR_COLORS[ui],
-          puntaje:0, aciertos:0,
-          apuestas: SIM_PARTIDOS_BASE.reduce((acc,p)=>{ acc[p.id]={l:simRnd(0,4),v:simRnd(0,4)}; return acc; },{})
-        };
-      })
-    }))
-  };
-}
-
-window.simAvanzar = function(){
-  if(SIM.jornada>=3) return;
-  SIM.jornada++;
-  SIM.partidos.filter(p=>p.jornada===SIM.jornada).forEach(p=>{
-    p.resultado={l:simRnd(0,4),v:simRnd(0,4)};
-    SIM.grupos.forEach(g=>{
-      g.usuarios.forEach(u=>{
-        const ap=u.apuestas[p.id];
-        const pts=simCalcPts(p.resultado,ap);
-        u.puntaje+=pts;
-        if(pts>0) u.aciertos++;
-      });
-    });
-  });
-  simRenderAll();
-  // Habilitar publicar si hay resultados
-  const jugados=SIM.partidos.filter(p=>p.resultado).length;
-  const btnPub=document.getElementById('sim-btn-publicar');
-  if(btnPub&&jugados>0){ btnPub.disabled=false; btnPub.style.opacity='1'; }
-  const btn=document.getElementById('sim-btn-avanzar');
-  if(SIM.jornada>=3){
-    btn.disabled=true;
-    btn.innerHTML='<i class="fas fa-trophy"></i> Fase de grupos completa';
-  } else {
-    btn.innerHTML=`<i class="fas fa-play"></i> Simular jornada ${SIM.jornada+1}`;
-  }
-};
-
-window.simReset = function(){
-  simInit();
-  const btn=document.getElementById('sim-btn-avanzar');
-  btn.disabled=false;
-  btn.innerHTML='<i class="fas fa-play"></i> Simular jornada 1';
-  const btnPub=document.getElementById('sim-btn-publicar');
-  if(btnPub){ btnPub.disabled=true; btnPub.style.opacity='.4'; }
-  simRenderAll();
-};
-
-// ── FIRESTORE: IDs de los partidos simulados (mismos que en el fixture real) ──
-const SIM_ID_MAP = {
-  A1:'fgA1',A2:'fgA2',A3:'fgA3',A4:'fgA4',A5:'fgA5',A6:'fgA6',
-  B1:'fgB1',B2:'fgB2',B3:'fgB3',B4:'fgB4',B5:'fgB5',B6:'fgB6',
-  C1:'fgC1',C2:'fgC2',C3:'fgC3',C4:'fgC4',C5:'fgC5',C6:'fgC6',
-  D1:'fgD1',D2:'fgD2',D3:'fgD3',D4:'fgD4',D5:'fgD5',D6:'fgD6',
-  E1:'fgE1',E2:'fgE2',E3:'fgE3',E4:'fgE4',E5:'fgE5',E6:'fgE6',
-};
-
-function simLog(msg, type='inf'){
-  const el=document.getElementById('sim-fs-log');
-  if(!el) return;
-  el.style.display='block';
-  el.innerHTML+=`<div class="sim-fs-log-${type}">${msg}</div>`;
-  el.scrollTop=el.scrollHeight;
-}
-function simLogClear(){
-  const el=document.getElementById('sim-fs-log');
-  if(el){ el.innerHTML=''; el.style.display='none'; }
-}
-
-window.simPublicarFirestore = async function(){
-  const jugados=SIM.partidos.filter(p=>p.resultado);
-  if(!jugados.length){ toast('No hay resultados simulados aún','warn'); return; }
-
-  if(!confirm(`¿Publicar ${jugados.length} resultados simulados en Firestore?\n\nEl sitio público (index.html) los verá como datos reales.\nUsa "Limpiar Firestore" cuando termines de probar.`)) return;
-
-  const btnPub=document.getElementById('sim-btn-publicar');
-  const btnLim=document.getElementById('sim-btn-limpiar');
-  btnPub.disabled=true; btnPub.innerHTML='<i class="fas fa-spinner fa-spin"></i> Publicando...';
-  simLogClear();
-  simLog(`▶ Publicando ${jugados.length} resultados en Firestore...`,'inf');
-
-  let ok=0, err=0;
-  const batch=writeBatch(db);
-
-  for(const p of jugados){
-    const firestoreId=SIM_ID_MAP[p.id];
-    if(!firestoreId){ simLog(`⚠ Sin ID Firestore para ${p.id}`,'err'); continue; }
+window.cargarArchivoRestore = (input) => {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
     try {
-      batch.set(doc(db,'partidos',firestoreId),{
-        resultado_local:  p.resultado.l,
-        resultado_visita: p.resultado.v,
-        simulado: true,
-        actualizadoPor: ADMIN_UID,
-        actualizadoEn:  serverTimestamp(),
-      },{ merge:true });
-      simLog(`✓ ${firestoreId}  ${p.local.replace(/[^ ]+ /,'')} ${p.resultado.l}–${p.resultado.v} ${p.visita.replace(/[^ ]+ /,'')}`, 'ok');
-      ok++;
-    } catch(e){
-      simLog(`✗ ${firestoreId}: ${e.message}`,'err'); err++;
-    }
-  }
+      const data = JSON.parse(e.target.result);
+      if (!data.version || !data.colecciones) { toast('Archivo invalido', 'error'); return; }
+      _restoreData = data;
+      const preview = document.getElementById('restore-preview');
+      const previewContent = document.getElementById('restore-preview-content');
+      preview.style.display = 'block';
+      const cols = Object.keys(data.colecciones);
+      const totalDocs = cols.reduce((s, c) => s + (data.colecciones[c] && data.colecciones[c].length || 0), 0);
+      const fechaBackup = data.timestamp ? new Date(data.timestamp).toLocaleString('es-CL') : 'desconocida';
+      previewContent.innerHTML = '<div style="color:var(--muted);margin-bottom:8px;">Fecha: <strong style="color:var(--text);">' + fechaBackup + '</strong></div>' +
+        '<div style="color:var(--muted);margin-bottom:10px;">Total: <strong style="color:var(--text);">' + totalDocs + ' documentos</strong></div>' +
+        cols.map(c => '<label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;cursor:pointer;">' +
+          '<input type="checkbox" class="restore-col-check" data-col="' + c + '" checked style="accent-color:var(--gold);"> ' +
+          '<span style="color:var(--text);">' + c + '</span>' +
+          '<span style="color:var(--muted);font-size:0.72rem;margin-left:4px;">(' + (data.colecciones[c] && data.colecciones[c].length || 0) + ' docs)</span>' +
+          '</label>').join('');
+      document.getElementById('btn-restore').disabled = false;
+    } catch(e) { toast('Error leyendo archivo: ' + e.message, 'error'); }
+  };
+  reader.readAsText(file);
+};
 
-  // Recalcular puntajes de apuestas reales de Firestore
-  try {
-    await batch.commit();
-    simLog('━━━ Resultados escritos. Recalculando puntajes de apuestas...','inf');
+window.ejecutarRestore = async () => {
+  if (!_restoreData) return;
+  const colsSeleccionadas = Array.from(document.querySelectorAll('.restore-col-check:checked')).map(el => el.dataset.col);
+  if (!colsSeleccionadas.length) { toast('Selecciona al menos una coleccion', 'warn'); return; }
+  const totalDocs = colsSeleccionadas.reduce((s, c) => s + (_restoreData.colecciones[c] && _restoreData.colecciones[c].length || 0), 0);
 
-    let apuestasActualizadas=0;
-    for(const p of jugados){
-      const firestoreId=SIM_ID_MAP[p.id];
-      if(!firestoreId) continue;
-      const apSnap=await getDocs(query(collection(db,'apuestas'),where('partidoId','==',firestoreId)));
-      if(apSnap.size>0){
-        const batchAp=writeBatch(db);
-        apSnap.docs.forEach(docRef=>{
-          const a=docRef.data();
-          const pts=calcularPuntaje(
-            {local:p.resultado.l, visita:p.resultado.v},
-            {local:a.golesLocal,  visita:a.golesVisita}
-          );
-          batchAp.update(docRef.ref,{puntaje:pts, recalculadoEn:serverTimestamp()});
+  if (!confirm('Restaurar ' + totalDocs + ' documentos en ' + colsSeleccionadas.length + ' colecciones?\n\nColecciones: ' + colsSeleccionadas.join(', ') + '\n\nATENCION: Los documentos existentes con el mismo ID seran sobreescritos.')) return;
+
+  const btn = document.getElementById('btn-restore');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Restaurando...';
+  const logEl = document.getElementById('backup-log');
+  if (logEl) { logEl.style.display = 'block'; logEl.innerHTML = ''; }
+  blog('Iniciando restore...', 'info');
+
+  let totalRestaurados = 0, totalErrores = 0;
+
+  for (const col of colsSeleccionadas) {
+    const docs = _restoreData.colecciones[col] || [];
+    if (!docs.length) { blog('-- ' + col + ': sin documentos', 'warn'); continue; }
+    blog('Restaurando ' + col + ' (' + docs.length + ' docs)...');
+    const CHUNK = 499;
+    let colOk = 0, colErr = 0;
+    for (let i = 0; i < docs.length; i += CHUNK) {
+      const chunk = docs.slice(i, i + CHUNK);
+      try {
+        const batch = writeBatch(db);
+        chunk.forEach(d => {
+          const { _id, ...data } = d;
+          batch.set(doc(db, col, _id), data);
         });
-        await batchAp.commit();
-        apuestasActualizadas+=apSnap.size;
+        await batch.commit();
+        colOk += chunk.length;
+      } catch(e) {
+        blog('ERROR ' + col + ' batch ' + (Math.floor(i/CHUNK)+1) + ': ' + e.message, 'err');
+        colErr += chunk.length;
       }
     }
-    simLog(`✅ ${ok} resultados publicados · ${apuestasActualizadas} apuestas recalculadas`,'ok');
-    toast(`${ok} resultados publicados en Firestore ✓`,'success');
-
-    // Actualizar UI
-    const badge=document.getElementById('sim-fs-badge');
-    if(badge){ badge.style.display='block'; document.getElementById('sim-fs-count').textContent=ok; }
-    const alertEl=document.getElementById('sim-alert-publicado');
-    if(alertEl) alertEl.style.display='flex';
-    if(btnLim){ btnLim.disabled=false; btnLim.style.opacity='1'; }
-    SIM._publicados=jugados.map(p=>SIM_ID_MAP[p.id]).filter(Boolean);
-  } catch(e){
-    simLog(`✗ Error al commitear batch: ${e.message}`,'err');
-    toast('Error: '+e.message,'error');
+    totalRestaurados += colOk;
+    totalErrores    += colErr;
+    blog((colErr > 0 ? 'WARN ' : 'OK ') + col + ': ' + colOk + ' restaurados' + (colErr > 0 ? ' / ' + colErr + ' errores' : ''), colErr > 0 ? 'warn' : 'ok');
   }
 
-  btnPub.disabled=false;
-  btnPub.innerHTML='<i class="fas fa-cloud-upload-alt"></i> Publicar en Firestore';
+  blog('RESULTADO: ' + totalRestaurados + ' restaurados / ' + totalErrores + ' errores', totalErrores === 0 ? 'ok' : 'warn');
+  toast('Restore: ' + totalRestaurados + ' docs' + (totalErrores > 0 ? ' / ' + totalErrores + ' errores' : ''), totalErrores === 0 ? 'success' : 'warn');
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-upload"></i> Restaurar seleccionados';
 };
 
-window.simLimpiarFirestore = async function(){
-  const ids=SIM._publicados||[];
-  if(!ids.length){ toast('No hay resultados simulados en Firestore para limpiar','warn'); return; }
-  if(!confirm(`¿Eliminar los ${ids.length} resultados simulados de Firestore?\n\nEsto deja los partidos sin resultado (como estaban antes de simular).`)) return;
-
-  const btnLim=document.getElementById('sim-btn-limpiar');
-  btnLim.disabled=true; btnLim.innerHTML='<i class="fas fa-spinner fa-spin"></i> Limpiando...';
-  simLog('━━━ Limpiando resultados simulados...','inf');
-
-  let ok=0, err=0;
-  const batch=writeBatch(db);
-
-  for(const firestoreId of ids){
-    try{
-      batch.set(doc(db,'partidos',firestoreId),{
-        resultado_local:  deleteField(),
-        resultado_visita: deleteField(),
-        simulado:         deleteField(),
-        actualizadoPor:   deleteField(),
-        actualizadoEn:    deleteField(),
-      },{ merge:true });
-      simLog(`✓ Borrado resultado de ${firestoreId}`,'ok');
-      ok++;
-    } catch(e){ simLog(`✗ ${firestoreId}: ${e.message}`,'err'); err++; }
-  }
-
-  // Resetear puntajes de apuestas
-  try{
-    await batch.commit();
-    simLog('━━━ Reseteando puntajes de apuestas...','inf');
-    let reseteadas=0;
-    for(const firestoreId of ids){
-      const apSnap=await getDocs(query(collection(db,'apuestas'),where('partidoId','==',firestoreId)));
-      if(apSnap.size>0){
-        const batchAp=writeBatch(db);
-        apSnap.docs.forEach(d=>{ batchAp.update(d.ref,{puntaje:deleteField(),recalculadoEn:deleteField()}); });
-        await batchAp.commit();
-        reseteadas+=apSnap.size;
-      }
-    }
-    simLog(`✅ ${ok} resultados borrados · ${reseteadas} apuestas reseteadas`,'ok');
-    toast(`Firestore limpio — ${ok} resultados eliminados`,'success');
-
-    // Actualizar UI
-    const badge=document.getElementById('sim-fs-badge');
-    if(badge) badge.style.display='none';
-    const alertEl=document.getElementById('sim-alert-publicado');
-    if(alertEl) alertEl.style.display='none';
-    SIM._publicados=[];
-    btnLim.disabled=true; btnLim.style.opacity='.4';
-  } catch(e){
-    simLog(`✗ Error al limpiar: ${e.message}`,'err');
-    toast('Error: '+e.message,'error');
-  }
-  btnLim.innerHTML='<i class="fas fa-broom"></i> Limpiar Firestore';
-};
-
-function simRenderAll(){
-  const jugados=SIM.partidos.filter(p=>p.resultado).length;
-  document.getElementById('sim-st-partidos').textContent=`${jugados}/30`;
-  document.getElementById('sim-st-jornada').textContent=`${SIM.jornada}/3`;
-  const pct=Math.round((jugados/30)*100);
-  document.getElementById('sim-prog-bar').style.width=pct+'%';
-  document.getElementById('sim-prog-label').textContent=`${jugados} de 30 partidos completados (${pct}%)`;
-  simRenderGrupos(); simRenderPartidos(); simRenderRanking(); simRenderClasificados();
-}
-
-function simRenderGrupos(){
-  const c=document.getElementById('sim-v-grupos'); if(!c) return;
-  c.innerHTML=`<div class="sim-grupos-grid">${SIM.grupos.map(g=>{
-    const sorted=g.usuarios.slice().sort((a,b)=>b.puntaje-a.puntaje||b.aciertos-a.aciertos);
-    return `<div class="sim-grupo-card">
-      <div class="sim-grupo-head">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <div style="width:10px;height:10px;border-radius:50%;background:${g.color};flex-shrink:0;"></div>
-          <span class="sim-grupo-name" style="color:${g.color}">${g.nombre}</span>
-        </div>
-        <span class="badge badge-muted">7 jugadores</span>
-      </div>
-      ${sorted.map((u,i)=>{
-        const med=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
-        return `<div class="sim-usr-row">
-          <div class="sim-avatar" style="background:${u.color}22;color:${u.color}">${u.iniciales}</div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:.88rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.nombre}</div>
-            <div style="font-size:.7rem;color:var(--muted);">${u.aciertos} acierto${u.aciertos!==1?'s':''}</div>
-          </div>
-          <div style="font-size:.88rem;font-weight:700;color:var(--text);">${u.puntaje}pts</div>
-          <div style="font-size:.95rem;min-width:18px;text-align:center;">${med}</div>
-        </div>`;
-      }).join('')}
-    </div>`;
-  }).join('')}</div>`;
-}
-
-function simRenderPartidos(){
-  const c=document.getElementById('sim-v-partidos'); if(!c) return;
-  let html='';
-  [1,2,3].forEach(j=>{
-    const ps=SIM.partidos.filter(p=>p.jornada===j);
-    const fechas={1:'11–14 jun',2:'18–20 jun',3:'24–25 jun'};
-    html+=`<div style="margin-bottom:20px;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--gold);letter-spacing:.04em;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);">
-        Jornada ${j} · ${fechas[j]}
-      </div>`;
-    html+=ps.map(p=>{
-      const r=p.resultado;
-      const scoreHtml=r
-        ?`<span class="sim-score jugado">${r.l} – ${r.v}</span>`
-        :`<span class="sim-score">VS</span>`;
-      return `<div class="sim-partido-card">
-        <div class="sim-partido-inner">
-          <div class="sim-team"><span>${p.local}</span></div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
-            ${scoreHtml}
-            <span style="font-size:.65rem;color:var(--muted);">${p.fecha} · ${p.hora}</span>
-          </div>
-          <div class="sim-team right"><span>${p.visita}</span></div>
-        </div>
-        <div class="sim-meta">
-          <span><i class="fas fa-location-dot"></i> ${p.estadio}</span>
-          <span>Grupo ${p.grupo}</span>
-        </div>
-      </div>`;
-    }).join('');
-    html+='</div>';
-  });
-  c.innerHTML=html;
-}
-
-function simRenderRanking(){
-  const c=document.getElementById('sim-v-ranking'); if(!c) return;
-  if(SIM.jornada===0){
-    c.innerHTML=`<div class="sim-notice"><i class="fas fa-lock"></i><p>Simula la primera jornada para ver el ranking</p></div>`;
+const _origShowTabFn = window.showTab;
+window.showTab = async (tab) => {
+  if (tab === 'backup') {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('tab-backup').classList.add('active');
+    const logEl = document.getElementById('backup-log');
+    if (logEl) { logEl.style.display = 'none'; logEl.innerHTML = ''; }
     return;
   }
-  let html='';
-  SIM.grupos.forEach(g=>{
-    const sorted=g.usuarios.slice().sort((a,b)=>b.puntaje-a.puntaje||b.aciertos-a.aciertos);
-    const maxPts=sorted[0]?.puntaje||1;
-    html+=`<div style="margin-bottom:24px;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-        <div style="width:8px;height:8px;border-radius:50%;background:${g.color};"></div>
-        <span style="font-family:'Bebas Neue',sans-serif;font-size:1rem;color:${g.color};letter-spacing:.04em;">${g.nombre}</span>
-        <span style="font-size:.72rem;color:var(--muted);">· competencia independiente</span>
-      </div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-        <table class="sim-rk-table"><thead><tr>
-          <th style="width:38px;">#</th>
-          <th>Jugador</th>
-          <th style="text-align:center;">Aciertos</th>
-          <th>Puntos</th>
-        </tr></thead><tbody>`;
-    sorted.forEach((u,i)=>{
-      const pos=i+1;
-      const posColors=['rgba(245,200,66,.2)','rgba(148,163,184,.2)','rgba(205,127,50,.2)','rgba(255,255,255,.05)'];
-      const posTextColors=[g.color,'#94a3b8','#cd7f32','var(--muted)'];
-      const pct=Math.round((u.puntaje/maxPts)*100);
-      const med=pos===1?'🥇':pos===2?'🥈':pos===3?'🥉':'';
-      html+=`<tr>
-        <td><span style="width:26px;height:26px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;background:${posColors[Math.min(pos-1,3)]};color:${posTextColors[Math.min(pos-1,3)]};">${pos}</span></td>
-        <td><div style="display:flex;align-items:center;gap:8px;">
-          <div class="sim-avatar" style="width:26px;height:26px;font-size:10px;background:${u.color}22;color:${u.color};">${u.iniciales}</div>
-          <span style="font-weight:${pos<=3?700:400};">${med} ${u.nombre}</span>
-        </div></td>
-        <td style="text-align:center;color:var(--muted);">${u.aciertos}</td>
-        <td><div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-weight:700;font-size:1rem;color:var(--text);min-width:30px;">${u.puntaje}</span>
-          <div class="sim-bar"><div class="sim-bar-fill" style="width:${pct}%;background:${g.color};"></div></div>
-        </div></td>
-      </tr>`;
-    });
-    html+=`</tbody></table></div></div>`;
-  });
-  c.innerHTML=html;
-}
-
-function simRenderClasificados(){
-  const c=document.getElementById('sim-v-clasificados'); if(!c) return;
-  if(SIM.jornada<3){
-    const falta=3-SIM.jornada;
-    c.innerHTML=`<div class="sim-notice"><i class="fas fa-lock"></i><p>Faltan ${falta} jornada${falta!==1?'s':''} para conocer los clasificados</p></div>`;
-    return;
-  }
-
-  // Calcular tabla real de cada grupo
-  let html=`<div style="font-size:.8rem;color:var(--muted);margin-bottom:16px;">Los 2 primeros de cada grupo avanzan a los 32avos de final.</div>`;
-  html+=`<div class="sim-clas-grid">`;
-  ['A','B','C','D','E'].forEach(g=>{
-    const equipos=SIM_EQUIPOS[g];
-    const partidos=SIM.partidos.filter(p=>p.grupo===g&&p.resultado);
-    const tabla={};
-    equipos.forEach(e=>{ tabla[e]={pj:0,g:0,e:0,pe:0,gf:0,gc:0,pts:0}; });
-    partidos.forEach(p=>{
-      const r=p.resultado;
-      if(!tabla[p.local]||!tabla[p.visita]) return;
-      tabla[p.local].pj++;tabla[p.visita].pj++;
-      tabla[p.local].gf+=r.l;tabla[p.local].gc+=r.v;
-      tabla[p.visita].gf+=r.v;tabla[p.visita].gc+=r.l;
-      if(r.l>r.v){tabla[p.local].g++;tabla[p.local].pts+=3;tabla[p.visita].pe++;}
-      else if(r.v>r.l){tabla[p.visita].g++;tabla[p.visita].pts+=3;tabla[p.local].pe++;}
-      else{tabla[p.local].e++;tabla[p.local].pts++;tabla[p.visita].e++;tabla[p.visita].pts++;}
-    });
-    const sorted=Object.entries(tabla).sort((a,b)=>b[1].pts-a[1].pts||(b[1].gf-b[1].gc)-(a[1].gf-a[1].gc)||b[1].gf-a[1].gf);
-    html+=`<div class="sim-clas-card">
-      <div class="sim-clas-head"><i class="fas fa-table" style="opacity:.6;"></i> Grupo ${g}</div>`;
-    sorted.forEach(([eq,st],i)=>{
-      html+=`<div class="sim-clas-slot ${i<2?'top':''}">
-        <span style="font-size:.72rem;color:var(--muted);min-width:16px;">${i+1}</span>
-        <span style="font-size:.85rem;font-weight:${i<2?700:400};">${i<2?'✓ ':''} ${eq}</span>
-        <span style="font-size:.82rem;color:var(--muted);margin-left:auto;">${st.pts}pts</span>
-      </div>`;
-    });
-    html+='</div>';
-  });
-  html+='</div>';
-
-  // Ranking final polla por grupo
-  html+=`<div style="margin-top:28px;margin-bottom:12px;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--gold);letter-spacing:.04em;">Resultado final — Ranking de la polla</div>`;
-  html+=`<div class="sim-clas-grid">`;
-  SIM.grupos.forEach(g=>{
-    const sorted=g.usuarios.slice().sort((a,b)=>b.puntaje-a.puntaje||b.aciertos-a.aciertos);
-    html+=`<div class="sim-clas-card">
-      <div class="sim-clas-head" style="color:${g.color};">
-        <div style="width:8px;height:8px;border-radius:50%;background:${g.color};flex-shrink:0;"></div>
-        ${g.nombre}
-      </div>`;
-    sorted.forEach((u,i)=>{
-      const med=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
-      html+=`<div class="sim-clas-slot ${i<3?'top':''}">
-        <span style="font-size:.72rem;color:var(--muted);min-width:16px;">${i+1}</span>
-        <div style="display:flex;align-items:center;gap:7px;flex:1;">
-          <div class="sim-avatar" style="width:22px;height:22px;font-size:10px;background:${u.color}22;color:${u.color};">${u.iniciales}</div>
-          <span style="font-size:.85rem;font-weight:${i<3?700:400};">${med} ${u.nombre}</span>
-        </div>
-        <span style="font-size:.82rem;font-weight:700;color:var(--text);">${u.puntaje}pts</span>
-      </div>`;
-    });
-    html+='</div>';
-  });
-  html+='</div>';
-  c.innerHTML=html;
-}
-
-window.simShowTab = function(btn, tab){
-  document.querySelectorAll('.sim-stab').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.sim-view').forEach(v=>v.style.display='none');
-  btn.classList.add('active');
-  const el=document.getElementById('sim-v-'+tab);
-  if(el) el.style.display='block';
-};
-
-// Inicializar cuando se abre el tab simulador
-const _origShowTab = window.showTab;
-window.showTab = async function(tab){
-  await _origShowTab(tab);
-  if(tab==='simulador' && !SIM.grupos){
-    simInit();
-    simRenderAll();
-  }
+  return _origShowTabFn(tab);
 };
 
 </script>
