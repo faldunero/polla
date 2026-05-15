@@ -1141,11 +1141,6 @@ function renderSolicitudesFiltradas() {
       <div class="solicitud-acciones">
         ${estadoBadge[estado] || estadoBadge.pendiente}
         ${acciones.join('')}
-        <button class="btn btn-sm" title="Eliminar usuario"
-          style="background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.25);"
-          onclick="confirmarEliminarUsuario('${uid}','${(s.nombre||s.email).replace(/'/g,"\\'")}')">
-          <i class="fas fa-trash-can"></i>
-        </button>
       </div>
     </div>`;
   }).join('');
@@ -1164,34 +1159,6 @@ window.cambiarEstado = async (uid, nuevoEstado) => {
     const labels = { aprobado:'Aprobado ✓', rechazado:'Rechazado', pendiente:'Vuelto a pendiente' };
     toast(labels[nuevoEstado] || 'Estado actualizado', nuevoEstado === 'aprobado' ? 'success' : nuevoEstado === 'rechazado' ? 'error' : 'info');
   } catch(e) { toast('Error: ' + e.message, 'error'); }
-};
-
-window.confirmarEliminarUsuario = (uid, nombre) => {
-  if (!confirm(`¿Eliminar a "${nombre}" de la polla?\n\nSe borrará su perfil de participante y todas sus apuestas. Esta acción no se puede deshacer.`)) return;
-  eliminarUsuario(uid, nombre);
-};
-
-window.eliminarUsuario = async (uid, nombre) => {
-  try {
-    // 1. Borrar todas las apuestas del usuario
-    const apSnap = await getDocs(query(collection(db, 'apuestas'), where('uid', '==', uid)));
-    if (apSnap.size > 0) {
-      const batch = writeBatch(db);
-      apSnap.docs.forEach(d => batch.delete(d.ref));
-      await batch.commit();
-    }
-
-    // 2. Borrar el documento del participante
-    await deleteDoc(doc(db, 'participantes', uid));
-
-    // 3. Actualizar caché local y UI
-    globalSolicitudes = globalSolicitudes.filter(s => (s.uid || s.id) !== uid);
-    document.getElementById('sol_' + uid)?.remove();
-    actualizarStats();
-    renderSolicitudesFiltradas();
-
-    toast(`${nombre} eliminado · ${apSnap.size} apuesta${apSnap.size !== 1 ? 's' : ''} borrada${apSnap.size !== 1 ? 's' : ''}`, 'success');
-  } catch(e) { toast('Error al eliminar: ' + e.message, 'error'); }
 };
 
 function formatFechaHora(ts) {
@@ -1253,13 +1220,91 @@ window.crearGrupo = async () => {
 };
 
 window.eliminarGrupo = async (id, nombre) => {
-  if (!confirm(`¿Eliminar el grupo "${nombre}"? Esta acción no se puede deshacer.`)) return;
+  // Verificar si hay participantes en este grupo
+  let participantes = [];
   try {
-    await deleteDoc(doc(db, 'grupos', id));
-    toast('Grupo eliminado', 'success');
-    await renderGruposAdmin();
-  } catch(e) { toast('Error: ' + e.message, 'error'); }
+    const snap = await getDocs(query(collection(db, 'participantes'), where('grupoId', '==', id)));
+    participantes = snap.docs.map(d => ({ docId: d.id, ...d.data() }));
+  } catch(e) {
+    toast('Error verificando participantes: ' + e.message, 'error');
+    return;
+  }
+
+  if (participantes.length > 0) {
+    // Hay usuarios — mostrar modal de confirmación con lista
+    _grupoEliminarPendiente = { id, nombre, participantes };
+    const lista = participantes.map(p =>
+      `<div class="mrg-partido">
+        <span style="flex:1;">${p.nombre || p.email}</span>
+        <span style="font-size:0.72rem;color:var(--muted);">${p.email}</span>
+        <span class="mrg-score sin-res">${p.estado || 'pendiente'}</span>
+      </div>`
+    ).join('');
+    document.getElementById('mge-title').textContent = `Eliminar grupo "${nombre}"`;
+    document.getElementById('mge-desc').innerHTML =
+      `Este grupo tiene <strong style="color:var(--text);">${participantes.length} participante${participantes.length !== 1 ? 's' : ''}</strong>.
+       Si eliminas el grupo, <strong style="color:var(--red);">también se eliminarán sus perfiles y todas sus apuestas.</strong>`;
+    document.getElementById('mge-lista').innerHTML = lista;
+    document.getElementById('modal-eliminar-grupo').style.display = 'flex';
+  } else {
+    // Sin participantes — eliminar directo
+    if (!confirm(`¿Eliminar el grupo "${nombre}"? No tiene participantes.`)) return;
+    await _ejecutarEliminarGrupo(id, nombre, []);
+  }
 };
+
+let _grupoEliminarPendiente = null;
+
+window.cerrarModalEliminarGrupo = () => {
+  document.getElementById('modal-eliminar-grupo').style.display = 'none';
+  _grupoEliminarPendiente = null;
+};
+
+window.confirmarEliminarGrupoConUsuarios = async () => {
+  if (!_grupoEliminarPendiente) return;
+  const { id, nombre, participantes } = _grupoEliminarPendiente;
+  const btn = document.getElementById('mge-confirm-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Eliminando...';
+  await _ejecutarEliminarGrupo(id, nombre, participantes);
+  cerrarModalEliminarGrupo();
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-trash-can"></i> Sí, eliminar todo';
+};
+
+async function _ejecutarEliminarGrupo(grupoId, nombre, participantes) {
+  try {
+    let apuestasBorradas = 0;
+
+    // 1. Por cada participante: borrar sus apuestas y su perfil
+    for (const p of participantes) {
+      const uid = p.uid || p.docId;
+      // Borrar apuestas
+      const apSnap = await getDocs(query(collection(db, 'apuestas'), where('uid', '==', uid)));
+      if (apSnap.size > 0) {
+        const batch = writeBatch(db);
+        apSnap.docs.forEach(d => batch.delete(d.ref));
+        await batch.commit();
+        apuestasBorradas += apSnap.size;
+      }
+      // Borrar participante
+      await deleteDoc(doc(db, 'participantes', p.docId));
+    }
+
+    // 2. Borrar el grupo
+    await deleteDoc(doc(db, 'grupos', grupoId));
+
+    // 3. Actualizar UI
+    await renderGruposAdmin();
+
+    const msg = participantes.length > 0
+      ? `Grupo eliminado · ${participantes.length} usuario${participantes.length !== 1 ? 's' : ''} y ${apuestasBorradas} apuesta${apuestasBorradas !== 1 ? 's' : ''} borradas`
+      : 'Grupo eliminado';
+    toast(msg, 'success');
+  } catch(e) {
+    toast('Error al eliminar: ' + e.message, 'error');
+  }
+}
 
 // ── RESULTADOS (directo a Firestore) ─────────────────────────────────────
 const FG = {
@@ -3151,6 +3196,22 @@ document.getElementById('modal-estadio-edit').addEventListener('click', e => {
       <button class="mrg-cancel" onclick="cerrarResetGrupo()">Cancelar</button>
       <button class="mrg-confirm" id="mrg-confirm-btn" onclick="ejecutarResetGrupo()">
         <i class="fas fa-rotate-left"></i> Sí, resetear
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ELIMINAR GRUPO CON USUARIOS -->
+<div id="modal-eliminar-grupo" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);z-index:3000;align-items:center;justify-content:center;padding:20px;">
+  <div class="mrg-box">
+    <div class="mrg-icon">⚠️</div>
+    <div class="mrg-title" id="mge-title">Eliminar grupo</div>
+    <div class="mrg-desc" id="mge-desc"></div>
+    <div class="mrg-lista" id="mge-lista"></div>
+    <div class="mrg-footer">
+      <button class="mrg-cancel" onclick="cerrarModalEliminarGrupo()">Cancelar</button>
+      <button class="mrg-confirm" id="mge-confirm-btn" onclick="confirmarEliminarGrupoConUsuarios()">
+        <i class="fas fa-trash-can"></i> Sí, eliminar todo
       </button>
     </div>
   </div>
