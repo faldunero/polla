@@ -254,24 +254,11 @@ nav {
 .ranking-table th { text-align: left; padding: 10px 16px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); border-bottom: 1px solid var(--border); }
 .ranking-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
 .ranking-table tr:last-child td { border-bottom: none; }
-.ranking-table tr:hover td { background: var(--card2); }
 .pos-badge { width: 28px; height: 28px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; }
 .pos-1 { background: rgba(245,200,66,0.2); color: var(--gold); }
 .pos-2 { background: rgba(148,163,184,0.2); color: #94a3b8; }
 .pos-3 { background: rgba(205,127,50,0.2); color: #cd7f32; }
 .pos-n { background: var(--card2); color: var(--muted); }
-
-/* ── RANKING FILTROS ── */
-.rk-filter-btn{font-family:'Bebas Neue',sans-serif;font-size:0.82rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;transition:all 0.18s;display:inline-flex;align-items:center;gap:7px;}
-.rk-filter-btn:hover{border-color:rgba(245,200,66,0.4);color:var(--gold);}
-.rk-filter-btn.active{background:var(--gold);color:#0a0e1a;border-color:var(--gold);}
-.rk-grupo-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:16px;}
-.rk-grupo-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--card2);border-bottom:1px solid var(--border);gap:12px;flex-wrap:wrap;}
-.rk-grupo-nombre{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.05em;color:var(--gold);}
-.rk-grupo-meta{font-size:0.72rem;color:var(--muted);}
-.rk-bar-wrap{display:flex;align-items:center;gap:8px;}
-.rk-bar{flex:1;height:5px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;max-width:90px;}
-.rk-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));border-radius:999px;transition:width 0.5s ease;}
 
 /* ── SOLICITUDES ── */
 .badge-yellow  { background: rgba(245,200,66,0.15); color: var(--gold); border: 1px solid rgba(245,200,66,0.3); }
@@ -405,21 +392,6 @@ nav {
 .grupo-panel{display:none;padding:14px 18px;}
 .grupo-panel.active{display:block;}
 .fase-partidos-wrap{padding:14px 18px;}
-/* ── CARGA MASIVA EXCEL ──────────────────────────────────────────── */
-.col-pill{display:inline-flex;align-items:center;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:5px;padding:3px 9px;font-size:0.68rem;font-family:monospace;color:var(--text);}
-.col-pill.req{background:rgba(245,200,66,0.1);border-color:rgba(245,200,66,0.3);color:var(--gold);}
-#bulk-dropzone:hover{border-color:var(--gold)!important;background:rgba(245,200,66,0.06)!important;}
-/* Tabla preview bulk */
-#bulk-preview-table th{background:#111827;color:var(--muted);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;padding:8px 12px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.08);white-space:nowrap;}
-#bulk-preview-table td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:var(--text);vertical-align:top;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-#bulk-preview-table tr:hover td{background:rgba(255,255,255,0.03);}
-#bulk-preview-table tr.row-error td{background:rgba(239,68,68,0.07);}
-#bulk-preview-table tr.row-error td:first-child{border-left:3px solid var(--red);}
-#bulk-preview-table tr.row-ok td:first-child{border-left:3px solid var(--green);}
-.bulk-badge-ok{display:inline-flex;align-items:center;gap:4px;background:rgba(34,197,94,0.12);color:var(--green);border-radius:5px;padding:2px 8px;font-size:0.65rem;font-weight:700;}
-.bulk-badge-err{display:inline-flex;align-items:center;gap:4px;background:rgba(239,68,68,0.12);color:var(--red);border-radius:5px;padding:2px 8px;font-size:0.65rem;font-weight:700;}
-.bulk-badge-new{display:inline-flex;align-items:center;gap:4px;background:rgba(59,130,246,0.12);color:#60a5fa;border-radius:5px;padding:2px 8px;font-size:0.65rem;font-weight:700;}
-
 /* ── SELECCIONES ADMIN ─────────────────────────────────────────── */
 .sel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:4px;}
 .sel-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
@@ -681,15 +653,7 @@ nav {
     </div>
     <!-- TAB RANKING -->
     <div id="tab-ranking" class="page">
-      <div class="section-title"><i class="fas fa-trophy"></i> Ranking</div>
-
-      <!-- Filtros -->
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px;">
-        <span style="font-size:0.78rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Vista:</span>
-        <div id="rk-filtros" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
-      </div>
-
-      <!-- Contenido ranking -->
+      <div class="section-title"><i class="fas fa-trophy"></i> Ranking global</div>
       <div id="ranking-global"></div>
     </div>
 
@@ -728,67 +692,6 @@ nav {
 
       <!-- Grid de selecciones -->
       <div id="selecciones-grid"></div>
-
-      <!-- ── CARGA MASIVA EXCEL ── -->
-      <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border);">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--gold);letter-spacing:0.04em;margin-bottom:6px;">
-          <i class="fas fa-file-excel"></i> Carga masiva desde Excel
-        </div>
-        <div style="font-size:0.76rem;color:var(--muted);margin-bottom:16px;line-height:1.6;">
-          Sube un <strong style="color:var(--text);">.xlsx</strong> con una fila por selección. La primera fila debe ser el encabezado.
-          Cada registro se escribe con <strong style="color:var(--text);">setDoc</strong> — sobreescribe completamente el documento si ya existe
-          (usa el campo <code style="background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:4px;">nombre</code> como clave única).
-        </div>
-
-        <!-- Columnas esperadas -->
-        <div style="background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px 16px;margin-bottom:18px;font-size:0.72rem;color:var(--muted);line-height:2;">
-          <span style="color:var(--text);font-weight:700;display:block;margin-bottom:6px;">Columnas del Excel (encabezado exacto):</span>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;">
-            <span class="col-pill req">nombre *</span>
-            <span class="col-pill req">grupo *</span>
-            <span class="col-pill">confederacion</span>
-            <span class="col-pill">ranking_fifa</span>
-            <span class="col-pill">participaciones</span>
-            <span class="col-pill">mejor_posicion</span>
-            <span class="col-pill">entrenador</span>
-            <span class="col-pill">sede</span>
-            <span class="col-pill">goleador_historico</span>
-            <span class="col-pill">goleador_mundiales</span>
-            <span class="col-pill">jugador_mas_caro</span>
-            <span class="col-pill">valor_plantel_usd</span>
-          </div>
-          <div style="margin-top:8px;"><span style="color:var(--red);font-weight:700;">*</span> obligatorios · Las columnas extra se ignoran · Las celdas vacías no se escriben en BD</div>
-        </div>
-
-        <!-- Drop zone -->
-        <div id="bulk-dropzone" onclick="document.getElementById('bulk-file-input').click()"
-          style="border:2px dashed rgba(245,200,66,0.3);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;background:rgba(245,200,66,0.03);"
-          ondragover="event.preventDefault();this.style.borderColor='var(--gold)';this.style.background='rgba(245,200,66,0.07)'"
-          ondragleave="this.style.borderColor='rgba(245,200,66,0.3)';this.style.background='rgba(245,200,66,0.03)'"
-          ondrop="event.preventDefault();this.style.borderColor='rgba(245,200,66,0.3)';this.style.background='rgba(245,200,66,0.03)';handleBulkFile(event.dataTransfer.files[0])">
-          <i class="fas fa-file-excel" style="font-size:2.2rem;color:rgba(245,200,66,0.5);margin-bottom:10px;display:block;"></i>
-          <div style="font-weight:700;color:var(--text);margin-bottom:4px;">Arrastra el archivo aquí o haz clic para seleccionar</div>
-          <div style="font-size:0.75rem;color:var(--muted);">Solo archivos .xlsx · Máximo 5 MB</div>
-          <input type="file" id="bulk-file-input" accept=".xlsx" style="display:none;" onchange="handleBulkFile(this.files[0])">
-        </div>
-
-        <!-- Feedback archivo -->
-        <div id="bulk-file-info" style="display:none;margin-top:12px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;">
-          <i class="fas fa-file-excel" style="color:var(--green);font-size:1.3rem;flex-shrink:0;"></i>
-          <div style="flex:1;">
-            <div id="bulk-file-name" style="font-weight:700;font-size:0.88rem;"></div>
-            <div id="bulk-file-meta" style="font-size:0.72rem;color:var(--muted);margin-top:2px;"></div>
-          </div>
-          <button onclick="limpiarBulkFile()" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:4px;" title="Quitar archivo">✕</button>
-        </div>
-        <div id="bulk-parse-error" style="display:none;margin-top:10px;" class="alert alert-error"></div>
-
-        <!-- Botón preview -->
-        <button id="bulk-preview-btn" onclick="abrirPreviewBulkExcel()" disabled
-          style="margin-top:14px;padding:11px 24px;background:var(--gold);color:#0a0e1a;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.9rem;cursor:pointer;display:inline-flex;align-items:center;gap:9px;opacity:0.4;transition:all .2s;">
-          <i class="fas fa-eye"></i> Vista previa · Confirmar carga
-        </button>
-      </div>
     </div>
 
     <!-- TAB ESTADIOS -->
@@ -937,64 +840,6 @@ nav {
         <button onclick="guardarEstadio()" style="flex:1;padding:11px;background:#3b82f6;color:white;border:none;border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'"><i class="fas fa-save"></i> Guardar cambios</button>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- MODAL PREVIEW CARGA MASIVA EXCEL -->
-<div id="modal-bulk-preview" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:5000;align-items:center;justify-content:center;padding:16px;">
-  <div style="background:#1a2238;border:1px solid rgba(245,200,66,0.25);border-radius:18px;width:100%;max-width:900px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 32px 80px rgba(0,0,0,0.7);animation:mpopIn .22s cubic-bezier(0.34,1.4,0.64,1);">
-    <!-- Header -->
-    <div style="background:linear-gradient(135deg,#111827,#1a2238);border-bottom:1px solid rgba(255,255,255,0.08);padding:20px 26px;display:flex;align-items:center;justify-content:space-between;border-radius:18px 18px 0 0;flex-shrink:0;">
-      <div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--gold);letter-spacing:0.04em;"><i class="fas fa-table"></i> Vista previa — Carga masiva</div>
-        <div id="bulk-preview-subtitle" style="font-size:0.72rem;color:var(--muted);margin-top:2px;"></div>
-      </div>
-      <button onclick="cerrarPreviewBulk()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.08);border:none;cursor:pointer;color:var(--muted);font-size:1rem;display:flex;align-items:center;justify-content:center;" onmouseover="this.style.background='rgba(239,68,68,0.3)';this.style.color='white'" onmouseout="this.style.background='rgba(255,255,255,0.08)';this.style.color='var(--muted)'">✕</button>
-    </div>
-
-    <!-- Alertas -->
-    <div id="bulk-preview-alerts" style="padding:0 26px;flex-shrink:0;"></div>
-
-    <!-- Tabla preview -->
-    <div style="overflow:auto;flex:1;padding:16px 26px;">
-      <table id="bulk-preview-table" style="width:100%;border-collapse:collapse;font-size:0.78rem;">
-        <thead id="bulk-preview-thead" style="position:sticky;top:0;z-index:1;"></thead>
-        <tbody id="bulk-preview-tbody"></tbody>
-      </table>
-    </div>
-
-    <!-- Footer -->
-    <div style="border-top:1px solid rgba(255,255,255,0.08);padding:16px 26px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;flex-shrink:0;">
-      <div id="bulk-preview-stats" style="font-size:0.8rem;color:var(--muted);"></div>
-      <div style="display:flex;gap:10px;">
-        <button onclick="cerrarPreviewBulk()" style="padding:10px 22px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.88rem;transition:all .2s;" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Cancelar</button>
-        <button id="bulk-confirm-btn" onclick="ejecutarCargaMasiva()"
-          style="padding:10px 26px;background:var(--red);color:white;border:none;border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.88rem;display:flex;align-items:center;gap:8px;transition:all .2s;"
-          onmouseover="this.style.background='#b91c1c'" onmouseout="this.style.background='var(--red)'">
-          <i class="fas fa-bolt"></i> Confirmar y cargar a Firestore
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL PROGRESO CARGA MASIVA -->
-<div id="modal-bulk-progress" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:6000;align-items:center;justify-content:center;padding:16px;">
-  <div style="background:#1a2238;border:1px solid rgba(245,200,66,0.2);border-radius:18px;width:100%;max-width:480px;padding:32px;box-shadow:0 32px 80px rgba(0,0,0,0.7);text-align:center;">
-    <div style="font-size:2.5rem;margin-bottom:14px;" id="bulk-prog-icon">⚡</div>
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--gold);letter-spacing:0.04em;margin-bottom:8px;">Cargando selecciones...</div>
-    <div id="bulk-prog-text" style="font-size:0.82rem;color:var(--muted);margin-bottom:20px;"></div>
-    <!-- Barra de progreso -->
-    <div style="background:rgba(255,255,255,0.07);border-radius:999px;height:8px;overflow:hidden;margin-bottom:10px;">
-      <div id="bulk-prog-bar" style="height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));border-radius:999px;width:0%;transition:width .3s ease;"></div>
-    </div>
-    <div id="bulk-prog-count" style="font-size:0.72rem;color:var(--muted);"></div>
-    <!-- Log de errores (oculto hasta que haya algo) -->
-    <div id="bulk-prog-log" style="display:none;margin-top:16px;background:rgba(0,0,0,0.3);border-radius:8px;padding:10px 12px;max-height:120px;overflow-y:auto;text-align:left;font-size:0.7rem;font-family:monospace;color:var(--red);line-height:1.8;"></div>
-    <!-- Botón cerrar (aparece al terminar) -->
-    <button id="bulk-prog-close" onclick="cerrarProgresoBulk()" style="display:none;margin-top:18px;padding:10px 28px;background:var(--gold);color:#0a0e1a;border:none;border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.9rem;">
-      <i class="fas fa-check"></i> Listo
-    </button>
   </div>
 </div>
 
@@ -1296,6 +1141,11 @@ function renderSolicitudesFiltradas() {
       <div class="solicitud-acciones">
         ${estadoBadge[estado] || estadoBadge.pendiente}
         ${acciones.join('')}
+        <button class="btn btn-sm" title="Eliminar usuario"
+          style="background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.25);"
+          onclick="confirmarEliminarUsuario('${uid}','${(s.nombre||s.email).replace(/'/g,"\\'")}')">
+          <i class="fas fa-trash-can"></i>
+        </button>
       </div>
     </div>`;
   }).join('');
@@ -1314,6 +1164,34 @@ window.cambiarEstado = async (uid, nuevoEstado) => {
     const labels = { aprobado:'Aprobado ✓', rechazado:'Rechazado', pendiente:'Vuelto a pendiente' };
     toast(labels[nuevoEstado] || 'Estado actualizado', nuevoEstado === 'aprobado' ? 'success' : nuevoEstado === 'rechazado' ? 'error' : 'info');
   } catch(e) { toast('Error: ' + e.message, 'error'); }
+};
+
+window.confirmarEliminarUsuario = (uid, nombre) => {
+  if (!confirm(`¿Eliminar a "${nombre}" de la polla?\n\nSe borrará su perfil de participante y todas sus apuestas. Esta acción no se puede deshacer.`)) return;
+  eliminarUsuario(uid, nombre);
+};
+
+window.eliminarUsuario = async (uid, nombre) => {
+  try {
+    // 1. Borrar todas las apuestas del usuario
+    const apSnap = await getDocs(query(collection(db, 'apuestas'), where('uid', '==', uid)));
+    if (apSnap.size > 0) {
+      const batch = writeBatch(db);
+      apSnap.docs.forEach(d => batch.delete(d.ref));
+      await batch.commit();
+    }
+
+    // 2. Borrar el documento del participante
+    await deleteDoc(doc(db, 'participantes', uid));
+
+    // 3. Actualizar caché local y UI
+    globalSolicitudes = globalSolicitudes.filter(s => (s.uid || s.id) !== uid);
+    document.getElementById('sol_' + uid)?.remove();
+    actualizarStats();
+    renderSolicitudesFiltradas();
+
+    toast(`${nombre} eliminado · ${apSnap.size} apuesta${apSnap.size !== 1 ? 's' : ''} borrada${apSnap.size !== 1 ? 's' : ''}`, 'success');
+  } catch(e) { toast('Error al eliminar: ' + e.message, 'error'); }
 };
 
 function formatFechaHora(ts) {
@@ -1754,187 +1632,48 @@ window.toggleFaseRes = (id) => {
 };
 
 // ── RANKING GLOBAL (directo a Firestore) ──────────────────────────────────
-// ── RANKING GLOBAL ────────────────────────────────────────────────────────
-let _rkData = null; // cache: { grupos: {id: {nombre, participantes: [{...}]}}, todos: [{...}] }
-let _rkFiltro = 'todos'; // 'todos' | grupoId
-
 async function renderRankingGlobal() {
-  const container  = document.getElementById('ranking-global');
-  const filtrosEl  = document.getElementById('rk-filtros');
-  container.innerHTML = '<p style="color:var(--muted);padding:20px 0;"><i class="fas fa-spinner fa-spin"></i> Cargando ranking...</p>';
-  filtrosEl.innerHTML = '';
-
+  const container = document.getElementById('ranking-global');
+  container.innerHTML = '<p style="color:var(--muted);">Cargando...</p>';
   try {
-    // Cargar datos frescos
-    const [partSnap, apSnap, grSnap] = await Promise.all([
+    const [partSnap, apSnap] = await Promise.all([
       getDocs(collection(db, 'participantes')),
-      getDocs(collection(db, 'apuestas')),
-      getDocs(collection(db, 'grupos'))
+      getDocs(collection(db, 'apuestas'))
     ]);
-
-    // Mapa de grupos
-    const gruposMap = {}; // grupoId → { id, nombre }
-    grSnap.docs.forEach(d => { gruposMap[d.id] = { id: d.id, nombre: d.data().nombre || d.id }; });
-
-    // Acumular puntajes por participante
     const participantes = {};
     partSnap.docs.forEach(d => {
-      const p = d.data();
-      participantes[p.uid] = {
-        uid:        p.uid,
-        nombre:     p.nombre || p.email || 'Jugador',
-        email:      p.email || '',
-        grupoId:    p.grupoId || '',
-        grupoNombre:p.grupoNombre || gruposMap[p.grupoId]?.nombre || '—',
-        estado:     p.estado || 'pendiente',
-        total:      0,
-        aciertos:   0,
-        apuestas:   0,
-      };
+      participantes[d.data().uid] = { ...d.data(), total: 0, aciertos: 0 };
     });
-
     apSnap.docs.forEach(d => {
       const a = d.data();
-      if(!participantes[a.uid]) return;
-      participantes[a.uid].apuestas++;
-      if(a.puntaje != null){
-        participantes[a.uid].total += Number(a.puntaje);
-        if(a.puntaje > 0) participantes[a.uid].aciertos++;
+      if (a.puntaje != null && participantes[a.uid]) {
+        participantes[a.uid].total += a.puntaje;
+        if (a.puntaje > 0) participantes[a.uid].aciertos++;
       }
     });
-
-    // Solo aprobados para el ranking
-    const aprobados = Object.values(participantes).filter(p => p.estado === 'aprobado');
-
-    // Agrupar por grupo
-    const porGrupo = {};
-    aprobados.forEach(p => {
-      if(!porGrupo[p.grupoId]) porGrupo[p.grupoId] = { nombre: p.grupoNombre, jugadores: [] };
-      porGrupo[p.grupoId].jugadores.push(p);
-    });
-    // Ordenar dentro de cada grupo
-    Object.values(porGrupo).forEach(g => {
-      g.jugadores.sort((a,b) => b.total - a.total || b.aciertos - a.aciertos || a.nombre.localeCompare(b.nombre));
-    });
-    // Ranking total combinado
-    const todos = [...aprobados].sort((a,b) => b.total - a.total || b.aciertos - a.aciertos || a.nombre.localeCompare(b.nombre));
-
-    _rkData = { porGrupo, todos };
-
-    // ── Construir filtros ──
-    const gruposOrdenados = Object.entries(porGrupo).sort((a,b) => a[1].nombre.localeCompare(b[1].nombre));
-
-    let botonesHtml = `<button class="rk-filter-btn active" data-filtro="todos" onclick="setRkFiltro('todos')">
-      <i class="fas fa-globe"></i> Ranking Total
-    </button>`;
-    gruposOrdenados.forEach(([gid, g]) => {
-      botonesHtml += `<button class="rk-filter-btn" data-filtro="${gid}" onclick="setRkFiltro('${gid}')">
-        <i class="fas fa-users"></i> ${g.nombre}
-      </button>`;
-    });
-    filtrosEl.innerHTML = botonesHtml;
-
-    _rkFiltro = 'todos';
-    renderRankingVista();
-
-  } catch(e) {
-    container.innerHTML = `<p style="color:var(--red);">${e.message}</p>`;
-  }
-}
-
-window.setRkFiltro = function(filtro) {
-  _rkFiltro = filtro;
-  document.querySelectorAll('.rk-filter-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.filtro === filtro);
-  });
-  renderRankingVista();
-};
-
-function buildTablaGrupo(jugadores, grupoNombre, grupoId, mostrarGrupo) {
-  if(!jugadores.length) return '';
-  const maxPts = jugadores[0]?.total || 1;
-
-  let html = '';
-  if(mostrarGrupo){
-    html += `<div class="rk-grupo-card">
-      <div class="rk-grupo-header">
-        <div>
-          <div class="rk-grupo-nombre"><i class="fas fa-users" style="font-size:0.85rem;opacity:0.7;margin-right:6px;"></i>${grupoNombre}</div>
-          <div class="rk-grupo-meta">${jugadores.length} participante${jugadores.length!==1?'s':''} · Competencia independiente</div>
-        </div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--gold);letter-spacing:0.04em;">
-          ${jugadores[0]?.total ?? 0} <span style="font-size:0.8rem;color:var(--muted);">pts líder</span>
-        </div>
-      </div>`;
-  }
-
-  html += `<table class="ranking-table"><thead><tr>
-    <th style="width:44px;">#</th>
-    <th>Jugador</th>
-    ${mostrarGrupo ? '' : '<th>Grupo</th>'}
-    <th>Email</th>
-    <th style="text-align:center;">Apuestas</th>
-    <th style="text-align:center;">Aciertos</th>
-    <th>Puntos</th>
-  </tr></thead><tbody>`;
-
-  jugadores.forEach((r, i) => {
-    const pos = i + 1;
-    const posClass = pos===1?'pos-1':pos===2?'pos-2':pos===3?'pos-3':'pos-n';
-    const pct = maxPts ? Math.round((r.total/maxPts)*100) : 0;
-    const medalla = pos===1?'🥇':pos===2?'🥈':pos===3?'🥉':'';
-    html += `<tr>
-      <td><span class="pos-badge ${posClass}">${pos}</span></td>
-      <td style="font-weight:600;">${medalla?medalla+' ':''}${r.nombre}</td>
-      ${mostrarGrupo ? '' : `<td style="color:var(--muted);font-size:0.82rem;">${r.grupoNombre}</td>`}
-      <td style="color:var(--muted);font-size:0.78rem;">${r.email}</td>
-      <td style="text-align:center;color:var(--muted);font-size:0.85rem;">${r.apuestas}</td>
-      <td style="text-align:center;color:var(--muted);font-size:0.85rem;">${r.aciertos}</td>
-      <td>
-        <div class="rk-bar-wrap">
-          <span style="font-weight:700;font-size:1.05rem;color:var(--gold);min-width:32px;">${r.total}</span>
-          <div class="rk-bar"><div class="rk-bar-fill" style="width:${pct}%"></div></div>
-        </div>
-      </td>
-    </tr>`;
-  });
-
-  html += '</tbody></table>';
-  if(mostrarGrupo) html += '</div>';
-  return html;
-}
-
-function renderRankingVista() {
-  const container = document.getElementById('ranking-global');
-  if(!_rkData){ container.innerHTML=''; return; }
-
-  if(_rkFiltro === 'todos'){
-    // Vista global: todos juntos indicando su grupo
-    if(!_rkData.todos.length){
-      container.innerHTML='<p style="color:var(--muted);">Sin participantes aprobados.</p>';
+    const ranking = Object.values(participantes).sort((a, b) => b.total - a.total);
+    if (!ranking.length) {
+      container.innerHTML = '<p style="color:var(--muted);">Aún no hay apuestas registradas.</p>';
       return;
     }
-    // Encabezado resumen por grupo
-    const grupos = Object.entries(_rkData.porGrupo).sort((a,b)=>a[1].nombre.localeCompare(b[1].nombre));
-    let resumen = `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">`;
-    grupos.forEach(([gid, g]) => {
-      const lider = g.jugadores[0];
-      resumen += `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;flex:1;min-width:160px;cursor:pointer;transition:all .18s;" onclick="setRkFiltro('${gid}')" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:0.85rem;color:var(--muted);letter-spacing:0.06em;margin-bottom:4px;">${g.nombre}</div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--gold);">${lider?.total ?? 0} <span style="font-size:0.7rem;color:var(--muted);">pts</span></div>
-        <div style="font-size:0.7rem;color:var(--muted);margin-top:2px;">🥇 ${lider?.nombre ?? '—'}</div>
-        <div style="font-size:0.65rem;color:var(--muted);margin-top:1px;">${g.jugadores.length} jugador${g.jugadores.length!==1?'es':''}</div>
-      </div>`;
+    let html = `<table class="ranking-table"><thead><tr>
+      <th>#</th><th>Jugador</th><th>Grupo</th><th>Email</th><th>Aciertos</th><th>Puntos</th>
+    </tr></thead><tbody>`;
+    ranking.forEach((r, i) => {
+      const pos = i + 1;
+      const posClass = pos <= 3 ? `pos-${pos}` : 'pos-n';
+      html += `<tr>
+        <td><span class="pos-badge ${posClass}">${pos}</span></td>
+        <td style="font-weight:600;">${r.nombre || r.email}</td>
+        <td style="color:var(--muted);font-size:0.85rem;">${r.grupoNombre || '–'}</td>
+        <td style="color:var(--muted);font-size:0.82rem;">${r.email}</td>
+        <td style="color:var(--muted);font-size:0.85rem;">${r.aciertos}</td>
+        <td style="font-weight:700;font-size:1.05rem;color:var(--gold);">${r.total}</td>
+      </tr>`;
     });
-    resumen += '</div>';
-
-    container.innerHTML = resumen + buildTablaGrupo(_rkData.todos, '', '', false);
-  } else {
-    // Vista de un grupo específico
-    const g = _rkData.porGrupo[_rkFiltro];
-    if(!g){ container.innerHTML='<p style="color:var(--muted);">Grupo no encontrado.</p>'; return; }
-    container.innerHTML = buildTablaGrupo(g.jugadores, g.nombre, _rkFiltro, true);
-  }
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  } catch(e) { container.innerHTML = `<p style="color:var(--red);">${e.message}</p>`; }
 }
 
 
@@ -3398,250 +3137,6 @@ window.eliminarEstadioActual = async function() {
 document.getElementById('modal-estadio-edit').addEventListener('click', e => {
   if(e.target === document.getElementById('modal-estadio-edit')) cerrarModalEstadio();
 });
-
-// ── CARGA MASIVA EXCEL — SELECCIONES ─────────────────────────────────────
-// SheetJS cargado desde CDN
-let _bulkSheetJS = null;
-let _bulkParsedRows = [];   // filas parseadas listas para mostrar en preview
-let _bulkValidRows  = [];   // filas sin errores listas para escribir
-
-const BULK_COLS = [
-  { key:'nombre',            label:'Nombre',            required:true,  type:'string'  },
-  { key:'grupo',             label:'Grupo',             required:true,  type:'string'  },
-  { key:'confederacion',     label:'Confederación',     required:false, type:'string'  },
-  { key:'ranking_fifa',      label:'Ranking FIFA',      required:false, type:'number'  },
-  { key:'participaciones',   label:'Participaciones',   required:false, type:'number'  },
-  { key:'mejor_posicion',    label:'Mejor posición',    required:false, type:'string'  },
-  { key:'entrenador',        label:'Entrenador',        required:false, type:'string'  },
-  { key:'sede',              label:'Sede base',         required:false, type:'string'  },
-  { key:'goleador_historico',label:'Goleador histórico',required:false, type:'string'  },
-  { key:'goleador_mundiales',label:'Goleador mundiales',required:false, type:'string'  },
-  { key:'jugador_mas_caro',  label:'Jugador más caro',  required:false, type:'string'  },
-  { key:'valor_plantel_usd', label:'Valor plantel USD', required:false, type:'number'  },
-];
-
-async function getSheetJS(){
-  if(_bulkSheetJS) return _bulkSheetJS;
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-    s.onload  = () => { _bulkSheetJS = window.XLSX; resolve(window.XLSX); };
-    s.onerror = () => reject(new Error('No se pudo cargar SheetJS'));
-    document.head.appendChild(s);
-  });
-}
-
-window.handleBulkFile = async function(file) {
-  const errEl  = document.getElementById('bulk-parse-error');
-  const infoEl = document.getElementById('bulk-file-info');
-  const btn    = document.getElementById('bulk-preview-btn');
-  errEl.style.display  = 'none';
-  infoEl.style.display = 'none';
-  btn.disabled = true; btn.style.opacity = '0.4';
-  _bulkParsedRows = []; _bulkValidRows = [];
-
-  if(!file) return;
-  if(!file.name.endsWith('.xlsx')){
-    errEl.textContent = '❌ El archivo debe ser .xlsx';
-    errEl.style.display = 'flex'; return;
-  }
-  if(file.size > 5*1024*1024){
-    errEl.textContent = '❌ El archivo supera 5 MB';
-    errEl.style.display = 'flex'; return;
-  }
-
-  try {
-    const XLSX = await getSheetJS();
-    const buf  = await file.arrayBuffer();
-    const wb   = XLSX.read(buf, { type:'array' });
-    const ws   = wb.Sheets[wb.SheetNames[0]];
-    const raw  = XLSX.utils.sheet_to_json(ws, { defval:'' });
-
-    if(!raw.length){ throw new Error('El archivo está vacío o no tiene filas de datos.'); }
-
-    // Normalizar claves del Excel (trim + lowercase por si el usuario puso espacios)
-    const rows = raw.map((r, i) => {
-      const norm = {};
-      Object.keys(r).forEach(k => { norm[k.trim()] = r[k]; });
-      const out = { _fila: i+2, _errores: [] };
-      BULK_COLS.forEach(col => {
-        let val = norm[col.key];
-        // Intentar con variantes (sin acento, uppercase)
-        if(val === undefined || val === '') {
-          const altKey = Object.keys(norm).find(k => k.toLowerCase().replace(/\s/g,'') === col.key.toLowerCase().replace(/\s/g,''));
-          if(altKey) val = norm[altKey];
-        }
-        if(col.required && (val === undefined || val === '' || val === null)){
-          out._errores.push(`"${col.key}" es obligatorio`);
-          out[col.key] = '';
-          return;
-        }
-        if(val === undefined || val === '' || val === null){ out[col.key] = null; return; }
-        if(col.type === 'number'){
-          const n = Number(val);
-          out[col.key] = isNaN(n) ? null : n;
-        } else {
-          out[col.key] = String(val).trim() || null;
-        }
-      });
-      return out;
-    });
-
-    _bulkParsedRows = rows;
-    _bulkValidRows  = rows.filter(r => r._errores.length === 0);
-
-    // Mostrar info del archivo
-    document.getElementById('bulk-file-name').textContent = file.name;
-    document.getElementById('bulk-file-meta').textContent =
-      `${rows.length} filas leídas · ${_bulkValidRows.length} válidas · ${rows.length - _bulkValidRows.length} con errores · ${(file.size/1024).toFixed(0)} KB`;
-    infoEl.style.display = 'flex';
-
-    if(_bulkValidRows.length > 0){
-      btn.disabled = false; btn.style.opacity = '1';
-    } else {
-      errEl.textContent = '❌ No hay filas válidas. Revisa que las columnas "nombre" y "grupo" estén completas.';
-      errEl.style.display = 'flex';
-    }
-  } catch(e) {
-    errEl.innerHTML = `<i class="fas fa-circle-xmark"></i> Error al leer el Excel: ${e.message}`;
-    errEl.style.display = 'flex';
-  }
-  // Reset input para permitir volver a cargar el mismo archivo
-  document.getElementById('bulk-file-input').value = '';
-};
-
-window.limpiarBulkFile = function(){
-  document.getElementById('bulk-file-info').style.display  = 'none';
-  document.getElementById('bulk-parse-error').style.display = 'none';
-  const btn = document.getElementById('bulk-preview-btn');
-  btn.disabled = true; btn.style.opacity = '0.4';
-  _bulkParsedRows = []; _bulkValidRows = [];
-};
-
-window.abrirPreviewBulkExcel = function(){
-  if(!_bulkParsedRows.length) return;
-  const total   = _bulkParsedRows.length;
-  const validos = _bulkValidRows.length;
-  const errores = total - validos;
-
-  document.getElementById('bulk-preview-subtitle').textContent =
-    `${total} filas · ${validos} válidas · ${errores} con errores`;
-
-  // Alertas
-  const alertsEl = document.getElementById('bulk-preview-alerts');
-  let alerts = '';
-  if(errores > 0)
-    alerts += `<div class="alert alert-warn" style="margin:12px 0 0;"><i class="fas fa-triangle-exclamation"></i> ${errores} fila${errores>1?'s':''} con errores serán <strong>ignoradas</strong>. Solo se cargarán las ${validos} válidas.</div>`;
-  alerts += `<div class="alert alert-error" style="margin:12px 0 0;"><i class="fas fa-triangle-exclamation"></i> <strong>Atención:</strong> Esta operación sobreescribe completamente los documentos existentes en Firestore. No se puede deshacer.</div>`;
-  alertsEl.innerHTML = alerts;
-
-  // Tabla
-  const thead = document.getElementById('bulk-preview-thead');
-  const tbody  = document.getElementById('bulk-preview-tbody');
-
-  const visibleCols = BULK_COLS.filter(c => _bulkParsedRows.some(r => r[c.key] !== null && r[c.key] !== ''));
-  thead.innerHTML = `<tr>
-    <th style="width:40px;">#</th>
-    <th>Estado</th>
-    ${visibleCols.map(c=>`<th>${c.label}</th>`).join('')}
-    ${errores>0?'<th>Errores</th>':''}
-  </tr>`;
-
-  tbody.innerHTML = _bulkParsedRows.map(r => {
-    const ok = r._errores.length === 0;
-    const badge = ok
-      ? `<td><span class="bulk-badge-ok"><i class="fas fa-check"></i> OK</span></td>`
-      : `<td><span class="bulk-badge-err"><i class="fas fa-xmark"></i> Error</span></td>`;
-    const cells = visibleCols.map(c => {
-      const v = r[c.key];
-      return `<td title="${v ?? ''}">${v ?? '<span style="color:rgba(255,255,255,0.2);">—</span>'}</td>`;
-    }).join('');
-    const errCell = errores>0
-      ? `<td style="color:var(--red);font-size:0.68rem;max-width:200px;white-space:normal;">${r._errores.join(', ')||''}</td>`
-      : '';
-    return `<tr class="${ok?'row-ok':'row-error'}"><td style="color:var(--muted);font-size:0.72rem;">${r._fila}</td>${badge}${cells}${errCell}</tr>`;
-  }).join('');
-
-  document.getElementById('bulk-preview-stats').textContent =
-    `Se escribirán ${validos} seleccion${validos!==1?'es':''} en Firestore (colección "paises")`;
-
-  document.getElementById('modal-bulk-preview').style.display = 'flex';
-};
-
-window.cerrarPreviewBulk = function(){
-  document.getElementById('modal-bulk-preview').style.display = 'none';
-};
-
-window.ejecutarCargaMasiva = async function(){
-  if(!_bulkValidRows.length) return;
-  cerrarPreviewBulk();
-
-  const progModal  = document.getElementById('modal-bulk-progress');
-  const progBar    = document.getElementById('bulk-prog-bar');
-  const progText   = document.getElementById('bulk-prog-text');
-  const progCount  = document.getElementById('bulk-prog-count');
-  const progLog    = document.getElementById('bulk-prog-log');
-  const progClose  = document.getElementById('bulk-prog-close');
-  const progIcon   = document.getElementById('bulk-prog-icon');
-
-  progModal.style.display = 'flex';
-  progBar.style.width = '0%';
-  progLog.style.display = 'none'; progLog.innerHTML = '';
-  progClose.style.display = 'none';
-  progIcon.textContent = '⚡';
-
-  const total = _bulkValidRows.length;
-  let ok = 0, err = 0;
-
-  for(let i = 0; i < total; i++){
-    const row = _bulkValidRows[i];
-    progText.textContent  = `Escribiendo: ${row.nombre}`;
-    progCount.textContent = `${i+1} de ${total}`;
-    progBar.style.width   = `${Math.round(((i+1)/total)*100)}%`;
-
-    // Construir payload limpio (sin campos internos ni nulls)
-    const payload = { actualizadoEn: serverTimestamp() };
-    BULK_COLS.forEach(col => {
-      if(row[col.key] !== null && row[col.key] !== undefined && row[col.key] !== '')
-        payload[col.key] = row[col.key];
-    });
-
-    // Buscar si ya existe un doc con este nombre para usar su ID
-    try {
-      const existing = globalPaises.find(p => normSel(p.nombre) === normSel(row.nombre));
-      if(existing){
-        // Sobreescribir completamente (setDoc sin merge)
-        await setDoc(doc(db, 'paises', existing.id), payload);
-      } else {
-        // Crear nuevo documento
-        payload.creadoEn = serverTimestamp();
-        await addDoc(collection(db, 'paises'), payload);
-      }
-      ok++;
-    } catch(e) {
-      err++;
-      progLog.style.display = 'block';
-      progLog.innerHTML += `✗ Fila ${row._fila} (${row.nombre}): ${e.message}\n`;
-    }
-  }
-
-  // Finalizado
-  progBar.style.width   = '100%';
-  progIcon.textContent  = err === 0 ? '✅' : '⚠️';
-  progText.textContent  = err === 0
-    ? `¡Carga completada! ${ok} seleccion${ok!==1?'es':''} escritas en Firestore.`
-    : `Completado con ${err} error${err!==1?'es':''}. ${ok} exitosas.`;
-  progCount.textContent = '';
-  progClose.style.display = 'inline-flex';
-
-  // Refrescar grid
-  await renderSelecciones();
-};
-
-window.cerrarProgresoBulk = function(){
-  document.getElementById('modal-bulk-progress').style.display = 'none';
-  limpiarBulkFile();
-};
 
 </script>
 
