@@ -420,6 +420,12 @@ nav {
 .bulk-badge-err{display:inline-flex;align-items:center;gap:4px;background:rgba(239,68,68,0.12);color:var(--red);border-radius:5px;padding:2px 8px;font-size:0.65rem;font-weight:700;}
 .bulk-badge-new{display:inline-flex;align-items:center;gap:4px;background:rgba(59,130,246,0.12);color:#60a5fa;border-radius:5px;padding:2px 8px;font-size:0.65rem;font-weight:700;}
 
+.btn-green { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+.btn-green:hover { background: rgba(34,197,94,0.25); }
+.sim-fs-log-ok  { color: #4ade80; }
+.sim-fs-log-err { color: #f87171; }
+.sim-fs-log-inf { color: #93c5fd; }
+
 /* ── SELECCIONES ADMIN ─────────────────────────────────────────── */
 .sel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:4px;}
 .sel-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
@@ -869,13 +875,20 @@ nav {
     <!-- TAB SIMULADOR -->
     <div id="tab-simulador" class="page">
       <div class="section-title"><i class="fas fa-flask"></i> Simulador · Fase de Grupos</div>
-      <div class="alert alert-info" style="margin-bottom:20px;">
-        <i class="fas fa-info-circle"></i>
-        Datos ficticios 100% en memoria — no toca Firebase. Sirve para probar cómo se comporta el sistema antes del torneo real.
+
+      <!-- Alerta publicado -->
+      <div id="sim-alert-publicado" style="display:none;" class="alert alert-warn">
+        <i class="fas fa-triangle-exclamation"></i>
+        <strong>Resultados simulados activos en Firestore.</strong> El sitio público (index.html) está mostrando estos datos ficticios. Limpia antes de usar datos reales.
       </div>
 
-      <!-- Top bar -->
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
+      <div class="alert alert-info" style="margin-bottom:20px;">
+        <i class="fas fa-info-circle"></i>
+        Genera datos ficticios, simula jornadas y <strong>publícalos a Firestore</strong> para ver cómo se comporta todo el sistema en vivo. Usa "Limpiar Firestore" para dejar todo como estaba.
+      </div>
+
+      <!-- Top bar stats -->
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
           <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 16px;text-align:center;min-width:100px;">
             <strong id="sim-st-partidos" style="display:block;font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--gold);">0/30</strong>
@@ -889,10 +902,22 @@ nav {
             <strong id="sim-st-apuestas" style="display:block;font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--green);">175</strong>
             <span style="font-size:0.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Apuestas</span>
           </div>
+          <div id="sim-fs-badge" style="display:none;background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.3);border-radius:10px;padding:10px 16px;text-align:center;min-width:100px;">
+            <strong style="display:block;font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--gold);" id="sim-fs-count">0</strong>
+            <span style="font-size:0.66rem;color:var(--gold);text-transform:uppercase;letter-spacing:.06em;">En Firestore</span>
+          </div>
         </div>
-        <div style="display:flex;gap:10px;">
+
+        <!-- Botones acción -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
           <button class="btn btn-outline btn-sm" onclick="simReset()"><i class="fas fa-rotate-left"></i> Reiniciar</button>
           <button class="btn btn-gold" id="sim-btn-avanzar" onclick="simAvanzar()"><i class="fas fa-play"></i> Simular jornada 1</button>
+          <button class="btn btn-green btn-sm" id="sim-btn-publicar" onclick="simPublicarFirestore()" disabled style="opacity:.4;background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3);">
+            <i class="fas fa-cloud-upload-alt"></i> Publicar en Firestore
+          </button>
+          <button class="btn btn-danger btn-sm" id="sim-btn-limpiar" onclick="simLimpiarFirestore()" disabled style="opacity:.4;">
+            <i class="fas fa-broom"></i> Limpiar Firestore
+          </button>
         </div>
       </div>
 
@@ -901,6 +926,9 @@ nav {
         <div id="sim-prog-bar" style="height:100%;background:linear-gradient(90deg,var(--gold2),var(--gold));border-radius:999px;width:0%;transition:width .4s ease;"></div>
       </div>
       <div id="sim-prog-label" style="font-size:0.68rem;color:var(--muted);margin-bottom:20px;">0 de 30 partidos completados</div>
+
+      <!-- Log Firestore (oculto hasta que se use) -->
+      <div id="sim-fs-log" style="display:none;background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-family:monospace;font-size:0.72rem;max-height:140px;overflow-y:auto;margin-bottom:16px;line-height:1.8;"></div>
 
       <!-- Sub-tabs -->
       <div style="display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:20px;">
@@ -3837,6 +3865,10 @@ window.simAvanzar = function(){
     });
   });
   simRenderAll();
+  // Habilitar publicar si hay resultados
+  const jugados=SIM.partidos.filter(p=>p.resultado).length;
+  const btnPub=document.getElementById('sim-btn-publicar');
+  if(btnPub&&jugados>0){ btnPub.disabled=false; btnPub.style.opacity='1'; }
   const btn=document.getElementById('sim-btn-avanzar');
   if(SIM.jornada>=3){
     btn.disabled=true;
@@ -3851,7 +3883,163 @@ window.simReset = function(){
   const btn=document.getElementById('sim-btn-avanzar');
   btn.disabled=false;
   btn.innerHTML='<i class="fas fa-play"></i> Simular jornada 1';
+  const btnPub=document.getElementById('sim-btn-publicar');
+  if(btnPub){ btnPub.disabled=true; btnPub.style.opacity='.4'; }
   simRenderAll();
+};
+
+// ── FIRESTORE: IDs de los partidos simulados (mismos que en el fixture real) ──
+const SIM_ID_MAP = {
+  A1:'fgA1',A2:'fgA2',A3:'fgA3',A4:'fgA4',A5:'fgA5',A6:'fgA6',
+  B1:'fgB1',B2:'fgB2',B3:'fgB3',B4:'fgB4',B5:'fgB5',B6:'fgB6',
+  C1:'fgC1',C2:'fgC2',C3:'fgC3',C4:'fgC4',C5:'fgC5',C6:'fgC6',
+  D1:'fgD1',D2:'fgD2',D3:'fgD3',D4:'fgD4',D5:'fgD5',D6:'fgD6',
+  E1:'fgE1',E2:'fgE2',E3:'fgE3',E4:'fgE4',E5:'fgE5',E6:'fgE6',
+};
+
+function simLog(msg, type='inf'){
+  const el=document.getElementById('sim-fs-log');
+  if(!el) return;
+  el.style.display='block';
+  el.innerHTML+=`<div class="sim-fs-log-${type}">${msg}</div>`;
+  el.scrollTop=el.scrollHeight;
+}
+function simLogClear(){
+  const el=document.getElementById('sim-fs-log');
+  if(el){ el.innerHTML=''; el.style.display='none'; }
+}
+
+window.simPublicarFirestore = async function(){
+  const jugados=SIM.partidos.filter(p=>p.resultado);
+  if(!jugados.length){ toast('No hay resultados simulados aún','warn'); return; }
+
+  if(!confirm(`¿Publicar ${jugados.length} resultados simulados en Firestore?\n\nEl sitio público (index.html) los verá como datos reales.\nUsa "Limpiar Firestore" cuando termines de probar.`)) return;
+
+  const btnPub=document.getElementById('sim-btn-publicar');
+  const btnLim=document.getElementById('sim-btn-limpiar');
+  btnPub.disabled=true; btnPub.innerHTML='<i class="fas fa-spinner fa-spin"></i> Publicando...';
+  simLogClear();
+  simLog(`▶ Publicando ${jugados.length} resultados en Firestore...`,'inf');
+
+  let ok=0, err=0;
+  const batch=writeBatch(db);
+
+  for(const p of jugados){
+    const firestoreId=SIM_ID_MAP[p.id];
+    if(!firestoreId){ simLog(`⚠ Sin ID Firestore para ${p.id}`,'err'); continue; }
+    try {
+      batch.set(doc(db,'partidos',firestoreId),{
+        resultado_local:  p.resultado.l,
+        resultado_visita: p.resultado.v,
+        simulado: true,
+        actualizadoPor: ADMIN_UID,
+        actualizadoEn:  serverTimestamp(),
+      },{ merge:true });
+      simLog(`✓ ${firestoreId}  ${p.local.replace(/[^ ]+ /,'')} ${p.resultado.l}–${p.resultado.v} ${p.visita.replace(/[^ ]+ /,'')}`, 'ok');
+      ok++;
+    } catch(e){
+      simLog(`✗ ${firestoreId}: ${e.message}`,'err'); err++;
+    }
+  }
+
+  // Recalcular puntajes de apuestas reales de Firestore
+  try {
+    await batch.commit();
+    simLog('━━━ Resultados escritos. Recalculando puntajes de apuestas...','inf');
+
+    let apuestasActualizadas=0;
+    for(const p of jugados){
+      const firestoreId=SIM_ID_MAP[p.id];
+      if(!firestoreId) continue;
+      const apSnap=await getDocs(query(collection(db,'apuestas'),where('partidoId','==',firestoreId)));
+      if(apSnap.size>0){
+        const batchAp=writeBatch(db);
+        apSnap.docs.forEach(docRef=>{
+          const a=docRef.data();
+          const pts=calcularPuntaje(
+            {local:p.resultado.l, visita:p.resultado.v},
+            {local:a.golesLocal,  visita:a.golesVisita}
+          );
+          batchAp.update(docRef.ref,{puntaje:pts, recalculadoEn:serverTimestamp()});
+        });
+        await batchAp.commit();
+        apuestasActualizadas+=apSnap.size;
+      }
+    }
+    simLog(`✅ ${ok} resultados publicados · ${apuestasActualizadas} apuestas recalculadas`,'ok');
+    toast(`${ok} resultados publicados en Firestore ✓`,'success');
+
+    // Actualizar UI
+    const badge=document.getElementById('sim-fs-badge');
+    if(badge){ badge.style.display='block'; document.getElementById('sim-fs-count').textContent=ok; }
+    const alertEl=document.getElementById('sim-alert-publicado');
+    if(alertEl) alertEl.style.display='flex';
+    if(btnLim){ btnLim.disabled=false; btnLim.style.opacity='1'; }
+    SIM._publicados=jugados.map(p=>SIM_ID_MAP[p.id]).filter(Boolean);
+  } catch(e){
+    simLog(`✗ Error al commitear batch: ${e.message}`,'err');
+    toast('Error: '+e.message,'error');
+  }
+
+  btnPub.disabled=false;
+  btnPub.innerHTML='<i class="fas fa-cloud-upload-alt"></i> Publicar en Firestore';
+};
+
+window.simLimpiarFirestore = async function(){
+  const ids=SIM._publicados||[];
+  if(!ids.length){ toast('No hay resultados simulados en Firestore para limpiar','warn'); return; }
+  if(!confirm(`¿Eliminar los ${ids.length} resultados simulados de Firestore?\n\nEsto deja los partidos sin resultado (como estaban antes de simular).`)) return;
+
+  const btnLim=document.getElementById('sim-btn-limpiar');
+  btnLim.disabled=true; btnLim.innerHTML='<i class="fas fa-spinner fa-spin"></i> Limpiando...';
+  simLog('━━━ Limpiando resultados simulados...','inf');
+
+  let ok=0, err=0;
+  const batch=writeBatch(db);
+
+  for(const firestoreId of ids){
+    try{
+      batch.set(doc(db,'partidos',firestoreId),{
+        resultado_local:  deleteField(),
+        resultado_visita: deleteField(),
+        simulado:         deleteField(),
+        actualizadoPor:   deleteField(),
+        actualizadoEn:    deleteField(),
+      },{ merge:true });
+      simLog(`✓ Borrado resultado de ${firestoreId}`,'ok');
+      ok++;
+    } catch(e){ simLog(`✗ ${firestoreId}: ${e.message}`,'err'); err++; }
+  }
+
+  // Resetear puntajes de apuestas
+  try{
+    await batch.commit();
+    simLog('━━━ Reseteando puntajes de apuestas...','inf');
+    let reseteadas=0;
+    for(const firestoreId of ids){
+      const apSnap=await getDocs(query(collection(db,'apuestas'),where('partidoId','==',firestoreId)));
+      if(apSnap.size>0){
+        const batchAp=writeBatch(db);
+        apSnap.docs.forEach(d=>{ batchAp.update(d.ref,{puntaje:deleteField(),recalculadoEn:deleteField()}); });
+        await batchAp.commit();
+        reseteadas+=apSnap.size;
+      }
+    }
+    simLog(`✅ ${ok} resultados borrados · ${reseteadas} apuestas reseteadas`,'ok');
+    toast(`Firestore limpio — ${ok} resultados eliminados`,'success');
+
+    // Actualizar UI
+    const badge=document.getElementById('sim-fs-badge');
+    if(badge) badge.style.display='none';
+    const alertEl=document.getElementById('sim-alert-publicado');
+    if(alertEl) alertEl.style.display='none';
+    SIM._publicados=[];
+    btnLim.disabled=true; btnLim.style.opacity='.4';
+  } catch(e){
+    simLog(`✗ Error al limpiar: ${e.message}`,'err');
+    toast('Error: '+e.message,'error');
+  }
+  btnLim.innerHTML='<i class="fas fa-broom"></i> Limpiar Firestore';
 };
 
 function simRenderAll(){
