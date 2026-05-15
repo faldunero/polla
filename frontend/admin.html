@@ -3757,51 +3757,109 @@ window.cerrarProgresoBulk = function(){
 };
 
 // ── SIMULADOR ──────────────────────────────────────────────────────────────
-const SIM_GRUPOS_NOMBRES = ['Los Cracks','El Asado','Trabajo FC','Primos Unidos','La Peña'];
-const SIM_GRUPOS_COLORS  = ['#f5c842','#3b82f6','#22c55e','#f97316','#a855f7'];
+const SIM_GRUPOS_NOMBRES = ['Los Cracks','El Asado','Trabajo FC','Primos Unidos','La Peña','Los Fichajes','El Fulbito','La Hinchada','Los Punteros','El Clásico','La Cueva','Los Goleadores'];
+const SIM_GRUPOS_COLORS  = ['#f5c842','#3b82f6','#22c55e','#f97316','#a855f7','#06b6d4','#ec4899','#84cc16','#ef4444','#f59e0b','#8b5cf6','#14b8a6'];
 const SIM_AVATAR_COLORS  = ['#f5c842','#3b82f6','#22c55e','#ef4444','#a855f7','#06b6d4','#f97316'];
 const SIM_NOMBRES = [
   'Sebastián','Camila','Matías','Valentina','Felipe','Isidora','Rodrigo',
   'Catalina','Gonzalo','Paula','Tomás','Francisca','Diego','Sofía','Andrés',
   'Josefa','Cristóbal','Antonia','Javier','Ignacia','Maximiliano','Constanza',
   'Roberto','Daniela','Eduardo','Javiera','Lucas','Bárbara','Alejandro','Natalia',
-  'Nicolás','Fernanda','Ricardo','Pilar','Marco','Claudia'
+  'Nicolás','Fernanda','Ricardo','Pilar','Marco','Claudia','Patricio','Andrea',
+  'Renato','Monserrat','Ignacio','Beatriz','Jaime','Lorena','Carlos','Mónica',
+  'Héctor','Carla','Miguel','Verónica','Álvaro','Vanessa','Marcelo','Paz',
+  'Sergio','Gabriela','Jorge','Ximena','Fernando','Cecilia','Mauricio','Romina',
+  'Enrique','Paola','Cristián','Paulina','Germán','Tamara','Rodrigo','Karla',
+  'Esteban','Daniela','Martín','Viviana','Álvaro','Claudia','Felipe','Andrea',
+  'Facundo','Agustina','Nico','Sofía','Ramón','Julieta','Bruno','Micaela',
+  'Simón','Florencia','Agustín','Lara','Emilio','Victoria','Pedro','Nathalie',
 ];
 
 const SIM_PARTIDOS_BASE = [
-  // Jornada 1
+  // ── GRUPO A ──
   {id:'A1',local:'🇲🇽 México',visita:'🇿🇦 Sudáfrica',fecha:'11 jun',hora:'15:00',estadio:'Azteca, México',grupo:'A',jornada:1},
   {id:'A2',local:'🇰🇷 Corea del Sur',visita:'🇨🇿 Chequia',fecha:'11 jun',hora:'22:00',estadio:'Akron, Guadalajara',grupo:'A',jornada:1},
-  {id:'B1',local:'🇨🇦 Canadá',visita:'🇧🇦 Bosnia',fecha:'12 jun',hora:'15:00',estadio:'BMO Field, Toronto',grupo:'B',jornada:1},
-  {id:'B2',local:'🇶🇦 Qatar',visita:'🇨🇭 Suiza',fecha:'13 jun',hora:'15:00',estadio:"Levi's, San Francisco",grupo:'B',jornada:1},
-  {id:'C1',local:'🇧🇷 Brasil',visita:'🇲🇦 Marruecos',fecha:'13 jun',hora:'18:00',estadio:'Gillette, Boston',grupo:'C',jornada:1},
-  {id:'C2',local:'🇭🇹 Haití',visita:'🏴󠁧󠁢󠁳󠁣󠁴󠁿 Escocia',fecha:'13 jun',hora:'21:00',estadio:'MetLife, Nueva York',grupo:'C',jornada:1},
-  {id:'D1',local:'🇺🇸 Estados Unidos',visita:'🇵🇾 Paraguay',fecha:'12 jun',hora:'21:00',estadio:'SoFi, Los Ángeles',grupo:'D',jornada:1},
-  {id:'D2',local:'🇦🇺 Australia',visita:'🇹🇷 Turquía',fecha:'14 jun',hora:'00:00',estadio:'BC Place, Vancouver',grupo:'D',jornada:1},
-  {id:'E1',local:'🇩🇪 Alemania',visita:'🇨🇼 Curazao',fecha:'14 jun',hora:'13:00',estadio:'Lincoln, Filadelfia',grupo:'E',jornada:1},
-  {id:'E2',local:'🇨🇮 Costa de Marfil',visita:'🇪🇨 Ecuador',fecha:'14 jun',hora:'19:00',estadio:'NRG, Houston',grupo:'E',jornada:1},
-  // Jornada 2
   {id:'A3',local:'🇨🇿 Chequia',visita:'🇿🇦 Sudáfrica',fecha:'18 jun',hora:'12:00',estadio:'Mercedes-Benz, Atlanta',grupo:'A',jornada:2},
   {id:'A4',local:'🇲🇽 México',visita:'🇰🇷 Corea del Sur',fecha:'18 jun',hora:'21:00',estadio:'Azteca, México',grupo:'A',jornada:2},
-  {id:'B3',local:'🇨🇭 Suiza',visita:'🇧🇦 Bosnia',fecha:'18 jun',hora:'15:00',estadio:'SoFi, Los Ángeles',grupo:'B',jornada:2},
-  {id:'B4',local:'🇨🇦 Canadá',visita:'🇶🇦 Qatar',fecha:'18 jun',hora:'18:00',estadio:'BC Place, Vancouver',grupo:'B',jornada:2},
-  {id:'C3',local:'🏴󠁧󠁢󠁳󠁣󠁴󠁿 Escocia',visita:'🇲🇦 Marruecos',fecha:'19 jun',hora:'18:00',estadio:'Gillette, Boston',grupo:'C',jornada:2},
-  {id:'C4',local:'🇧🇷 Brasil',visita:'🇭🇹 Haití',fecha:'19 jun',hora:'20:30',estadio:'Hard Rock, Miami',grupo:'C',jornada:2},
-  {id:'D3',local:'🇺🇸 Estados Unidos',visita:'🇦🇺 Australia',fecha:'19 jun',hora:'15:00',estadio:"Levi's, San Francisco",grupo:'D',jornada:2},
-  {id:'D4',local:'🇹🇷 Turquía',visita:'🇵🇾 Paraguay',fecha:'19 jun',hora:'23:00',estadio:'BMO, Toronto',grupo:'D',jornada:2},
-  {id:'E3',local:'🇩🇪 Alemania',visita:'🇨🇮 Costa de Marfil',fecha:'20 jun',hora:'16:00',estadio:'MetLife, Nueva York',grupo:'E',jornada:2},
-  {id:'E4',local:'🇪🇨 Ecuador',visita:'🇨🇼 Curazao',fecha:'20 jun',hora:'20:00',estadio:'Arrowhead, Kansas City',grupo:'E',jornada:2},
-  // Jornada 3
   {id:'A5',local:'🇿🇦 Sudáfrica',visita:'🇰🇷 Corea del Sur',fecha:'24 jun',hora:'21:00',estadio:'BBVA, Monterrey',grupo:'A',jornada:3},
   {id:'A6',local:'🇨🇿 Chequia',visita:'🇲🇽 México',fecha:'24 jun',hora:'21:00',estadio:'Azteca, México',grupo:'A',jornada:3},
+  // ── GRUPO B ──
+  {id:'B1',local:'🇨🇦 Canadá',visita:'🇧🇦 Bosnia',fecha:'12 jun',hora:'15:00',estadio:'BMO Field, Toronto',grupo:'B',jornada:1},
+  {id:'B2',local:'🇶🇦 Qatar',visita:'🇨🇭 Suiza',fecha:'13 jun',hora:'15:00',estadio:"Levi's, San Francisco",grupo:'B',jornada:1},
+  {id:'B3',local:'🇨🇭 Suiza',visita:'🇧🇦 Bosnia',fecha:'18 jun',hora:'15:00',estadio:'SoFi, Los Ángeles',grupo:'B',jornada:2},
+  {id:'B4',local:'🇨🇦 Canadá',visita:'🇶🇦 Qatar',fecha:'18 jun',hora:'18:00',estadio:'BC Place, Vancouver',grupo:'B',jornada:2},
   {id:'B5',local:'🇨🇭 Suiza',visita:'🇨🇦 Canadá',fecha:'24 jun',hora:'15:00',estadio:'BC Place, Vancouver',grupo:'B',jornada:3},
   {id:'B6',local:'🇧🇦 Bosnia',visita:'🇶🇦 Qatar',fecha:'24 jun',hora:'15:00',estadio:'Lumen, Seattle',grupo:'B',jornada:3},
+  // ── GRUPO C ──
+  {id:'C1',local:'🇧🇷 Brasil',visita:'🇲🇦 Marruecos',fecha:'13 jun',hora:'18:00',estadio:'Gillette, Boston',grupo:'C',jornada:1},
+  {id:'C2',local:'🇭🇹 Haití',visita:'🏴󠁧󠁢󠁳󠁣󠁴󠁿 Escocia',fecha:'13 jun',hora:'21:00',estadio:'MetLife, Nueva York',grupo:'C',jornada:1},
+  {id:'C3',local:'🏴󠁧󠁢󠁳󠁣󠁴󠁿 Escocia',visita:'🇲🇦 Marruecos',fecha:'19 jun',hora:'18:00',estadio:'Gillette, Boston',grupo:'C',jornada:2},
+  {id:'C4',local:'🇧🇷 Brasil',visita:'🇭🇹 Haití',fecha:'19 jun',hora:'20:30',estadio:'Hard Rock, Miami',grupo:'C',jornada:2},
   {id:'C5',local:'🇲🇦 Marruecos',visita:'🇭🇹 Haití',fecha:'24 jun',hora:'18:00',estadio:'Mercedes-Benz, Atlanta',grupo:'C',jornada:3},
   {id:'C6',local:'🏴󠁧󠁢󠁳󠁣󠁴󠁿 Escocia',visita:'🇧🇷 Brasil',fecha:'24 jun',hora:'18:00',estadio:'Hard Rock, Miami',grupo:'C',jornada:3},
+  // ── GRUPO D ──
+  {id:'D1',local:'🇺🇸 Estados Unidos',visita:'🇵🇾 Paraguay',fecha:'12 jun',hora:'21:00',estadio:'SoFi, Los Ángeles',grupo:'D',jornada:1},
+  {id:'D2',local:'🇦🇺 Australia',visita:'🇹🇷 Turquía',fecha:'14 jun',hora:'00:00',estadio:'BC Place, Vancouver',grupo:'D',jornada:1},
+  {id:'D3',local:'🇺🇸 Estados Unidos',visita:'🇦🇺 Australia',fecha:'19 jun',hora:'15:00',estadio:"Levi's, San Francisco",grupo:'D',jornada:2},
+  {id:'D4',local:'🇹🇷 Turquía',visita:'🇵🇾 Paraguay',fecha:'19 jun',hora:'23:00',estadio:'BMO, Toronto',grupo:'D',jornada:2},
   {id:'D5',local:'🇹🇷 Turquía',visita:'🇺🇸 Estados Unidos',fecha:'25 jun',hora:'22:00',estadio:'SoFi, Los Ángeles',grupo:'D',jornada:3},
   {id:'D6',local:'🇵🇾 Paraguay',visita:'🇦🇺 Australia',fecha:'25 jun',hora:'22:00',estadio:"Levi's, San Francisco",grupo:'D',jornada:3},
+  // ── GRUPO E ──
+  {id:'E1',local:'🇩🇪 Alemania',visita:'🇨🇼 Curazao',fecha:'14 jun',hora:'13:00',estadio:'Lincoln, Filadelfia',grupo:'E',jornada:1},
+  {id:'E2',local:'🇨🇮 Costa de Marfil',visita:'🇪🇨 Ecuador',fecha:'14 jun',hora:'19:00',estadio:'NRG, Houston',grupo:'E',jornada:1},
+  {id:'E3',local:'🇩🇪 Alemania',visita:'🇨🇮 Costa de Marfil',fecha:'20 jun',hora:'16:00',estadio:'MetLife, Nueva York',grupo:'E',jornada:2},
+  {id:'E4',local:'🇪🇨 Ecuador',visita:'🇨🇼 Curazao',fecha:'20 jun',hora:'20:00',estadio:'Arrowhead, Kansas City',grupo:'E',jornada:2},
   {id:'E5',local:'🇨🇼 Curazao',visita:'🇨🇮 Costa de Marfil',fecha:'25 jun',hora:'16:00',estadio:'Lincoln, Filadelfia',grupo:'E',jornada:3},
   {id:'E6',local:'🇪🇨 Ecuador',visita:'🇩🇪 Alemania',fecha:'25 jun',hora:'16:00',estadio:'MetLife, Nueva York',grupo:'E',jornada:3},
+  // ── GRUPO F ──
+  {id:'F1',local:'🇳🇱 Países Bajos',visita:'🇯🇵 Japón',fecha:'14 jun',hora:'16:00',estadio:'AT&T Stadium, Dallas',grupo:'F',jornada:1},
+  {id:'F2',local:'🇸🇪 Suecia',visita:'🇹🇳 Túnez',fecha:'14 jun',hora:'22:00',estadio:'BBVA, Monterrey',grupo:'F',jornada:1},
+  {id:'F3',local:'🇳🇱 Países Bajos',visita:'🇸🇪 Suecia',fecha:'20 jun',hora:'13:00',estadio:'NRG, Houston',grupo:'F',jornada:2},
+  {id:'F4',local:'🇹🇳 Túnez',visita:'🇯🇵 Japón',fecha:'21 jun',hora:'00:00',estadio:'BBVA, Monterrey',grupo:'F',jornada:2},
+  {id:'F5',local:'🇹🇳 Túnez',visita:'🇳🇱 Países Bajos',fecha:'25 jun',hora:'19:00',estadio:'Arrowhead, Kansas City',grupo:'F',jornada:3},
+  {id:'F6',local:'🇯🇵 Japón',visita:'🇸🇪 Suecia',fecha:'25 jun',hora:'19:00',estadio:'AT&T Stadium, Dallas',grupo:'F',jornada:3},
+  // ── GRUPO G ──
+  {id:'G1',local:'🇧🇪 Bélgica',visita:'🇪🇬 Egipto',fecha:'15 jun',hora:'15:00',estadio:'Lumen, Seattle',grupo:'G',jornada:1},
+  {id:'G2',local:'🇮🇷 Irán',visita:'🇳🇿 Nueva Zelanda',fecha:'15 jun',hora:'21:00',estadio:'SoFi, Los Ángeles',grupo:'G',jornada:1},
+  {id:'G3',local:'🇧🇪 Bélgica',visita:'🇮🇷 Irán',fecha:'21 jun',hora:'15:00',estadio:'SoFi, Los Ángeles',grupo:'G',jornada:2},
+  {id:'G4',local:'🇳🇿 Nueva Zelanda',visita:'🇪🇬 Egipto',fecha:'21 jun',hora:'21:00',estadio:'BC Place, Vancouver',grupo:'G',jornada:2},
+  {id:'G5',local:'🇳🇿 Nueva Zelanda',visita:'🇧🇪 Bélgica',fecha:'26 jun',hora:'23:00',estadio:'BC Place, Vancouver',grupo:'G',jornada:3},
+  {id:'G6',local:'🇪🇬 Egipto',visita:'🇮🇷 Irán',fecha:'26 jun',hora:'23:00',estadio:'Hard Rock, Miami',grupo:'G',jornada:3},
+  // ── GRUPO H ──
+  {id:'H1',local:'🇪🇸 España',visita:'🇨🇻 Cabo Verde',fecha:'15 jun',hora:'12:00',estadio:'Mercedes-Benz, Atlanta',grupo:'H',jornada:1},
+  {id:'H2',local:'🇸🇦 Arabia Saudita',visita:'🇺🇾 Uruguay',fecha:'15 jun',hora:'18:00',estadio:'Hard Rock, Miami',grupo:'H',jornada:1},
+  {id:'H3',local:'🇪🇸 España',visita:'🇸🇦 Arabia Saudita',fecha:'21 jun',hora:'12:00',estadio:'Mercedes-Benz, Atlanta',grupo:'H',jornada:2},
+  {id:'H4',local:'🇺🇾 Uruguay',visita:'🇨🇻 Cabo Verde',fecha:'21 jun',hora:'18:00',estadio:'Hard Rock, Miami',grupo:'H',jornada:2},
+  {id:'H5',local:'🇨🇻 Cabo Verde',visita:'🇸🇦 Arabia Saudita',fecha:'26 jun',hora:'20:00',estadio:'NRG, Houston',grupo:'H',jornada:3},
+  {id:'H6',local:'🇺🇾 Uruguay',visita:'🇪🇸 España',fecha:'26 jun',hora:'20:00',estadio:'Akron, Guadalajara',grupo:'H',jornada:3},
+  // ── GRUPO I ──
+  {id:'I1',local:'🇫🇷 Francia',visita:'🇸🇳 Senegal',fecha:'16 jun',hora:'15:00',estadio:'MetLife, Nueva York',grupo:'I',jornada:1},
+  {id:'I2',local:'🇮🇶 Irak',visita:'🇳🇴 Noruega',fecha:'16 jun',hora:'18:00',estadio:'Gillette, Boston',grupo:'I',jornada:1},
+  {id:'I3',local:'🇫🇷 Francia',visita:'🇮🇶 Irak',fecha:'22 jun',hora:'17:00',estadio:'Lincoln, Filadelfia',grupo:'I',jornada:2},
+  {id:'I4',local:'🇳🇴 Noruega',visita:'🇸🇳 Senegal',fecha:'22 jun',hora:'20:00',estadio:'MetLife, Nueva York',grupo:'I',jornada:2},
+  {id:'I5',local:'🇳🇴 Noruega',visita:'🇫🇷 Francia',fecha:'26 jun',hora:'15:00',estadio:'Gillette, Boston',grupo:'I',jornada:3},
+  {id:'I6',local:'🇸🇳 Senegal',visita:'🇮🇶 Irak',fecha:'26 jun',hora:'15:00',estadio:'BMO Field, Toronto',grupo:'I',jornada:3},
+  // ── GRUPO J ──
+  {id:'J1',local:'🇦🇷 Argentina',visita:'🇩🇿 Argelia',fecha:'16 jun',hora:'21:00',estadio:'Arrowhead, Kansas City',grupo:'J',jornada:1},
+  {id:'J2',local:'🇦🇹 Austria',visita:'🇯🇴 Jordania',fecha:'17 jun',hora:'00:00',estadio:"Levi's, San Francisco",grupo:'J',jornada:1},
+  {id:'J3',local:'🇦🇷 Argentina',visita:'🇦🇹 Austria',fecha:'22 jun',hora:'13:00',estadio:'AT&T Stadium, Dallas',grupo:'J',jornada:2},
+  {id:'J4',local:'🇯🇴 Jordania',visita:'🇩🇿 Argelia',fecha:'22 jun',hora:'23:00',estadio:"Levi's, San Francisco",grupo:'J',jornada:2},
+  {id:'J5',local:'🇩🇿 Argelia',visita:'🇦🇹 Austria',fecha:'27 jun',hora:'22:00',estadio:'Arrowhead, Kansas City',grupo:'J',jornada:3},
+  {id:'J6',local:'🇯🇴 Jordania',visita:'🇦🇷 Argentina',fecha:'27 jun',hora:'22:00',estadio:'AT&T Stadium, Dallas',grupo:'J',jornada:3},
+  // ── GRUPO K ──
+  {id:'K1',local:'🇵🇹 Portugal',visita:'🇨🇩 RD Congo',fecha:'17 jun',hora:'13:00',estadio:'NRG, Houston',grupo:'K',jornada:1},
+  {id:'K2',local:'🇺🇿 Uzbekistán',visita:'🇨🇴 Colombia',fecha:'17 jun',hora:'22:00',estadio:'Azteca, México',grupo:'K',jornada:1},
+  {id:'K3',local:'🇵🇹 Portugal',visita:'🇺🇿 Uzbekistán',fecha:'23 jun',hora:'13:00',estadio:'NRG, Houston',grupo:'K',jornada:2},
+  {id:'K4',local:'🇨🇴 Colombia',visita:'🇨🇩 RD Congo',fecha:'23 jun',hora:'22:00',estadio:'Akron, Guadalajara',grupo:'K',jornada:2},
+  {id:'K5',local:'🇨🇴 Colombia',visita:'🇵🇹 Portugal',fecha:'27 jun',hora:'19:30',estadio:'Hard Rock, Miami',grupo:'K',jornada:3},
+  {id:'K6',local:'🇨🇩 RD Congo',visita:'🇺🇿 Uzbekistán',fecha:'27 jun',hora:'19:30',estadio:'Mercedes-Benz, Atlanta',grupo:'K',jornada:3},
+  // ── GRUPO L ──
+  {id:'L1',local:'🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra',visita:'🇭🇷 Croacia',fecha:'17 jun',hora:'16:00',estadio:'AT&T Stadium, Dallas',grupo:'L',jornada:1},
+  {id:'L2',local:'🇬🇭 Ghana',visita:'🇵🇦 Panamá',fecha:'17 jun',hora:'19:00',estadio:'BMO Field, Toronto',grupo:'L',jornada:1},
+  {id:'L3',local:'🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra',visita:'🇬🇭 Ghana',fecha:'23 jun',hora:'16:00',estadio:'Gillette, Boston',grupo:'L',jornada:2},
+  {id:'L4',local:'🇵🇦 Panamá',visita:'🇭🇷 Croacia',fecha:'23 jun',hora:'19:00',estadio:'BMO Field, Toronto',grupo:'L',jornada:2},
+  {id:'L5',local:'🇵🇦 Panamá',visita:'🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra',fecha:'27 jun',hora:'17:00',estadio:'MetLife, Nueva York',grupo:'L',jornada:3},
+  {id:'L6',local:'🇭🇷 Croacia',visita:'🇬🇭 Ghana',fecha:'27 jun',hora:'17:00',estadio:'Lincoln, Filadelfia',grupo:'L',jornada:3},
 ];
 
 const SIM_EQUIPOS = {
@@ -3810,6 +3868,13 @@ const SIM_EQUIPOS = {
   C:['🇧🇷 Brasil','🇲🇦 Marruecos','🏴󠁧󠁢󠁳󠁣󠁴󠁿 Escocia','🇭🇹 Haití'],
   D:['🇺🇸 Estados Unidos','🇹🇷 Turquía','🇦🇺 Australia','🇵🇾 Paraguay'],
   E:['🇩🇪 Alemania','🇨🇮 Costa de Marfil','🇪🇨 Ecuador','🇨🇼 Curazao'],
+  F:['🇳🇱 Países Bajos','🇸🇪 Suecia','🇹🇳 Túnez','🇯🇵 Japón'],
+  G:['🇧🇪 Bélgica','🇮🇷 Irán','🇳🇿 Nueva Zelanda','🇪🇬 Egipto'],
+  H:['🇪🇸 España','🇸🇦 Arabia Saudita','🇺🇾 Uruguay','🇨🇻 Cabo Verde'],
+  I:['🇫🇷 Francia','🇳🇴 Noruega','🇸🇳 Senegal','🇮🇶 Irak'],
+  J:['🇦🇷 Argentina','🇦🇹 Austria','🇩🇿 Argelia','🇯🇴 Jordania'],
+  K:['🇵🇹 Portugal','🇨🇴 Colombia','🇺🇿 Uzbekistán','🇨🇩 RD Congo'],
+  L:['🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra','🇭🇷 Croacia','🇬🇭 Ghana','🇵🇦 Panamá'],
 };
 
 let SIM = {};
@@ -3895,6 +3960,13 @@ const SIM_ID_MAP = {
   C1:'fgC1',C2:'fgC2',C3:'fgC3',C4:'fgC4',C5:'fgC5',C6:'fgC6',
   D1:'fgD1',D2:'fgD2',D3:'fgD3',D4:'fgD4',D5:'fgD5',D6:'fgD6',
   E1:'fgE1',E2:'fgE2',E3:'fgE3',E4:'fgE4',E5:'fgE5',E6:'fgE6',
+  F1:'fgF1',F2:'fgF2',F3:'fgF3',F4:'fgF4',F5:'fgF5',F6:'fgF6',
+  G1:'fgG1',G2:'fgG2',G3:'fgG3',G4:'fgG4',G5:'fgG5',G6:'fgG6',
+  H1:'fgH1',H2:'fgH2',H3:'fgH3',H4:'fgH4',H5:'fgH5',H6:'fgH6',
+  I1:'fgI1',I2:'fgI2',I3:'fgI3',I4:'fgI4',I5:'fgI5',I6:'fgI6',
+  J1:'fgJ1',J2:'fgJ2',J3:'fgJ3',J4:'fgJ4',J5:'fgJ5',J6:'fgJ6',
+  K1:'fgK1',K2:'fgK2',K3:'fgK3',K4:'fgK4',K5:'fgK5',K6:'fgK6',
+  L1:'fgL1',L2:'fgL2',L3:'fgL3',L4:'fgL4',L5:'fgL5',L6:'fgL6',
 };
 
 function simLog(msg, type='inf'){
@@ -3913,7 +3985,12 @@ window.simPublicarFirestore = async function(){
   const jugados=SIM.partidos.filter(p=>p.resultado);
   if(!jugados.length){ toast('No hay resultados simulados aún','warn'); return; }
 
-  if(!confirm(`¿Publicar ${jugados.length} resultados simulados en Firestore?\n\nEl sitio público (index.html) los verá como datos reales.\nUsa "Limpiar Firestore" cuando termines de probar.`)) return;
+  const jornada3Completa = SIM.jornada >= 3;
+  const msgExtra = jornada3Completa
+    ? '\n\nComo la fase de grupos está completa, también se calcularán y escribirán los 16 cruces de 32avos de final en Firestore.'
+    : '';
+
+  if(!confirm(`¿Publicar ${jugados.length} resultados simulados en Firestore?\n\nEl sitio público (index.html) los verá como datos reales.\nUsa "Limpiar Firestore" cuando termines de probar.${msgExtra}`)) return;
 
   const btnPub=document.getElementById('sim-btn-publicar');
   const btnLim=document.getElementById('sim-btn-limpiar');
@@ -3942,7 +4019,7 @@ window.simPublicarFirestore = async function(){
     }
   }
 
-  // Recalcular puntajes de apuestas reales de Firestore
+  // Recalcular puntajes de apuestas reales
   try {
     await batch.commit();
     simLog('━━━ Resultados escritos. Recalculando puntajes de apuestas...','inf');
@@ -3966,18 +4043,54 @@ window.simPublicarFirestore = async function(){
         apuestasActualizadas+=apSnap.size;
       }
     }
-    simLog(`✅ ${ok} resultados publicados · ${apuestasActualizadas} apuestas recalculadas`,'ok');
+    simLog(`✅ ${ok} resultados · ${apuestasActualizadas} apuestas recalculadas`,'ok');
+
+    // ── Escribir cruces de 32avos si la fase de grupos está completa ──
+    if(jornada3Completa){
+      simLog('━━━ Calculando cruces de 32avos de final...','inf');
+      const cruces=simGenerarCruces32();
+      const batchCruces=writeBatch(db);
+      const idsCruces=[];
+
+      // IDs Firestore reales de los 32avos (colección partidos)
+      const R32_IDS=['r32_1','r32_2','r32_3','r32_4','r32_5','r32_6','r32_7','r32_8',
+                     'r32_9','r32_10','r32_11','r32_12','r32_13','r32_14','r32_15','r32_16'];
+
+      cruces.forEach((cruce,i)=>{
+        const fsId=R32_IDS[i];
+        if(!fsId) return;
+        batchCruces.set(doc(db,'partidos',fsId),{
+          local:   cruce.local,
+          visita:  cruce.visita,
+          fecha:   cruce.fecha,
+          fase:    '32avos',
+          simulado: true,
+          actualizadoPor: ADMIN_UID,
+          actualizadoEn:  serverTimestamp(),
+        },{ merge:true });
+        simLog(`✓ Cruce ${fsId}: ${cruce.local} vs ${cruce.visita} (${cruce.fecha})`,'ok');
+        idsCruces.push(fsId);
+      });
+
+      await batchCruces.commit();
+      simLog(`✅ ${cruces.length} cruces de 32avos escritos en Firestore`,'ok');
+
+      // Guardar IDs para poder limpiarlos luego
+      SIM._publicadosCruces = idsCruces;
+    }
+
     toast(`${ok} resultados publicados en Firestore ✓`,'success');
 
     // Actualizar UI
     const badge=document.getElementById('sim-fs-badge');
-    if(badge){ badge.style.display='block'; document.getElementById('sim-fs-count').textContent=ok; }
+    if(badge){ badge.style.display='block'; document.getElementById('sim-fs-count').textContent=ok+(SIM._publicadosCruces?.length||0); }
     const alertEl=document.getElementById('sim-alert-publicado');
     if(alertEl) alertEl.style.display='flex';
     if(btnLim){ btnLim.disabled=false; btnLim.style.opacity='1'; }
     SIM._publicados=jugados.map(p=>SIM_ID_MAP[p.id]).filter(Boolean);
+
   } catch(e){
-    simLog(`✗ Error al commitear batch: ${e.message}`,'err');
+    simLog(`✗ Error: ${e.message}`,'err');
     toast('Error: '+e.message,'error');
   }
 
@@ -3987,8 +4100,11 @@ window.simPublicarFirestore = async function(){
 
 window.simLimpiarFirestore = async function(){
   const ids=SIM._publicados||[];
-  if(!ids.length){ toast('No hay resultados simulados en Firestore para limpiar','warn'); return; }
-  if(!confirm(`¿Eliminar los ${ids.length} resultados simulados de Firestore?\n\nEsto deja los partidos sin resultado (como estaban antes de simular).`)) return;
+  const idsCruces=SIM._publicadosCruces||[];
+  const totalIds=[...ids,...idsCruces];
+  if(!totalIds.length){ toast('No hay datos simulados en Firestore para limpiar','warn'); return; }
+
+  if(!confirm(`¿Eliminar ${ids.length} resultados${idsCruces.length?` y ${idsCruces.length} cruces de 32avos`:''} de Firestore?\n\nEsto deja los partidos como estaban antes de simular.`)) return;
 
   const btnLim=document.getElementById('sim-btn-limpiar');
   btnLim.disabled=true; btnLim.innerHTML='<i class="fas fa-spinner fa-spin"></i> Limpiando...';
@@ -3997,6 +4113,7 @@ window.simLimpiarFirestore = async function(){
   let ok=0, err=0;
   const batch=writeBatch(db);
 
+  // Limpiar resultados de partidos de grupos
   for(const firestoreId of ids){
     try{
       batch.set(doc(db,'partidos',firestoreId),{
@@ -4006,12 +4123,26 @@ window.simLimpiarFirestore = async function(){
         actualizadoPor:   deleteField(),
         actualizadoEn:    deleteField(),
       },{ merge:true });
-      simLog(`✓ Borrado resultado de ${firestoreId}`,'ok');
+      simLog(`✓ Resultado borrado: ${firestoreId}`,'ok');
       ok++;
     } catch(e){ simLog(`✗ ${firestoreId}: ${e.message}`,'err'); err++; }
   }
 
-  // Resetear puntajes de apuestas
+  // Limpiar cruces de 32avos (borrar local/visita para dejarlos como "por definir")
+  for(const firestoreId of idsCruces){
+    try{
+      batch.set(doc(db,'partidos',firestoreId),{
+        local:          deleteField(),
+        visita:         deleteField(),
+        simulado:       deleteField(),
+        actualizadoPor: deleteField(),
+        actualizadoEn:  deleteField(),
+      },{ merge:true });
+      simLog(`✓ Cruce limpiado: ${firestoreId}`,'ok');
+      ok++;
+    } catch(e){ simLog(`✗ ${firestoreId}: ${e.message}`,'err'); err++; }
+  }
+
   try{
     await batch.commit();
     simLog('━━━ Reseteando puntajes de apuestas...','inf');
@@ -4025,8 +4156,8 @@ window.simLimpiarFirestore = async function(){
         reseteadas+=apSnap.size;
       }
     }
-    simLog(`✅ ${ok} resultados borrados · ${reseteadas} apuestas reseteadas`,'ok');
-    toast(`Firestore limpio — ${ok} resultados eliminados`,'success');
+    simLog(`✅ ${ok} documentos limpiados · ${reseteadas} apuestas reseteadas`,'ok');
+    toast(`Firestore limpio — ${ok} documentos eliminados`,'success');
 
     // Actualizar UI
     const badge=document.getElementById('sim-fs-badge');
@@ -4034,6 +4165,7 @@ window.simLimpiarFirestore = async function(){
     const alertEl=document.getElementById('sim-alert-publicado');
     if(alertEl) alertEl.style.display='none';
     SIM._publicados=[];
+    SIM._publicadosCruces=[];
     btnLim.disabled=true; btnLim.style.opacity='.4';
   } catch(e){
     simLog(`✗ Error al limpiar: ${e.message}`,'err');
@@ -4162,6 +4294,67 @@ function simRenderRanking(){
   c.innerHTML=html;
 }
 
+// ── Helper: calcula tabla de posiciones de un grupo dado sus partidos ──────
+function simTablaPosiciones(grupo){
+  const equipos=SIM_EQUIPOS[grupo];
+  const partidos=SIM.partidos.filter(p=>p.grupo===grupo&&p.resultado);
+  const tabla={};
+  equipos.forEach(e=>{ tabla[e]={pj:0,g:0,e:0,pe:0,gf:0,gc:0,pts:0,dg:0}; });
+  partidos.forEach(p=>{
+    const r=p.resultado;
+    if(!tabla[p.local]||!tabla[p.visita]) return;
+    tabla[p.local].pj++;tabla[p.visita].pj++;
+    tabla[p.local].gf+=r.l;tabla[p.local].gc+=r.v;
+    tabla[p.visita].gf+=r.v;tabla[p.visita].gc+=r.l;
+    if(r.l>r.v){tabla[p.local].g++;tabla[p.local].pts+=3;tabla[p.visita].pe++;}
+    else if(r.v>r.l){tabla[p.visita].g++;tabla[p.visita].pts+=3;tabla[p.local].pe++;}
+    else{tabla[p.local].e++;tabla[p.local].pts++;tabla[p.visita].e++;tabla[p.visita].pts++;}
+  });
+  Object.values(tabla).forEach(t=>{ t.dg=t.gf-t.gc; });
+  return Object.entries(tabla)
+    .sort((a,b)=>b[1].pts-a[1].pts||b[1].dg-a[1].dg||b[1].gf-a[1].gf||a[0].localeCompare(b[0]));
+}
+
+// ── Genera cruces de 32avos según clasificados ──────────────────────────────
+// Formato FIFA: 1.A vs 2.B, 1.C vs 2.D, etc. + 4 cruces de mejores 3eros
+function simGenerarCruces32(){
+  const grupos='ABCDEFGHIJKL'.split('');
+  const primeros={}, segundos={}, terceros={};
+  grupos.forEach(g=>{
+    const tabla=simTablaPosiciones(g);
+    if(tabla[0]) primeros[g]=tabla[0][0];
+    if(tabla[1]) segundos[g]=tabla[1][0];
+    if(tabla[2]) terceros[g]={nombre:tabla[2][0],...tabla[2][1]};
+  });
+
+  // Selección mejores 3eros (top 8 de los 12 terceros)
+  const mejores3eros=Object.entries(terceros)
+    .sort((a,b)=>b[1].pts-a[1].pts||b[1].dg-a[1].dg||b[1].gf-a[1].gf)
+    .slice(0,8)
+    .map(([g,t])=>t.nombre);
+
+  // Cruces oficiales FIFA 2026 (1ero vs 2do de grupos cruzados)
+  const cruces=[
+    {id:'r32_1',  local:primeros.A||'1.A', visita:segundos.B||'2.B', fecha:'1 jul'},
+    {id:'r32_2',  local:primeros.C||'1.C', visita:segundos.D||'2.D', fecha:'1 jul'},
+    {id:'r32_3',  local:primeros.E||'1.E', visita:segundos.F||'2.F', fecha:'2 jul'},
+    {id:'r32_4',  local:primeros.G||'1.G', visita:segundos.H||'2.H', fecha:'2 jul'},
+    {id:'r32_5',  local:primeros.I||'1.I', visita:segundos.J||'2.J', fecha:'3 jul'},
+    {id:'r32_6',  local:primeros.K||'1.K', visita:segundos.L||'2.L', fecha:'3 jul'},
+    {id:'r32_7',  local:primeros.B||'1.B', visita:segundos.A||'2.A', fecha:'4 jul'},
+    {id:'r32_8',  local:primeros.D||'1.D', visita:segundos.C||'2.C', fecha:'4 jul'},
+    {id:'r32_9',  local:primeros.F||'1.F', visita:segundos.E||'2.E', fecha:'5 jul'},
+    {id:'r32_10', local:primeros.H||'1.H', visita:segundos.G||'2.G', fecha:'5 jul'},
+    {id:'r32_11', local:primeros.J||'1.J', visita:segundos.I||'2.I', fecha:'6 jul'},
+    {id:'r32_12', local:primeros.L||'1.L', visita:segundos.K||'2.K', fecha:'6 jul'},
+    {id:'r32_13', local:mejores3eros[0]||'3er 1', visita:mejores3eros[1]||'3er 2', fecha:'7 jul'},
+    {id:'r32_14', local:mejores3eros[2]||'3er 3', visita:mejores3eros[3]||'3er 4', fecha:'7 jul'},
+    {id:'r32_15', local:mejores3eros[4]||'3er 5', visita:mejores3eros[5]||'3er 6', fecha:'8 jul'},
+    {id:'r32_16', local:mejores3eros[6]||'3er 7', visita:mejores3eros[7]||'3er 8', fecha:'8 jul'},
+  ];
+  return cruces;
+}
+
 function simRenderClasificados(){
   const c=document.getElementById('sim-v-clasificados'); if(!c) return;
   if(SIM.jornada<3){
@@ -4170,40 +4363,60 @@ function simRenderClasificados(){
     return;
   }
 
-  // Calcular tabla real de cada grupo
-  let html=`<div style="font-size:.8rem;color:var(--muted);margin-bottom:16px;">Los 2 primeros de cada grupo avanzan a los 32avos de final.</div>`;
+  const grupos='ABCDEFGHIJKL'.split('');
+
+  // ── Tablas de posición por grupo ──────────────────────────────────────
+  let html=`<div style="font-size:.8rem;color:var(--muted);margin-bottom:14px;">Los 2 primeros de cada grupo + los 8 mejores 3eros (24 equipos) avanzan a los 32avos de final.</div>`;
   html+=`<div class="sim-clas-grid">`;
-  ['A','B','C','D','E'].forEach(g=>{
-    const equipos=SIM_EQUIPOS[g];
-    const partidos=SIM.partidos.filter(p=>p.grupo===g&&p.resultado);
-    const tabla={};
-    equipos.forEach(e=>{ tabla[e]={pj:0,g:0,e:0,pe:0,gf:0,gc:0,pts:0}; });
-    partidos.forEach(p=>{
-      const r=p.resultado;
-      if(!tabla[p.local]||!tabla[p.visita]) return;
-      tabla[p.local].pj++;tabla[p.visita].pj++;
-      tabla[p.local].gf+=r.l;tabla[p.local].gc+=r.v;
-      tabla[p.visita].gf+=r.v;tabla[p.visita].gc+=r.l;
-      if(r.l>r.v){tabla[p.local].g++;tabla[p.local].pts+=3;tabla[p.visita].pe++;}
-      else if(r.v>r.l){tabla[p.visita].g++;tabla[p.visita].pts+=3;tabla[p.local].pe++;}
-      else{tabla[p.local].e++;tabla[p.local].pts++;tabla[p.visita].e++;tabla[p.visita].pts++;}
-    });
-    const sorted=Object.entries(tabla).sort((a,b)=>b[1].pts-a[1].pts||(b[1].gf-b[1].gc)-(a[1].gf-a[1].gc)||b[1].gf-a[1].gf);
+  grupos.forEach(g=>{
+    const sorted=simTablaPosiciones(g);
     html+=`<div class="sim-clas-card">
       <div class="sim-clas-head"><i class="fas fa-table" style="opacity:.6;"></i> Grupo ${g}</div>`;
     sorted.forEach(([eq,st],i)=>{
+      const badge=i===0?'🥇':i===1?'🥈':i===2?'🎖':' ';
       html+=`<div class="sim-clas-slot ${i<2?'top':''}">
         <span style="font-size:.72rem;color:var(--muted);min-width:16px;">${i+1}</span>
-        <span style="font-size:.85rem;font-weight:${i<2?700:400};">${i<2?'✓ ':''} ${eq}</span>
-        <span style="font-size:.82rem;color:var(--muted);margin-left:auto;">${st.pts}pts</span>
+        <span style="font-size:.85rem;font-weight:${i<2?700:400};flex:1;">${i<2?'✓ ':i===2?'△ ':''} ${eq}</span>
+        <span style="font-size:.75rem;color:var(--muted);">${st.pts}pts  ${st.dg>=0?'+':''}${st.dg}</span>
       </div>`;
     });
     html+='</div>';
   });
   html+='</div>';
 
-  // Ranking final polla por grupo
-  html+=`<div style="margin-top:28px;margin-bottom:12px;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--gold);letter-spacing:.04em;">Resultado final — Ranking de la polla</div>`;
+  // ── Cuadro de 32avos ─────────────────────────────────────────────────
+  const cruces=simGenerarCruces32();
+  html+=`<div style="margin-top:28px;margin-bottom:10px;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--gold);letter-spacing:.04em;">
+    <i class="fas fa-sitemap"></i> 32avos de Final — Cruces generados
+  </div>`;
+  html+=`<div style="font-size:.75rem;color:var(--muted);margin-bottom:14px;">Calculados automáticamente según la tabla de posiciones simulada.</div>`;
+
+  // Agrupar cruces en 4 bloques de 4
+  const bloques=[
+    {label:'1–4 jul · Bloque 1', ids:cruces.slice(0,4)},
+    {label:'4–5 jul · Bloque 2', ids:cruces.slice(4,8)},
+    {label:'5–6 jul · Bloque 3', ids:cruces.slice(8,12)},
+    {label:'7–8 jul · Mejores 3eros', ids:cruces.slice(12,16)},
+  ];
+
+  bloques.forEach(bloque=>{
+    html+=`<div style="margin-bottom:14px;">
+      <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);">${bloque.label}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px;">`;
+    bloque.ids.forEach(cruce=>{
+      html+=`<div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;">
+        <div style="font-size:.82rem;font-weight:600;">${cruce.local}</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:.8rem;color:var(--muted);padding:3px 10px;background:var(--card);border-radius:6px;white-space:nowrap;">${cruce.fecha}</div>
+        <div style="font-size:.82rem;font-weight:600;text-align:right;">${cruce.visita}</div>
+      </div>`;
+    });
+    html+=`</div></div>`;
+  });
+
+  // ── Ranking final polla por grupo ─────────────────────────────────────
+  html+=`<div style="margin-top:28px;margin-bottom:10px;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--gold);letter-spacing:.04em;">
+    <i class="fas fa-trophy"></i> Resultado final — Ranking de la polla por grupo
+  </div>`;
   html+=`<div class="sim-clas-grid">`;
   SIM.grupos.forEach(g=>{
     const sorted=g.usuarios.slice().sort((a,b)=>b.puntaje-a.puntaje||b.aciertos-a.aciertos);
