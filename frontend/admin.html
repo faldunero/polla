@@ -4084,12 +4084,9 @@ window.simPublicarFirestore = async function(){
     toast(`${ok} resultados publicados en Firestore ✓`,'success');
 
     // Actualizar UI
-    const badge=document.getElementById('sim-fs-badge');
-    if(badge){ badge.style.display='block'; document.getElementById('sim-fs-count').textContent=ok+(SIM._publicadosCruces?.length||0); }
-    const alertEl=document.getElementById('sim-alert-publicado');
-    if(alertEl) alertEl.style.display='flex';
-    if(btnLim){ btnLim.disabled=false; btnLim.style.opacity='1'; }
     SIM._publicados=jugados.map(p=>SIM_ID_MAP[p.id]).filter(Boolean);
+    simActualizarUIFirestore(SIM._publicados, SIM._publicadosCruces||[]);
+    if(btnLim){ btnLim.disabled=false; btnLim.style.opacity='1'; }
 
   } catch(e){
     simLog(`✗ Error: ${e.message}`,'err');
@@ -4527,15 +4524,126 @@ window.simShowTab = function(btn, tab){
   if(el) el.style.display='block';
 };
 
-// Inicializar cuando se abre el tab simulador
+// ── Inicializar simulador con sync Firestore ───────────────────────────────
 const _origShowTab = window.showTab;
 window.showTab = async function(tab){
   await _origShowTab(tab);
-  if(tab==='simulador' && !SIM.grupos){
-    simInit();
-    simRenderAll();
+  if(tab==='simulador'){
+    if(!SIM.grupos) simInit();
+    await simSincronizarDesdeFirestore();
   }
 };
+
+// Carga resultados simulados activos desde Firestore y reconstruye el estado SIM
+async function simSincronizarDesdeFirestore(){
+  // Mostrar spinner en el log
+  const logEl = document.getElementById('sim-fs-log');
+  if(logEl){ logEl.style.display='block'; logEl.innerHTML='<div style="color:#94a3b8">🔄 Verificando Firestore...</div>'; }
+
+  try {
+    // Buscar todos los partidos marcados como simulado:true
+    const snap = await getDocs(query(collection(db,'partidos'), where('simulado','==',true)));
+
+    if(snap.empty){
+      // No hay datos simulados en Firestore — estado limpio
+      if(logEl){ logEl.style.display='none'; logEl.innerHTML=''; }
+      simActualizarUIFirestore([], []);
+      return;
+    }
+
+    // Reconstruir resultados en SIM desde Firestore
+    const firestoreResults = {};
+    const idsCruces = [];
+    snap.docs.forEach(d => {
+      const data = d.data();
+      firestoreResults[d.id] = data;
+      if(data.fase === '32avos') idsCruces.push(d.id);
+    });
+
+    // Mapeo inverso: firestoreId → simId
+    const inversoMap = {};
+    Object.entries(SIM_ID_MAP).forEach(([simId, fsId]) => { inversoMap[fsId] = simId; });
+
+    // Resetear resultados en memoria y reconstruir desde Firestore
+    SIM.partidos.forEach(p => { p.resultado = null; });
+    SIM.grupos.forEach(g => g.usuarios.forEach(u => { u.puntaje = 0; u.aciertos = 0; }));
+
+    let jornadaMaxima = 0;
+    const publicadosIds = [];
+
+    Object.entries(firestoreResults).forEach(([fsId, data]) => {
+      const simId = inversoMap[fsId];
+      if(!simId) return; // es un cruce de 32avos, no partido de grupos
+      const partido = SIM.partidos.find(p => p.id === simId);
+      if(!partido) return;
+      if(data.resultado_local != null && data.resultado_visita != null){
+        partido.resultado = { l: data.resultado_local, v: data.resultado_visita };
+        jornadaMaxima = Math.max(jornadaMaxima, partido.jornada);
+        publicadosIds.push(fsId);
+        // Recalcular puntajes de usuarios ficticios
+        SIM.grupos.forEach(g => {
+          g.usuarios.forEach(u => {
+            const ap = u.apuestas[simId];
+            if(ap){
+              const pts = simCalcPts(partido.resultado, ap);
+              u.puntaje += pts;
+              if(pts > 0) u.aciertos++;
+            }
+          });
+        });
+      }
+    });
+
+    SIM.jornada = jornadaMaxima;
+    SIM._publicados = publicadosIds;
+    SIM._publicadosCruces = idsCruces;
+
+    // Actualizar botones según estado
+    const jugados = publicadosIds.length;
+    const btnAvanzar = document.getElementById('sim-btn-avanzar');
+    const btnPub     = document.getElementById('sim-btn-publicar');
+    const btnLim     = document.getElementById('sim-btn-limpiar');
+
+    if(jornadaMaxima >= 3){
+      if(btnAvanzar){ btnAvanzar.disabled=true; btnAvanzar.innerHTML='<i class="fas fa-trophy"></i> Fase de grupos completa'; }
+    } else if(jornadaMaxima > 0){
+      if(btnAvanzar){ btnAvanzar.disabled=false; btnAvanzar.innerHTML=`<i class="fas fa-play"></i> Simular jornada ${jornadaMaxima+1}`; }
+    }
+
+    if(jugados > 0){
+      if(btnPub){ btnPub.disabled=false; btnPub.style.opacity='1'; }
+      if(btnLim){ btnLim.disabled=false; btnLim.style.opacity='1'; }
+    }
+
+    // Mostrar badge y alerta de datos activos
+    simActualizarUIFirestore(publicadosIds, idsCruces);
+    simRenderAll();
+
+    if(logEl){
+      logEl.innerHTML = `<div style="color:#4ade80">✅ Sincronizado desde Firestore: ${jugados} resultados simulados activos (jornada ${jornadaMaxima}/3)${idsCruces.length ? ` · ${idsCruces.length} cruces de 32avos` : ''}</div>`;
+      setTimeout(()=>{ if(logEl) logEl.style.display='none'; }, 4000);
+    }
+
+  } catch(e) {
+    if(logEl){ logEl.innerHTML = `<div style="color:#f87171">⚠ Error al verificar Firestore: ${e.message}</div>`; }
+    console.warn('simSincronizarDesdeFirestore:', e);
+  }
+}
+
+function simActualizarUIFirestore(publicados, cruces){
+  const total = publicados.length + cruces.length;
+  const badge   = document.getElementById('sim-fs-badge');
+  const alertEl = document.getElementById('sim-alert-publicado');
+  const fsCount = document.getElementById('sim-fs-count');
+  if(total > 0){
+    if(badge)  { badge.style.display='block'; }
+    if(fsCount){ fsCount.textContent = total; }
+    if(alertEl){ alertEl.style.display='flex'; }
+  } else {
+    if(badge)  badge.style.display='none';
+    if(alertEl) alertEl.style.display='none';
+  }
+}
 
 </script>
 
