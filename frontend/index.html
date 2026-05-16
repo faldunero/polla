@@ -687,6 +687,7 @@ const FLAG_ESTADIO={
 };
 
 let globalData = {};
+let globalResCache = {}; // cache global de resultados de Firestore (compartido entre renderGrupos y renderResultadosAccordion)
 
 function norm(t){ return (t||'').toString().trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[''`´]/g,''); }
 
@@ -735,9 +736,10 @@ function renderGrupos(){
 
   Object.keys(FG).forEach(g => {
     FG[g].forEach(base => {
-      const fs = firestoreById[base.id] || {};
-      // Merge: fixture garantiza local/visita/fecha/hora/estadio; Firestore aporta resultado
-      const m = { ...base, ...fs };
+      const fs  = firestoreById[base.id] || {};
+      const res = globalResCache[base.id] || {}; // resultados del cache global (incluye simulados)
+      // Merge: fixture base → datos Firestore (local/visita reales) → resultado (puede ser simulado)
+      const m = { ...base, ...fs, ...res };
       if (!porGrupo[g]) porGrupo[g] = [];
       porGrupo[g].push(m);
     });
@@ -1560,6 +1562,7 @@ async function renderResultadosAccordion() {
   try {
     const snap = await getDocs(collection(db, 'partidos'));
     snap.docs.forEach(d => { resCache[d.id] = {id: d.id, ...d.data()}; });
+    globalResCache = resCache; // compartir con renderGrupos
   } catch(e) { console.warn('No se pudo cargar resultados de Firestore:', e.message); }
 
   const faseActual = detectarFaseActual(resCache);
@@ -1739,6 +1742,8 @@ async function init(){
       partidos: partidosSnap.docs.map(d=>({id:d.id,...d.data()})),
       estadios: estadiosSnap.docs.map(d=>({id:d.id,...d.data()}))
     };
+    // Poblar globalResCache en el primer load para que renderGrupos tenga resultados inmediatamente
+    globalData.partidos.forEach(p => { globalResCache[p.id] = p; });
     const sp=document.getElementById('stat-paises'); if(sp) sp.textContent=globalData.paises.length;
     renderGrupos(); renderEstadios(); await renderResultadosAccordion();
   } catch(e){
