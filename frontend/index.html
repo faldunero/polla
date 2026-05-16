@@ -1,3 +1,6 @@
+Index · HTML
+Copy
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -19,7 +22,7 @@
 html{scroll-behavior:smooth;}
 body{font-family:var(--font-body);background:var(--off);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;}
 a{color:inherit;text-decoration:none;}
-
+ 
 /* ── TOPBAR ── */
 .topbar{background:var(--red);position:sticky;top:0;z-index:200;border-bottom:3px solid var(--gold);}
 .topbar-inner{display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:62px;gap:16px;}
@@ -34,11 +37,11 @@ a{color:inherit;text-decoration:none;}
 .nav-divider{width:1px;height:24px;background:rgba(255,255,255,0.2);margin:0 6px;}
 .btn-nav-polla{font-family:var(--font-display);font-weight:800;font-size:0.82rem;letter-spacing:0.1em;text-transform:uppercase;background:var(--gold);color:var(--ink);padding:8px 18px;border-radius:4px;border:none;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:7px;}
 .btn-nav-polla:hover{background:white;transform:translateY(-1px);}
-
+ 
 /* ── DISCLAIMER ── */
 .disclaimer{background:var(--ink);color:rgba(255,255,255,0.7);text-align:center;padding:8px 20px;font-size:0.72rem;letter-spacing:0.04em;border-bottom:2px solid var(--gold);}
 .disclaimer strong{color:var(--gold);}
-
+ 
 /* ── HERO ── */
 header.hero-section{background:var(--red);position:relative;overflow:hidden;}
 header.hero-section::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,0.07) 1px,transparent 1px);background-size:18px 18px;pointer-events:none;}
@@ -59,18 +62,18 @@ header.hero-section::before{content:'';position:absolute;inset:0;background-imag
 .hero-stat:first-child{border-left:none;}
 .hero-stat-num{font-family:var(--font-display);font-weight:900;font-size:2.6rem;color:var(--gold);line-height:1;display:block;}
 .hero-stat-label{font-size:0.62rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-top:3px;display:block;}
-
+ 
 /* ── LAYOUT ── */
 .layout{display:block;}
 main{padding:36px 40px;max-width:1400px;margin:0 auto;}
-
+ 
 /* ── SECTION ── */
 .section-wrap{margin-bottom:48px;}
 .section-label{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
 .section-line{width:4px;height:30px;background:var(--red);border-radius:2px;flex-shrink:0;}
 .section-label h2{font-family:var(--font-display);font-weight:800;font-size:1.5rem;letter-spacing:0.03em;text-transform:uppercase;color:var(--ink);line-height:1;}
 .section-label p{font-size:0.8rem;color:var(--muted);margin-top:2px;}
-
+ 
 /* ── GRUPOS ── */
 .grupos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px;}
 .grupo-card{background:white;border:1px solid var(--border);border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.05);transition:all 0.22s;}
@@ -93,7 +96,7 @@ main{padding:36px 40px;max-width:1400px;margin:0 auto;}
 .match-info-line{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:0.72rem;color:var(--muted);}
 .match-info-line i{color:var(--red);font-size:0.7rem;}
 .match-info-left{display:flex;align-items:center;gap:6px;}
-
+ 
 /* ── ESTADIOS ── */
 .estadios-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px;}
 .estadio-card{background:white;border:1px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;transition:all 0.22s;box-shadow:0 2px 10px rgba(0,0,0,0.05);}
@@ -110,7 +113,7 @@ main{padding:36px 40px;max-width:1400px;margin:0 auto;}
 .estadio-info h4{font-family:var(--font-display);font-weight:800;font-size:0.95rem;text-transform:uppercase;color:var(--ink);margin-bottom:5px;}
 .estadio-meta{display:flex;justify-content:space-between;font-size:0.72rem;color:var(--muted);}
 .estadio-meta span{display:flex;align-items:center;gap:4px;}
-
+ 
 /* ── WEATHER INLINE ── */
 .weather-trigger {
   display: inline-flex;
@@ -132,7 +135,7 @@ main{padding:36px 40px;max-width:1400px;margin:0 auto;}
 .weather-trigger .w-temp { font-weight: 700; color: var(--ink); font-size: 0.75rem; }
 .weather-trigger .w-chevron { font-size: 0.55rem; color: var(--muted); transition: transform 0.2s; }
 .weather-trigger.open .w-chevron { transform: rotate(180deg); }
-
+ 
 .weather-panel {
   display: none;
   margin-top: 8px;
@@ -150,7 +153,7 @@ main{padding:36px 40px;max-width:1400px;margin:0 auto;}
 .wp-cond-icon { font-size: 1.5rem; }
 .wp-cond-text { font-family: var(--font-display); font-weight: 700; font-size: 0.88rem; color: white; }
 .wp-loading { grid-column: 1/-1; font-size: 0.75rem; color: rgba(255,255,255,0.45); font-style: italic; text-align:center; padding: 4px 0; }
-
+ 
 /* ── WEATHER EN MODAL ── */
 .modal-weather-bar {
   display: flex;
@@ -167,7 +170,7 @@ main{padding:36px 40px;max-width:1400px;margin:0 auto;}
 .mw-cond  { display: flex; align-items: center; gap: 7px; margin-right: 8px; }
 .mw-cond-icon { font-size: 1.4rem; }
 .mw-loading { color: rgba(255,255,255,0.45); font-style:italic; font-size:0.78rem; }
-
+ 
 /* ── CLIMA EN PARTIDOS ── */
 .match-weather {
   display: inline-flex;
@@ -187,7 +190,7 @@ main{padding:36px 40px;max-width:1400px;margin:0 auto;}
 /* En res-center (resultados) → centrado */
 .res-center .match-weather { margin-top: 2px; }
 /* En match-info-line (grupos) → pushed right via space-between */ 
-
+ 
 /* ── MODALS ── */
 .modal{display:none;position:fixed;inset:0;z-index:1000;background:rgba(13,13,13,0.72);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px;}
 .modal-box{background:white;border-radius:8px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;position:relative;animation:popIn 0.24s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 36px 72px rgba(0,0,0,0.38);}
@@ -211,7 +214,7 @@ main{padding:36px 40px;max-width:1400px;margin:0 auto;}
 .stadium-name{font-family:var(--font-display);font-weight:900;font-size:1.7rem;letter-spacing:0.02em;text-transform:uppercase;color:var(--ink);margin-bottom:14px;line-height:1;}
 .stadium-detail{display:flex;align-items:flex-start;gap:10px;font-size:0.86rem;color:var(--ink2);margin-bottom:8px;}
 .stadium-detail i{color:var(--red);width:14px;margin-top:2px;}
-
+ 
 /* ── TABLA POSICIONES MODAL ── */
 .tabla-head{background:var(--ink);padding:20px 24px 16px;position:relative;}
 .tabla-head-title{font-family:var(--font-display);font-weight:900;font-size:1.4rem;color:white;text-transform:uppercase;letter-spacing:0.04em;}
@@ -232,7 +235,7 @@ main{padding:36px 40px;max-width:1400px;margin:0 auto;}
 .tabla-clasificado{border-left:3px solid var(--red);}
 .grupo-card-badge{cursor:pointer;transition:all 0.2s;}
 .grupo-card-badge:hover{background:var(--red-dark);color:white;}
-
+ 
 /* ── FOOTER ── */
 footer{background:var(--ink);color:white;position:relative;margin-top:auto;}
 footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--red) 0%,var(--gold) 50%,var(--red) 100%);}
@@ -252,7 +255,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
 .footer-bottom{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
 .footer-copy{font-size:0.7rem;color:rgba(255,255,255,0.28);letter-spacing:0.04em;}
 .footer-flags{font-size:1.2rem;opacity:0.5;}
-
+ 
 /* ── RESPONSIVE ── */
 #open-puntaje-btn:hover{background:rgba(218,0,21,0.06);border-color:var(--red);color:var(--red);}
 .btn-hero-icon{position:relative;font-family:var(--font-display);font-weight:700;font-size:1.3rem;color:rgba(255,255,255,0.85);border:1.5px solid rgba(255,255,255,0.35);padding:10px 14px;border-radius:4px;cursor:pointer;transition:all 0.2s;background:transparent;display:inline-flex;align-items:center;justify-content:center;line-height:1;}
@@ -260,13 +263,13 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
 .btn-hero-icon .tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:rgba(13,13,13,0.9);color:white;font-family:var(--font-display);font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:5px 10px;border-radius:4px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity 0.18s;}
 .btn-hero-icon .tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:rgba(13,13,13,0.9);}
 .btn-hero-icon:hover .tooltip{opacity:1;}
-
+ 
 @media(max-width:1024px){
   main{padding:28px 24px;}
   .hero-inner{padding:36px 24px 44px;}
   .footer-inner{padding:32px 24px 20px;}
 }
-
+ 
 @media(max-width:768px){
   /* topbar */
   .topbar-inner{padding:0 16px;}
@@ -293,7 +296,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
   .modal{padding:12px;}
   .info-grid{grid-template-columns:1fr 1fr;}
 }
-
+ 
 @media(max-width:480px){
   .hero-cta{flex-direction:column;align-items:flex-start;}
   .btn-hero,.btn-hero-outline{width:100%;justify-content:center;}
@@ -303,7 +306,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
   .match-team span:last-child{display:none;}
   .match-team.right span:first-child{display:none;}
 }
-
+ 
 /* ── COUNTDOWN ── */
 .countdown-bar{background:linear-gradient(90deg,var(--ink) 0%,#1a1a1a 100%);border-bottom:3px solid var(--gold);padding:18px 40px;position:relative;overflow:hidden;}
 .countdown-bar::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:20px 20px;pointer-events:none;}
@@ -324,7 +327,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
 .cd-kick-info span{color:var(--gold);}
 .cd-started{font-family:var(--font-display);font-weight:900;font-size:1.6rem;color:var(--gold);letter-spacing:0.06em;text-transform:uppercase;text-align:center;width:100%;}
 @media(max-width:768px){.countdown-bar{padding:14px 16px;}.countdown-units{gap:6px;}.cd-num{font-size:1.8rem;min-width:50px;padding:5px 9px;}.countdown-kick{display:none;}}
-
+ 
 /* ── RESULTADOS ACCORDION ── */
 .resultados-section{margin-bottom:48px;}
 .fase-acc{margin-bottom:8px;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:white;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
@@ -382,7 +385,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
 </style>
 </head>
 <body>
-
+ 
 <!-- TOPBAR -->
 <div class="topbar">
   <div class="topbar-inner">
@@ -404,12 +407,12 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
     </nav>
   </div>
 </div>
-
+ 
 <!-- DISCLAIMER -->
 <div class="disclaimer">
   <strong>⚠️ Sitio no oficial.</strong> Este es un proyecto independiente de entretenimiento. No tiene afiliación con FIFA, UEFA ni ninguna federación de fútbol. · Diseñado por <a href="https://ludolab.cl" target="_blank" style="color:var(--gold);">Ludolab.cl</a>
 </div>
-
+ 
 <!-- HERO -->
 <header class="hero-section">
   <div class="hero-inner">
@@ -433,7 +436,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
     </div>
   </div>
 </header>
-
+ 
 <!-- COUNTDOWN -->
 <div class="countdown-bar" id="countdown-bar">
   <div class="countdown-inner">
@@ -457,11 +460,11 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
     </div>
   </div>
 </div>
-
+ 
 <!-- LAYOUT -->
 <div class="layout">
   <main>
-
+ 
     <section class="section-wrap" id="grupos">
       <div class="section-label">
         <div class="section-line"></div>
@@ -469,7 +472,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
       </div>
       <div id="grupos-wrapper" class="grupos-grid"></div>
     </section>
-
+ 
     <section class="resultados-section" id="resultados">
       <div class="section-label">
         <div class="section-line"></div>
@@ -486,7 +489,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
     </section>
   </main>
 </div>
-
+ 
 <!-- MODAL PUNTAJE -->
 <div id="puntajeModal" class="modal">
   <div class="modal-box" style="max-width:480px;">
@@ -498,10 +501,10 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
       <p style="color:rgba(255,255,255,0.7);font-size:0.82rem;margin-top:6px;position:relative;">¿Cómo se calculan los puntos de La Polla 2026?</p>
     </div>
     <div style="padding:20px 24px;">
-
+ 
       <!-- Filas de puntaje -->
       <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
-
+ 
         <div style="display:flex;align-items:center;gap:14px;padding:13px 16px;background:var(--off);border-radius:8px;border-left:4px solid #DA0015;">
           <div style="text-align:center;min-width:52px;">
             <span style="font-family:var(--font-display);font-weight:900;font-size:1.8rem;color:#DA0015;line-height:1;">4</span>
@@ -512,7 +515,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
             <div style="font-size:0.76rem;color:var(--muted);margin-top:2px;">Predices 2-1 y termina 2-1. ¡Perfecto!</div>
           </div>
         </div>
-
+ 
         <div style="display:flex;align-items:center;gap:14px;padding:13px 16px;background:var(--off);border-radius:8px;border-left:4px solid #3b82f6;">
           <div style="text-align:center;min-width:52px;">
             <span style="font-family:var(--font-display);font-weight:900;font-size:1.8rem;color:#3b82f6;line-height:1;">3</span>
@@ -523,7 +526,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
             <div style="font-size:0.76rem;color:var(--muted);margin-top:2px;">Aciertas quién gana pero no el marcador exacto.</div>
           </div>
         </div>
-
+ 
         <div style="display:flex;align-items:center;gap:14px;padding:13px 16px;background:var(--off);border-radius:8px;border-left:4px solid #22c55e;">
           <div style="text-align:center;min-width:52px;">
             <span style="font-family:var(--font-display);font-weight:900;font-size:1.8rem;color:#22c55e;line-height:1;">2</span>
@@ -534,7 +537,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
             <div style="font-size:0.76rem;color:var(--muted);margin-top:2px;">Predices 1-1 y termina 1-1.</div>
           </div>
         </div>
-
+ 
         <div style="display:flex;align-items:center;gap:14px;padding:13px 16px;background:var(--off);border-radius:8px;border-left:4px solid #94a3b8;">
           <div style="text-align:center;min-width:52px;">
             <span style="font-family:var(--font-display);font-weight:900;font-size:1.8rem;color:#94a3b8;line-height:1;">1</span>
@@ -545,7 +548,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
             <div style="font-size:0.76rem;color:var(--muted);margin-top:2px;">Predices empate pero con distinto marcador. Ej: 0-0 → 2-2.</div>
           </div>
         </div>
-
+ 
         <div style="display:flex;align-items:center;gap:14px;padding:13px 16px;background:var(--off);border-radius:8px;border-left:4px solid #e2e8f0;">
           <div style="text-align:center;min-width:52px;">
             <span style="font-family:var(--font-display);font-weight:900;font-size:1.8rem;color:#cbd5e1;line-height:1;">0</span>
@@ -556,19 +559,19 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
             <div style="font-size:0.76rem;color:var(--muted);margin-top:2px;">Tu predicción no coincide con el resultado ni el ganador.</div>
           </div>
         </div>
-
+ 
       </div>
-
+ 
       <!-- Nota fecha límite -->
       <div style="background:rgba(218,0,21,0.05);border:1px solid rgba(218,0,21,0.2);border-radius:8px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;">
         <i class="fas fa-clock" style="color:var(--red);margin-top:2px;flex-shrink:0;font-size:0.85rem;"></i>
         <p style="font-size:0.78rem;color:var(--muted);line-height:1.5;margin:0;">Las apuestas cierran el <strong style="color:var(--ink);">10 de junio de 2026</strong>, un día antes del inicio del Mundial. Sin excepciones.</p>
       </div>
-
+ 
     </div>
   </div>
 </div>
-
+ 
 <!-- MODAL PAÍS -->
 <div id="paisModal" class="modal">
   <div class="modal-box">
@@ -576,7 +579,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
     <div id="modal-body"></div>
   </div>
 </div>
-
+ 
 <!-- MODAL ESTADIO -->
 <div id="stadiumModal" class="modal">
   <div class="modal-box modal-box-wide">
@@ -584,7 +587,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
     <div id="stadium-modal-body"></div>
   </div>
 </div>
-
+ 
 <!-- MODAL TABLA POSICIONES -->
 <div id="tablaModal" class="modal">
   <div class="modal-box modal-box-wide">
@@ -592,7 +595,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
     <div id="tabla-modal-body"></div>
   </div>
 </div>
-
+ 
 <!-- FOOTER -->
 <footer>
   <div class="footer-inner">
@@ -616,11 +619,11 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
     </div>
   </div>
 </footer>
-
+ 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, getDocs, getDoc, doc, collection } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-
+import { getFirestore, getDocs, collection } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+ 
 const fbApp = initializeApp({
   apiKey:"AIzaSyAqrYCFQN8epqx9HZrd7t1Ywz9wVf2Fx5Y",
   authDomain:"polla-495421-ab029.firebaseapp.com",
@@ -630,7 +633,7 @@ const fbApp = initializeApp({
   appId:"1:366484877682:web:a7c21e72c012d4b709adeb"
 });
 const db = getFirestore(fbApp);
-
+ 
 const FLAGS_MAP={
   'QATAR':'🇶🇦','CATAR':'🇶🇦','ECUADOR':'🇪🇨','SENEGAL':'🇸🇳','PAISES BAJOS':'🇳🇱',
   'HOLANDA':'🇳🇱','INGLATERRA':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','IRAN':'🇮🇷','ESTADOS UNIDOS':'🇺🇸','USA':'🇺🇸',
@@ -657,7 +660,7 @@ const FLAGS_MAP={
   'NUEVA GUINEA':'🇵🇬','BOSNIA':'🇧🇦','BOSNIA Y HERZEGOVINA':'🇧🇦','CABO VERDE':'🇨🇻',
   'RUMANIA':'🇷🇴','ESLOVAQUIA':'🇸🇰'
 };
-
+ 
 const IMG_MAP={
   'ATLANTA':'estadios/estadio_atlanta.png','MERCEDES':'estadios/estadio_atlanta.png',
   'AZTECA':'estadios/estadio_azteca.png','CIUDAD DE MEXICO':'estadios/estadio_azteca.png',
@@ -676,7 +679,7 @@ const IMG_MAP={
   'TORONTO':'estadios/estadio_toronto.png','BMO':'estadios/estadio_toronto.png',
   'VANCOUVER':'estadios/estadio_vancouver.png','BC PLACE':'estadios/estadio_vancouver.png'
 };
-
+ 
 const FLAG_ESTADIO={
   'ATLANTA':'🇺🇸','BOSTON':'🇺🇸','DALLAS':'🇺🇸','HOUSTON':'🇺🇸','KANSAS':'🇺🇸',
   'LOS ANGELES':'🇺🇸','INGLEWOOD':'🇺🇸','MIAMI':'🇺🇸','NEW JERSEY':'🇺🇸','EAST RUTHERFORD':'🇺🇸',
@@ -685,11 +688,11 @@ const FLAG_ESTADIO={
   'AZTECA':'🇲🇽','GUADALAJARA':'🇲🇽','MONTERREY':'🇲🇽','AKRON':'🇲🇽','BBVA':'🇲🇽','CIUDAD DE MEXICO':'🇲🇽',
   'TORONTO':'🇨🇦','VANCOUVER':'🇨🇦','BMO':'🇨🇦','BC PLACE':'🇨🇦'
 };
-
+ 
 let globalData = {};
-
+ 
 function norm(t){ return (t||'').toString().trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[''`´]/g,''); }
-
+ 
 function getFlag(n){
   const k = norm(n);
   if(FLAGS_MAP[k]) return FLAGS_MAP[k];
@@ -697,19 +700,19 @@ function getFlag(n){
   for(const [key,val] of Object.entries(FLAGS_MAP)){ if(k.includes(key)||key.includes(k)) return val; }
   return '🏳️';
 }
-
+ 
 function getStadiumImg(e){
   const n = norm((e.nombre||'') + ' ' + (e.ciudad||e.city||''));
   for(const [k,v] of Object.entries(IMG_MAP)){ if(n.includes(k)) return v; }
   return null;
 }
-
+ 
 function getStadiumFlag(e){
   const n = norm((e.nombre||'') + ' ' + (e.ciudad||e.city||''));
   for(const [k,v] of Object.entries(FLAG_ESTADIO)){ if(n.includes(k)) return v; }
   return '🏟️';
 }
-
+ 
 function fmtDate(s){
   if(!s||isNaN(s)) return s||'TBD';
   const d=new Date(Math.round((s-25569)*86400*1000));
@@ -721,18 +724,18 @@ function fmtTime(t){
   return `${String(h).padStart(2,'0')}:${String(mn).padStart(2,'0')}`;
 }
 function getVal(obj,keys){ for(const k of keys){ if(obj[k]!=null&&obj[k]!=='') return obj[k]; } return '—'; }
-
+ 
 // Grupos
 function renderGrupos(){
   const w = document.getElementById('grupos-wrapper');
   if (!w) return;
-
+ 
   // Usar FIXTURE_MAP como fuente de verdad base, enriquecer con datos de Firestore
   // Esto resuelve el caso donde Firestore tiene docs incompletos (sin local/visita/fecha)
   const porGrupo = {};
   const firestoreById = {};
   globalData.partidos.forEach(m => { firestoreById[m.id] = m; });
-
+ 
   Object.keys(FG).forEach(g => {
     FG[g].forEach(base => {
       const fs = firestoreById[base.id] || {};
@@ -742,20 +745,20 @@ function renderGrupos(){
       porGrupo[g].push(m);
     });
   });
-
+ 
   w.innerHTML = '';
   const gs = Object.keys(porGrupo).sort();
   const sp = document.getElementById('stat-grupos');
   if (sp) sp.textContent = gs.length;
-
+ 
   gs.forEach(g => {
     const card = document.createElement('div');
     card.className = 'grupo-card';
-
+ 
     const matches = porGrupo[g].map((m, mi) => {
       const sede   = m.estadio || m.sede || 'Estadio por confirmar';
       const wbid   = `gwb_${g}_${mi}`;
-
+ 
       // Hora: puede ser string "HH:MM" (fixture nuevo) o decimal Excel (legacy)
       let horaStr = '';
       if (m.hora != null) {
@@ -765,17 +768,17 @@ function renderGrupos(){
           horaStr = fmtTime(m.hora);
         }
       }
-
+ 
       // Fecha: puede ser string "DD mon" o número Excel
       const fechaStr = (typeof m.fecha === 'string' && isNaN(m.fecha))
         ? m.fecha : fmtDate(m.fecha);
-
+ 
       // Marcador: si el admin ya ingresó resultado, mostrarlo; si no, VS
       const tieneRes = m.resultado_local != null && m.resultado_visita != null;
       const scoreHtml = tieneRes
         ? `<span class="match-score">${m.resultado_local}<span class="score-sep">–</span>${m.resultado_visita}</span>`
         : `<span class="match-vs">VS</span>`;
-
+ 
       return `
       <div class="match-row">
         <div class="match-teams-line">
@@ -802,7 +805,7 @@ function renderGrupos(){
         </div>
       </div>`;
     }).join('');
-
+ 
     card.innerHTML = `
       <div class="grupo-card-head">
         <a href="selecciones.html#grupo-${g}" class="grupo-card-title" style="text-decoration:none;color:white;cursor:pointer;">Grupo ${g}</a>
@@ -813,10 +816,10 @@ function renderGrupos(){
         </span>
       </div>
       <div class="grupo-card-body">${matches}</div>`;
-
+ 
     card.querySelector('.grupo-card-badge').addEventListener('click', () => window._showTabla(g));
     w.appendChild(card);
-
+ 
     // Clima por partido
     porGrupo[g].forEach((m, mi) => {
       const sede = m.estadio || m.sede || '';
@@ -833,7 +836,7 @@ function renderGrupos(){
     });
   });
 }
-
+ 
 // Estadios
 // ── COORDENADAS CIUDADES SEDE ─────────────────────────────────────────────
 const CITY_COORDS = {
@@ -861,9 +864,9 @@ const CITY_COORDS = {
   'TORONTO':       { lat: 43.651, lon: -79.347 },
   'VANCOUVER':     { lat: 49.283, lon: -123.121 },
 };
-
+ 
 const weatherCache = {};
-
+ 
 function getCityCoords(estadio) {
   const ciudad = norm(estadio.ciudad || estadio.city || '');
   const nombre = norm(estadio.nombre || '');
@@ -872,12 +875,12 @@ function getCityCoords(estadio) {
   }
   return null;
 }
-
+ 
 // Resuelve coords a partir del nombre de un estadio/sede en un partido
 function getCoordsFromSede(sede) {
   if (!sede) return null;
   const n = norm(sede);
-
+ 
   // Mapeo explícito de nombres de estadio → clave de ciudad
   const SEDE_MAP = {
     'FILADELFIA': 'PHILADELPHIA', 'PHILADELPHIA': 'PHILADELPHIA',
@@ -898,7 +901,7 @@ function getCoordsFromSede(sede) {
     'SANTA CLARA': 'SANTA CLARA', 'LEVIS': 'SANTA CLARA', 'SAN FRANCISCO': 'SANTA CLARA',
     'SEATTLE': 'SEATTLE', 'LUMEN': 'SEATTLE',
   };
-
+ 
   for (const [k, cityKey] of Object.entries(SEDE_MAP)) {
     if (n.includes(k)) {
       const coords = CITY_COORDS[cityKey];
@@ -911,7 +914,7 @@ function getCoordsFromSede(sede) {
   }
   return null;
 }
-
+ 
 const WMO_ICONS = {
   0:'☀️', 1:'🌤️', 2:'⛅', 3:'☁️',
   45:'🌫️', 48:'🌫️',
@@ -930,7 +933,7 @@ const WMO_DESC = {
   80:'Chubascos leves', 81:'Chubascos', 82:'Chubascos fuertes',
   95:'Tormenta', 96:'Tormenta c/granizo', 99:'Tormenta fuerte',
 };
-
+ 
 async function fetchWeather(lat, lon, cacheKey) {
   if (weatherCache[cacheKey]) return weatherCache[cacheKey];
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode,windspeed_10m,relative_humidity_2m&timezone=auto&temperature_unit=celsius`;
@@ -948,7 +951,7 @@ async function fetchWeather(lat, lon, cacheKey) {
   weatherCache[cacheKey] = result;
   return result;
 }
-
+ 
 function renderEstadios(){
   const c=document.getElementById('estadios-container'); if(!c) return;
   c.innerHTML='';
@@ -959,19 +962,19 @@ function renderEstadios(){
     const coords = getCityCoords(e);
     const wid = coords ? `w_${coords.key.replace(/\s/g,'_')}` : null;
     const card=document.createElement('div'); card.className='estadio-card';
-
+ 
     const weatherHtml = coords ? `
       <button class="weather-trigger" id="wt_${wid}" aria-label="Ver clima">
         <span class="w-icon">🌡️</span>
         <span class="w-temp">Clima</span>
         <span class="w-chevron">▼</span>
       </button>` : '';
-
+ 
     const weatherPanelHtml = coords ? `
       <div class="weather-panel" id="wp_${wid}">
         <div class="wp-loading">Cargando clima...</div>
       </div>` : '';
-
+ 
     card.innerHTML=`
       <div class="estadio-img-wrap" data-open-modal="1">
         ${img?`<img src="${img}" class="estadio-img" alt="${e.nombre}" onerror="this.parentElement.innerHTML='<div class=estadio-fallback><i class=\\'fas fa-landmark\\'></i><span>${e.nombre}</span></div>'">`:
@@ -990,18 +993,18 @@ function renderEstadios(){
         </div>
         ${weatherPanelHtml}
       </div>`;
-
+ 
     // Click en zonas marcadas → abre modal
     card.querySelectorAll('[data-open-modal]').forEach(el => {
       el.addEventListener('click', ()=> showStadium(e));
     });
-
+ 
     // Toggle clima independiente + carga automática al inicio
     if (coords) {
       const trigger = card.querySelector(`#wt_${wid}`);
       const panel   = card.querySelector(`#wp_${wid}`);
       let loaded = false;
-
+ 
       async function loadWeather() {
         if (loaded) return;
         loaded = true;
@@ -1022,11 +1025,11 @@ function renderEstadios(){
           panel.innerHTML = '<div class="wp-loading">Sin datos disponibles</div>';
         }
       }
-
+ 
       // Cargar automáticamente (escalonado para no saturar la API)
       const idx = c.children.length; // cantidad ya en el DOM antes del append
       setTimeout(loadWeather, idx * 80);
-
+ 
       trigger.addEventListener('click', async (ev) => {
         ev.stopPropagation();
         const isOpen = panel.classList.toggle('open');
@@ -1037,121 +1040,68 @@ function renderEstadios(){
     c.appendChild(card);
   });
 }
-
+ 
 // Modal País
-// ── helpers modales ───────────────────────────────────────────────────────
-function infoItem(label, value){
-  if(value === null || value === undefined || value === '' || value === false) return '';
-  return `<div class="info-item"><div class="info-label">${label}</div><div class="info-value">${value}</div></div>`;
-}
-
-function buildModalPais(p){
-  const ranking = p.ranking_fifa || p.ranking_2022;
-  const items = [
-    infoItem('Ranking FIFA',              ranking ? '#'+ranking : ''),
-    infoItem('Participaciones Mundiales', p.participaciones),
-    infoItem('Mejor posición histórica',  p.mejor_posicion),
-    infoItem('Sede base en el torneo',    p.sede),
-    infoItem('Entrenador',                p.entrenador),
-    infoItem('Goleador histórico',        p.goleador_historico),
-    infoItem('Goleador en Mundiales',     p.goleador_mundiales),
-    infoItem('Jugador más caro',          p.jugador_mas_caro),
-    infoItem('Valor del plantel',         p.valor_plantel_usd ? 'USD $'+Number(p.valor_plantel_usd).toLocaleString('es-CL')+'M' : ''),
-  ].join('');
-  return `
+function showPais(nombre){
+  const p=globalData.paises.find(i=>norm(i.nombre)===norm(nombre)); if(!p) return;
+  document.getElementById('modal-body').innerHTML=`
     <div class="modal-head-red">
       <span class="modal-flag-big">${getFlag(p.nombre)}</span>
       <div class="modal-country">${p.nombre}</div>
-      <div style="display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:8px;position:relative;">
-        <span class="modal-group-tag">Grupo ${p.grupo||'TBD'}</span>
-        ${p.confederacion ? `<span class="modal-group-tag" style="background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.9);">${p.confederacion}</span>` : ''}
-      </div>
+      <span class="modal-group-tag">Grupo ${p.grupo||'TBD'}</span>
     </div>
     <div class="modal-body-pad">
-      ${items ? `<div class="info-grid">${items}</div>` : '<p style="color:var(--muted);font-size:0.85rem;text-align:center;padding:20px 0;">Sin información adicional registrada.</p>'}
+      <div class="info-grid">
+        <div class="info-item"><div class="info-label">Ranking FIFA</div><div class="info-value">#${p.ranking_fifa||p.ranking_2022||'—'}</div></div>
+        <div class="info-item"><div class="info-label">Participaciones</div><div class="info-value">${p.participaciones||'—'}</div></div>
+        <div class="info-item"><div class="info-label">Mejor posición</div><div class="info-value">${p.mejor_posicion||'—'}</div></div>
+        <div class="info-item"><div class="info-label">Sede base</div><div class="info-value">${p.sede||'—'}</div></div>
+        <div class="info-item"><div class="info-label">Goleador histórico</div><div class="info-value">${p.goleador_historico||'—'}</div></div>
+        <div class="info-item"><div class="info-label">Goleador mundiales</div><div class="info-value">${p.goleador_mundiales||'—'}</div></div>
+        <div class="info-item"><div class="info-label">Jugador más caro</div><div class="info-value">${p.jugador_mas_caro||'—'}</div></div>
+        <div class="info-item"><div class="info-label">Valor plantel</div><div class="info-value">${p.valor_plantel_usd ? 'USD $'+p.valor_plantel_usd+'M' : '—'}</div></div>
+      </div>
     </div>`;
-}
-
-function showPais(nombre){
-  const cached = globalData.paises.find(i=>norm(i.nombre)===norm(nombre));
-  if(!cached) return;
-  const body = document.getElementById('modal-body');
-  body.innerHTML = buildModalPais(cached);
   document.getElementById('paisModal').style.display='flex';
-  // Fetch fresco desde Firestore
-  getDoc(doc(db,'paises',cached.id)).then(snap=>{
-    if(!snap.exists()) return;
-    const fresh={id:snap.id,...snap.data()};
-    const idx=globalData.paises.findIndex(p=>p.id===cached.id);
-    if(idx!==-1) globalData.paises[idx]=fresh;
-    body.innerHTML=buildModalPais(fresh);
-  }).catch(()=>{});
 }
-
-function buildModalEstadio(e, coords){
-  const img=getStadiumImg(e), flag=getStadiumFlag(e);
-  const ciudad=e.ciudad||e.city||'';
-  const paisLabel=e.pais==='USA'?'Estados Unidos 🇺🇸':e.pais==='Mexico'?'México 🇲🇽':e.pais==='Canada'?'Canadá 🇨🇦':(e.pais||'');
-  const det=(icon,label,value)=>{
-    if(value===null||value===undefined||value==='') return '';
-    return `<div class="stadium-detail"><i class="${icon}"></i><span><b>${label}:</b> ${value}</span></div>`;
-  };
-  return `
+ 
+function showStadium(e){
+  const img=getStadiumImg(e), flag=getStadiumFlag(e), ciudad=e.ciudad||e.city||'N/A';
+  const coords = getCityCoords(e);
+  document.getElementById('stadium-modal-body').innerHTML=`
     ${img?`<img src="${img}" class="stadium-modal-img" alt="${e.nombre}" onerror="this.style.display='none'">`:
     `<div style="height:220px;background:linear-gradient(135deg,#0D0D0D,#2A2A2A);display:flex;align-items:center;justify-content:center;"><i class="fas fa-landmark" style="font-size:2.5rem;color:#F0C040"></i></div>`}
     <div class="stadium-modal-panel">
       <div class="stadium-tag"><i class="fas fa-circle-check"></i> Sede Oficial FIFA 2026</div>
       <div class="stadium-name">${e.nombre} ${flag}</div>
-      ${det('fas fa-city',         'Ciudad',             ciudad)}
-      ${det('fas fa-globe',        'País',               paisLabel)}
-      ${det('fas fa-users',        'Capacidad',          e.capacidad?Number(e.capacidad).toLocaleString('es-CL')+' espectadores':'')}
-      ${det('fas fa-calendar',     'Inauguración',       e.anio_inauguracion||e.anio||'')}
-      ${det('fas fa-leaf',         'Superficie',         e.superficie||'')}
-      ${det('fas fa-cloud',        'Techo',              e.techo||'')}
-      ${det('fas fa-futbol',       'Partidos asignados', e.partidos_asignados||'')}
-      ${det('fas fa-shield-halved','Equipo local',       e.equipo_local||'')}
-      ${det('fas fa-info-circle',  'Datos relevantes',   e.datos_relevantes||'')}
+      <div class="stadium-detail"><i class="fas fa-city"></i><span><b>Ciudad:</b> ${ciudad}</span></div>
+      <div class="stadium-detail"><i class="fas fa-users"></i><span><b>Capacidad:</b> ${e.capacidad?.toLocaleString()||'N/A'} espectadores</span></div>
+      ${e.datos_relevantes?`<div class="stadium-detail"><i class="fas fa-info-circle"></i><span>${e.datos_relevantes}</span></div>`:''}
     </div>
-    ${coords?`<div class="modal-weather-bar" id="mwb_modal"><span class="mw-loading">🌡️ Cargando clima actual...</span></div>`:''}`;
-}
-
-function loadWeatherBar(coords){
-  if(!coords) return;
-  fetchWeather(coords.lat,coords.lon,coords.key).then(w=>{
-    const bar=document.getElementById('mwb_modal');
-    if(!bar) return;
-    bar.innerHTML=`
-      <div class="mw-cond"><span class="mw-cond-icon">${w.icon}</span>
-        <div><div class="mw-label">Condición actual</div><div class="mw-val">${w.desc}</div></div>
-      </div>
-      <div class="mw-item"><div class="mw-label">🌡️ Temp.</div><div class="mw-val">${w.temp}°C</div></div>
-      <div class="mw-item"><div class="mw-label">💧 Humedad</div><div class="mw-val">${w.humidity}%</div></div>
-      <div class="mw-item"><div class="mw-label">💨 Viento</div><div class="mw-val">${w.wind} km/h</div></div>`;
-  }).catch(()=>{
-    const bar=document.getElementById('mwb_modal');
-    if(bar) bar.innerHTML='<span class="mw-loading">Sin datos de clima</span>';
-  });
-}
-
-function showStadium(e){
-  const coords=getCityCoords(e);
-  const body=document.getElementById('stadium-modal-body');
-  body.innerHTML=buildModalEstadio(e,coords);
-  document.getElementById('stadiumModal').style.display='flex';
-  loadWeatherBar(coords);
-  // Fetch fresco desde Firestore si tiene ID
-  if(e.id){
-    getDoc(doc(db,'estadios',e.id)).then(snap=>{
-      if(!snap.exists()) return;
-      const fresh={id:snap.id,...snap.data()};
-      const idx=globalData.estadios.findIndex(s=>s.id===e.id);
-      if(idx!==-1) globalData.estadios[idx]=fresh;
-      body.innerHTML=buildModalEstadio(fresh,coords);
-      loadWeatherBar(coords);
-    }).catch(()=>{});
+    ${coords ? `<div class="modal-weather-bar" id="mwb_modal"><span class="mw-loading">🌡️ Cargando clima actual...</span></div>` : ''}`;
+ 
+  if (coords) {
+    fetchWeather(coords.lat, coords.lon, coords.key).then(w => {
+      const bar = document.getElementById('mwb_modal');
+      if (!bar) return;
+      bar.innerHTML = `
+        <div class="mw-cond">
+          <span class="mw-cond-icon">${w.icon}</span>
+          <div><div class="mw-label">Condición actual</div><div class="mw-val">${w.desc}</div></div>
+        </div>
+        <div class="mw-item"><div class="mw-label">🌡️ Temp.</div><div class="mw-val">${w.temp}°C</div></div>
+        <div class="mw-item"><div class="mw-label">💧 Humedad</div><div class="mw-val">${w.humidity}%</div></div>
+        <div class="mw-item"><div class="mw-label">💨 Viento</div><div class="mw-val">${w.wind} km/h</div></div>
+      `;
+    }).catch(() => {
+      const bar = document.getElementById('mwb_modal');
+      if (bar) bar.innerHTML = '<span class="mw-loading">Sin datos de clima</span>';
+    });
   }
+ 
+  document.getElementById('stadiumModal').style.display='flex';
 }
-
+ 
 // Tabla de Posiciones
 window._showTabla = function(g){
   const paisesGrupo = globalData.paises.filter(p=>p.grupo===g);
@@ -1204,12 +1154,12 @@ window._showTabla = function(g){
     </div>`;
   document.getElementById('tablaModal').style.display='flex';
 };
-
+ 
 // Highlight nav active
 document.querySelectorAll('.nav-link').forEach(l=>{
   if(l.href===location.href) l.classList.add('active');
 });
-
+ 
 // ── MODAL LISTENERS — must be inside module ──
 document.getElementById('close-pais-btn').addEventListener('click', ()=>{
   document.getElementById('paisModal').style.display='none';
@@ -1238,7 +1188,7 @@ document.getElementById('close-tabla-btn').addEventListener('click', ()=>{
 document.getElementById('tablaModal').addEventListener('click', e=>{
   if(e.target===e.currentTarget) document.getElementById('tablaModal').style.display='none';
 });
-
+ 
 // ── DESCARGA CALENDARIO ICS ──
 document.getElementById('btn-download-ics').addEventListener('click', function(){
   if(!globalData || !globalData.partidos || globalData.partidos.length === 0){
@@ -1256,17 +1206,17 @@ document.getElementById('btn-download-ics').addEventListener('click', function()
     } catch(e){ return null; }
   }
   function escapeICS(str){ return (str||'').replace(/\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;'); }
-
+ 
   const faseGrupos = globalData.partidos.filter(p => {
     const fase = (p.fase||p.etapa||p.ronda||'').toLowerCase();
     return !fase || fase.includes('grupo') || fase.includes('group') || fase === '';
   });
   if(faseGrupos.length === 0){ alert('No se encontraron partidos de fase de grupos.'); return; }
-
+ 
   const now = new Date();
   const stamp = `${now.getUTCFullYear()}${pad(now.getUTCMonth()+1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
   let ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//La Polla 2026//Mundial FIFA 2026//ES\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\nX-WR-CALNAME:Mundial FIFA 2026 · Fase de Grupos\r\nX-WR-TIMEZONE:America/Santiago\r\nX-WR-CALDESC:Partidos de la fase de grupos del Mundial FIFA 2026';
-
+ 
   faseGrupos.forEach((p, i) => {
     const local1  = p.local || p.equipo_local || p.home || '?';
     const local2  = p.visitante || p.equipo_visitante || p.away || '?';
@@ -1287,7 +1237,7 @@ document.getElementById('btn-download-ics').addEventListener('click', function()
     ics += `DESCRIPTION:Grupo ${escapeICS(grupo)} · Mundial FIFA 2026\\nHorario Chile: ${hora} hrs\r\nEND:VEVENT`;
   });
   ics += '\r\nEND:VCALENDAR';
-
+ 
   const blob = new Blob([ics], { type:'text/calendar;charset=utf-8' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
@@ -1295,7 +1245,7 @@ document.getElementById('btn-download-ics').addEventListener('click', function()
   document.body.appendChild(a); a.click();
   document.body.removeChild(a); URL.revokeObjectURL(url);
 });
-
+ 
 // ── COUNTDOWN ──
 (function(){
   // 11 Jun 2026, 16:00 hora Chile (UTC-4 en invierno chileno = UTC+0 -4h → UTC 20:00)
@@ -1324,7 +1274,7 @@ document.getElementById('btn-download-ics').addEventListener('click', function()
   tick();
   setInterval(tick, 1000);
 })();
-
+ 
 // ── FIXTURE GRUPOS completo — fuente de verdad local ──────────────────────────
 // Usado como base cuando Firestore tiene docs incompletos (ej: guardados antes del fix)
 const FG = {
@@ -1425,11 +1375,49 @@ const FG = {
     {"id": "fgL6", "local": "Croacia", "visita": "Ghana", "fecha": "27 jun", "hora": "17:00", "estadio": "Lincoln Financial Field, Filadelfia", "grupo": "L"},
   ],
 };
-
+ 
 // Mapa plano id → partido para lookup O(1)
 const FIXTURE_MAP = {};
 Object.values(FG).forEach(arr => arr.forEach(p => { FIXTURE_MAP[p.id] = p; }));
-
+ 
+// Fixture eliminatorias — mismo que admin/simulador
+const FIXTURE_ELIM_MAP = {
+  'r32_1':  {id:'r32_1',  fase:'32avos', local:'1.A',        visita:'2.B',        fecha:'2026-07-01', hora:'16:00', estadio:'MetLife Stadium, Nueva York'},
+  'r32_2':  {id:'r32_2',  fase:'32avos', local:'1.C',        visita:'2.D',        fecha:'2026-07-01', hora:'20:00', estadio:'AT&T Stadium, Dallas'},
+  'r32_3':  {id:'r32_3',  fase:'32avos', local:'1.E',        visita:'2.F',        fecha:'2026-07-02', hora:'16:00', estadio:'SoFi Stadium, Los Ángeles'},
+  'r32_4':  {id:'r32_4',  fase:'32avos', local:'1.G',        visita:'2.H',        fecha:'2026-07-02', hora:'20:00', estadio:'Mercedes-Benz Stadium, Atlanta'},
+  'r32_5':  {id:'r32_5',  fase:'32avos', local:'1.I',        visita:'2.J',        fecha:'2026-07-03', hora:'16:00', estadio:'Gillette Stadium, Boston'},
+  'r32_6':  {id:'r32_6',  fase:'32avos', local:'1.K',        visita:'2.L',        fecha:'2026-07-03', hora:'20:00', estadio:'Arrowhead Stadium, Kansas City'},
+  'r32_7':  {id:'r32_7',  fase:'32avos', local:'1.B',        visita:'2.A',        fecha:'2026-07-04', hora:'16:00', estadio:'BC Place, Vancouver'},
+  'r32_8':  {id:'r32_8',  fase:'32avos', local:'1.D',        visita:'2.C',        fecha:'2026-07-04', hora:'20:00', estadio:'NRG Stadium, Houston'},
+  'r32_9':  {id:'r32_9',  fase:'32avos', local:'1.F',        visita:'2.E',        fecha:'2026-07-05', hora:'16:00', estadio:'BMO Field, Toronto'},
+  'r32_10': {id:'r32_10', fase:'32avos', local:'1.H',        visita:'2.G',        fecha:'2026-07-05', hora:'20:00', estadio:'Hard Rock Stadium, Miami'},
+  'r32_11': {id:'r32_11', fase:'32avos', local:'1.J',        visita:'2.I',        fecha:'2026-07-06', hora:'16:00', estadio:'Lumen Field, Seattle'},
+  'r32_12': {id:'r32_12', fase:'32avos', local:'1.L',        visita:'2.K',        fecha:'2026-07-06', hora:'20:00', estadio:'Lincoln Financial Field, Filadelfia'},
+  'r32_13': {id:'r32_13', fase:'32avos', local:'3er mejor 1',visita:'3er mejor 2',fecha:'2026-07-07', hora:'16:00', estadio:'AT&T Stadium, Dallas'},
+  'r32_14': {id:'r32_14', fase:'32avos', local:'3er mejor 3',visita:'3er mejor 4',fecha:'2026-07-07', hora:'20:00', estadio:'MetLife Stadium, Nueva York'},
+  'r32_15': {id:'r32_15', fase:'32avos', local:'3er mejor 5',visita:'3er mejor 6',fecha:'2026-07-08', hora:'16:00', estadio:'SoFi Stadium, Los Ángeles'},
+  'r32_16': {id:'r32_16', fase:'32avos', local:'3er mejor 7',visita:'3er mejor 8',fecha:'2026-07-08', hora:'20:00', estadio:'Mercedes-Benz Stadium, Atlanta'},
+  'r16_1':  {id:'r16_1',  fase:'octavos', local:'G.32 1',  visita:'G.32 2',  fecha:'2026-07-11', hora:'16:00', estadio:'MetLife Stadium, Nueva York'},
+  'r16_2':  {id:'r16_2',  fase:'octavos', local:'G.32 3',  visita:'G.32 4',  fecha:'2026-07-11', hora:'20:00', estadio:'AT&T Stadium, Dallas'},
+  'r16_3':  {id:'r16_3',  fase:'octavos', local:'G.32 5',  visita:'G.32 6',  fecha:'2026-07-12', hora:'16:00', estadio:'SoFi Stadium, Los Ángeles'},
+  'r16_4':  {id:'r16_4',  fase:'octavos', local:'G.32 7',  visita:'G.32 8',  fecha:'2026-07-12', hora:'20:00', estadio:'Mercedes-Benz Stadium, Atlanta'},
+  'r16_5':  {id:'r16_5',  fase:'octavos', local:'G.32 9',  visita:'G.32 10', fecha:'2026-07-13', hora:'16:00', estadio:'Gillette Stadium, Boston'},
+  'r16_6':  {id:'r16_6',  fase:'octavos', local:'G.32 11', visita:'G.32 12', fecha:'2026-07-13', hora:'20:00', estadio:'Arrowhead Stadium, Kansas City'},
+  'r16_7':  {id:'r16_7',  fase:'octavos', local:'G.32 13', visita:'G.32 14', fecha:'2026-07-14', hora:'16:00', estadio:'BC Place, Vancouver'},
+  'r16_8':  {id:'r16_8',  fase:'octavos', local:'G.32 15', visita:'G.32 16', fecha:'2026-07-14', hora:'20:00', estadio:'NRG Stadium, Houston'},
+  'qf1':    {id:'qf1',    fase:'cuartos', local:'G.R16 1', visita:'G.R16 2', fecha:'2026-07-18', hora:'16:00', estadio:'MetLife Stadium, Nueva York'},
+  'qf2':    {id:'qf2',    fase:'cuartos', local:'G.R16 3', visita:'G.R16 4', fecha:'2026-07-18', hora:'20:00', estadio:'AT&T Stadium, Dallas'},
+  'qf3':    {id:'qf3',    fase:'cuartos', local:'G.R16 5', visita:'G.R16 6', fecha:'2026-07-19', hora:'16:00', estadio:'SoFi Stadium, Los Ángeles'},
+  'qf4':    {id:'qf4',    fase:'cuartos', local:'G.R16 7', visita:'G.R16 8', fecha:'2026-07-19', hora:'20:00', estadio:'Mercedes-Benz Stadium, Atlanta'},
+  'sf1':    {id:'sf1',    fase:'semis',   local:'G.CF 1',  visita:'G.CF 2',  fecha:'2026-07-22', hora:'20:00', estadio:'MetLife Stadium, Nueva York'},
+  'sf2':    {id:'sf2',    fase:'semis',   local:'G.CF 3',  visita:'G.CF 4',  fecha:'2026-07-23', hora:'20:00', estadio:'SoFi Stadium, Los Ángeles'},
+  '3p':     {id:'3p',     fase:'tercero', local:'Perdedor SF1', visita:'Perdedor SF2', fecha:'2026-07-25', hora:'16:00', estadio:'AT&T Stadium, Dallas'},
+  'fin':    {id:'fin',    fase:'final',   local:'Ganador SF1',  visita:'Ganador SF2',  fecha:'2026-07-26', hora:'20:00', estadio:'MetLife Stadium, Nueva York'},
+};
+// Unificar ambos mapas
+Object.assign(FIXTURE_MAP, FIXTURE_ELIM_MAP);
+ 
 // ── FG_IDX — solo IDs por grupo ────────────────────────────────────────────
 const FG_IDX = {
   A:['fgA1','fgA2','fgA3','fgA4','fgA5','fgA6'],
@@ -1445,46 +1433,63 @@ const FG_IDX = {
   K:['fgK1','fgK2','fgK3','fgK4','fgK5','fgK6'],
   L:['fgL1','fgL2','fgL3','fgL4','fgL5','fgL6'],
 };
-
+ 
+// IDs exactos que usa el admin/simulador — deben coincidir con Firestore
 const FASES_ELIM = [
-  {id:'octavos', label:'Octavos de Final', sublabel:'28 jun – 5 jul', icon:'fas fa-shield-halved', iconClass:'fase-acc-icon-octavos',
+  {id:'32avos', label:'32avos de Final', sublabel:'1–8 jul · 16 partidos', icon:'fas fa-circle-nodes', iconClass:'fase-acc-icon-octavos',
    grupos:[
-    {titulo:'Partidos 1–4 (28–29 jun)', ids:['oct1','oct2','oct3','oct4']},
-    {titulo:'Partidos 5–8 (30 jun – 1 jul)', ids:['oct5','oct6','oct7','oct8']},
-    {titulo:'Partidos 9–12 (2–3 jul)', ids:['oct9','oct10','oct11','oct12']},
-    {titulo:'Partidos 13–16 (4–5 jul)', ids:['oct13','oct14','oct15','oct16']},
+    {titulo:'1–8 jul', ids:['r32_1','r32_2','r32_3','r32_4','r32_5','r32_6','r32_7','r32_8']},
+    {titulo:'4–8 jul', ids:['r32_9','r32_10','r32_11','r32_12','r32_13','r32_14','r32_15','r32_16']},
    ]},
-  {id:'cuartos', label:'Cuartos de Final', sublabel:'8–11 jul', icon:'fas fa-trophy', iconClass:'fase-acc-icon-cuartos',
-   grupos:[{titulo:'Cuartos de Final', ids:['qf1','qf2','qf3','qf4','qf5','qf6','qf7','qf8']}]},
-  {id:'semis', label:'Semifinales', sublabel:'15–16 jul', icon:'fas fa-star-half-stroke', iconClass:'fase-acc-icon-semis',
-   grupos:[{titulo:'Semifinales', ids:['sf1','sf2','sf3','sf4']}]},
-  {id:'tercero', label:'Tercer Lugar', sublabel:'18 jul', icon:'fas fa-medal', iconClass:'fase-acc-icon-octavos',
-   grupos:[{titulo:'Partido Tercer Lugar', ids:['3p']}]},
-  {id:'final', label:'Gran Final', sublabel:'19 jul · MetLife Stadium', icon:'fas fa-crown', iconClass:'fase-acc-icon-final',
-   grupos:[{titulo:'Final del Mundial', ids:['fin']}]},
+  {id:'octavos', label:'Octavos de Final', sublabel:'11–14 jul · 8 partidos', icon:'fas fa-shield-halved', iconClass:'fase-acc-icon-octavos',
+   grupos:[{titulo:'11–14 jul', ids:['r16_1','r16_2','r16_3','r16_4','r16_5','r16_6','r16_7','r16_8']}]},
+  {id:'cuartos', label:'Cuartos de Final', sublabel:'18–19 jul · 4 partidos', icon:'fas fa-trophy', iconClass:'fase-acc-icon-cuartos',
+   grupos:[{titulo:'18–19 jul', ids:['qf1','qf2','qf3','qf4']}]},
+  {id:'semis', label:'Semifinales', sublabel:'22–23 jul · 2 partidos', icon:'fas fa-star-half-stroke', iconClass:'fase-acc-icon-semis',
+   grupos:[{titulo:'22–23 jul', ids:['sf1','sf2']}]},
+  {id:'tercero', label:'Tercer Lugar', sublabel:'25 jul · AT&T Stadium', icon:'fas fa-medal', iconClass:'fase-acc-icon-octavos',
+   grupos:[{titulo:'25 jul', ids:['3p']}]},
+  {id:'final', label:'Gran Final 🏆', sublabel:'26 jul · MetLife Stadium', icon:'fas fa-crown', iconClass:'fase-acc-icon-final',
+   grupos:[{titulo:'26 jul', ids:['fin']}]},
 ];
-
+ 
 // Determina qué fase está "en curso" para abrir por defecto
 function detectarFaseActual(resCache) {
   const ahora = new Date();
-  const gruposStart = new Date('2026-06-12');
-  const gruposEnd   = new Date('2026-06-27');
-  const octEnd      = new Date('2026-07-06');
-  const cfEnd       = new Date('2026-07-12');
-  const sfEnd       = new Date('2026-07-17');
-  const tercEnd     = new Date('2026-07-19');
-  const finEnd      = new Date('2026-07-20');
-
-  if (ahora < gruposStart) return 'grupos';
-  if (ahora <= gruposEnd)  return 'grupos';
-  if (ahora <= octEnd)     return 'octavos';
-  if (ahora <= cfEnd)      return 'cuartos';
-  if (ahora <= sfEnd)      return 'semis';
-  if (ahora <= tercEnd)    return 'tercero';
-  if (ahora <= finEnd)     return 'final';
+  // Determinar por datos en Firestore primero (más preciso que fecha)
+  const ids32    = ['r32_1','r32_2','r32_3','r32_4','r32_5','r32_6','r32_7','r32_8','r32_9','r32_10','r32_11','r32_12','r32_13','r32_14','r32_15','r32_16'];
+  const idsR16   = ['r16_1','r16_2','r16_3','r16_4','r16_5','r16_6','r16_7','r16_8'];
+  const idsQF    = ['qf1','qf2','qf3','qf4'];
+  const idsSF    = ['sf1','sf2'];
+  const idsFG    = Object.values(FG_IDX).flat();
+ 
+  const comp32   = ids32.filter(id => resCache[id]?.resultado_local != null).length;
+  const compR16  = idsR16.filter(id => resCache[id]?.resultado_local != null).length;
+  const compQF   = idsQF.filter(id => resCache[id]?.resultado_local != null).length;
+  const compSF   = idsSF.filter(id => resCache[id]?.resultado_local != null).length;
+  const compFG   = idsFG.filter(id => resCache[id]?.resultado_local != null).length;
+ 
+  if (resCache['fin']?.resultado_local != null) return 'final';
+  if (compSF > 0)  return 'semis';
+  if (compQF > 0)  return 'cuartos';
+  if (compR16 > 0) return 'octavos';
+  if (comp32 > 0)  return '32avos';
+  if (compFG > 0)  return 'grupos';
+ 
+  // Fallback por fecha
+  const gruposEnd = new Date('2026-06-28');
+  const avos32End = new Date('2026-07-09');
+  const r16End    = new Date('2026-07-15');
+  const qfEnd     = new Date('2026-07-20');
+  const sfEnd     = new Date('2026-07-24');
+  if (ahora <= gruposEnd) return 'grupos';
+  if (ahora <= avos32End) return '32avos';
+  if (ahora <= r16End)    return 'octavos';
+  if (ahora <= qfEnd)     return 'cuartos';
+  if (ahora <= sfEnd)     return 'semis';
   return 'final';
 }
-
+ 
 function fmtFecha(s) {
   if (!s) return 'TBD';
   // Número serial de Excel (ej: 46014.916...) — tomar solo parte entera
@@ -1504,7 +1509,7 @@ function fmtFecha(s) {
   }
   return s;
 }
-
+ 
 function fmtHora(h) {
   if (!h && h !== 0) return null;
   // Decimal Excel (0.625 = 15:00)
@@ -1517,7 +1522,7 @@ function fmtHora(h) {
   if (typeof h === 'string' && h.match(/^\d{1,2}:\d{2}/)) return h;
   return null;
 }
-
+ 
 function renderResPartido(p, esElim) {
   if (!p) return '';
   const tieneRes = p.resultado_local != null;
@@ -1530,7 +1535,7 @@ function renderResPartido(p, esElim) {
   const scoreHtml = tieneRes
     ? `<div class="res-score jugado">${p.resultado_local} – ${p.resultado_visita}</div>`
     : `<div class="res-score"><span class="res-vs">VS</span></div>`;
-
+ 
   return `<div class="res-match" data-wbsede="${(p.estadio||'').replace(/"/g,'')}">
     <div class="res-team">
       <span style="font-size:1.15rem;">${esPH ? '⬜' : getFlag(localNombre)}</span>
@@ -1548,21 +1553,21 @@ function renderResPartido(p, esElim) {
     <div class="res-meta"><i class="fas fa-location-dot"></i>${p.estadio || 'TBD'}</div>
   </div>`;
 }
-
+ 
 async function renderResultadosAccordion() {
   const container = document.getElementById('resultados-accordion');
   if (!container) return;
-
+ 
   // Cargar resultados de Firestore (usa partidos ya en globalData + enriquecer con resultados)
   let resCache = {};
   try {
     const snap = await getDocs(collection(db, 'partidos'));
     snap.docs.forEach(d => { resCache[d.id] = {id: d.id, ...d.data()}; });
   } catch(e) { console.warn('No se pudo cargar resultados de Firestore:', e.message); }
-
+ 
   const faseActual = detectarFaseActual(resCache);
   let html = '';
-
+ 
   // ── Fase Grupos ──
   const gruposKeys = Object.keys(FG_IDX).sort();
   let totG = 0, compG = 0;
@@ -1576,35 +1581,35 @@ async function renderResultadosAccordion() {
   const enCursoG = faseActual === 'grupos';
   const abrirG = enCursoG || faseActual === 'octavos' ? false : true; // abierto si está en curso o aún no empieza
   const abrirGrupos = ['grupos'].includes(faseActual);
-
+ 
   let badgeG = okG ? '<span class="fase-acc-badge completo">✓ Completa</span>'
     : enCursoG ? '<span class="fase-acc-badge en-curso">🔴 En curso</span>'
     : compG > 0 ? `<span class="fase-acc-badge">${compG}/${totG}</span>`
     : '<span class="fase-acc-badge">Próximamente</span>';
-
+ 
   html += `<div class="fase-acc" id="facc-grupos">
     <div class="fase-acc-header${abrirGrupos?' open':''}" id="faccH-grupos" onclick="toggleFaseAcc('grupos')">
       <div class="fase-acc-left">
         <div class="fase-acc-icon fase-acc-icon-grupos"><i class="fas fa-layer-group"></i></div>
         <div>
           <div class="fase-acc-title">Fase de Grupos</div>
-          <div class="fase-acc-sub">12 – 26 jun · 12 grupos · 48 partidos</div>
+          <div class="fase-acc-sub">12 – 26 jun · 12 grupos · 72 partidos</div>
         </div>
       </div>
       <div class="fase-acc-right">${badgeG}<i class="fas fa-chevron-down fase-acc-chevron"></i></div>
     </div>
     <div class="fase-acc-body${abrirGrupos?' open':''}" id="faccB-grupos">
       <div class="res-grupo-tabs" id="rgt-grupos">`;
-
+ 
   gruposKeys.forEach((g, i) => {
     const comp = FG_IDX[g].filter(id => resCache[id]?.resultado_local != null).length;
     const tot  = FG_IDX[g].length;
     const ok   = comp === tot && tot > 0;
     html += `<button class="res-grupo-tab${i===0?' active':''}" data-grupo="${g}" data-fase="grupos">Grupo ${g} <span class="gtcheck">${ok?'✓':comp+'/'+tot}</span></button>`;
   });
-
+ 
   html += `</div>`;
-
+ 
   // Paneles de grupos
   gruposKeys.forEach((g, i) => {
     const partidos = FG_IDX[g].map(id => {
@@ -1616,7 +1621,7 @@ async function renderResultadosAccordion() {
       if (!base && !res) return null;
       return { ...(base || {}), ...(res || {}) };
     }).filter(Boolean);
-
+ 
     // Fallback: buscar en globalData.partidos por local+visita si no hay por id
     const partidosGrupo = partidos.length > 0 ? partidos :
       (globalData.partidos || []).filter(p => {
@@ -1624,16 +1629,16 @@ async function renderResultadosAccordion() {
         const pV = (globalData.paises||[]).find(pa => norm(pa.nombre)===norm(p.visita));
         return (pL?.grupo||pV?.grupo) === g;
       });
-
+ 
     html += `<div class="res-grupo-panel${i===0?' active':''}" id="rgp-${g}-grupos">
       <div class="res-partidos-wrap">
         ${partidosGrupo.map(p => renderResPartido(p, false)).join('') || '<p style="color:var(--muted);font-size:0.82rem;">Sin partidos disponibles aún.</p>'}
       </div>
     </div>`;
   });
-
+ 
   html += `</div></div>`;
-
+ 
   // ── Fases eliminatorias ──
   FASES_ELIM.forEach(fase => {
     const todosIds = fase.grupos.flatMap(g => g.ids);
@@ -1642,12 +1647,12 @@ async function renderResultadosAccordion() {
     const ok   = comp === tot && tot > 0;
     const enCurso = faseActual === fase.id;
     const abrir   = faseActual === fase.id;
-
+ 
     let badge = ok ? '<span class="fase-acc-badge completo">✓ Completa</span>'
       : enCurso ? '<span class="fase-acc-badge en-curso">🔴 En curso</span>'
       : comp > 0 ? `<span class="fase-acc-badge">${comp}/${tot}</span>`
       : '<span class="fase-acc-badge">Próximamente</span>';
-
+ 
     html += `<div class="fase-acc" id="facc-${fase.id}">
       <div class="fase-acc-header${abrir?' open':''}" id="faccH-${fase.id}" onclick="toggleFaseAcc('${fase.id}')">
         <div class="fase-acc-left">
@@ -1661,29 +1666,29 @@ async function renderResultadosAccordion() {
       </div>
       <div class="fase-acc-body${abrir?' open':''}" id="faccB-${fase.id}">
         <div class="fase-elim-wrap">`;
-
+ 
     fase.grupos.forEach(subg => {
       html += `<div class="res-elim-group">
         <div class="res-elim-group-title">${subg.titulo}</div>`;
       subg.ids.forEach(id => {
-        // Buscar datos base en globalData.partidos, mergear con resultado de resCache
-        const base = globalData.partidos?.find(p => p.id === id) || null;
+        // FIXTURE_MAP ya incluye datos base de eliminatorias
+        const base = FIXTURE_MAP[id] || globalData.partidos?.find(p => p.id === id) || null;
         const res  = resCache[id] || null;
         if (!base && !res) {
-          const fallback = {id, local:'Por confirmar', visita:'Por confirmar', fecha:'–', estadio:'–'};
-          html += renderResPartido(fallback, true);
+          html += renderResPartido({id, local:'Por confirmar', visita:'Por confirmar', fecha:'–', estadio:'–'}, true);
         } else {
+          // Merge: fixture base (equipos/fecha/estadio) + Firestore (resultado + nombres actualizados)
           html += renderResPartido({ ...(base || {}), ...(res || {}) }, true);
         }
       });
       html += `</div>`;
     });
-
+ 
     html += `</div></div></div>`;
   });
-
+ 
   container.innerHTML = html;
-
+ 
   // Tabs de grupo
   container.querySelectorAll('.res-grupo-tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -1694,7 +1699,7 @@ async function renderResultadosAccordion() {
       document.getElementById(`rgp-${tab.dataset.grupo}-${fase}`)?.classList.add('active');
     });
   });
-
+ 
   // Poblar clima en todos los partidos de resultados
   const weatherBadges = container.querySelectorAll('.res-match[data-wbsede]');
   let delay = 0;
@@ -1717,14 +1722,14 @@ async function renderResultadosAccordion() {
     }, d);
   });
 }
-
+ 
 window.toggleFaseAcc = function(id) {
   const h = document.getElementById('faccH-' + id);
   const b = document.getElementById('faccB-' + id);
   if (h) h.classList.toggle('open');
   if (b) b.classList.toggle('open');
 };
-
+ 
 async function init(){
   try{
     const [paisesSnap, partidosSnap, estadiosSnap] = await Promise.all([
