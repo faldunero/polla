@@ -891,7 +891,7 @@ nav {
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
           <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 16px;text-align:center;min-width:100px;">
-            <strong id="sim-st-partidos" style="display:block;font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--gold);">0/72</strong>
+            <strong id="sim-st-partidos" style="display:block;font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--gold);">0/30</strong>
             <span style="font-size:0.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;">Partidos</span>
           </div>
           <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 16px;text-align:center;min-width:100px;">
@@ -933,14 +933,12 @@ nav {
       <!-- Sub-tabs -->
       <div style="display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:20px;">
         <button class="sim-stab active" data-stab="grupos" onclick="simShowTab(this,'grupos')">⚽ Grupos</button>
-        <button class="sim-stab" data-stab="tabla" onclick="simShowTab(this,'tabla')">🗃️ Tabla FIFA</button>
         <button class="sim-stab" data-stab="partidos" onclick="simShowTab(this,'partidos')">📅 Partidos</button>
         <button class="sim-stab" data-stab="ranking" onclick="simShowTab(this,'ranking')">🏆 Ranking</button>
         <button class="sim-stab" data-stab="clasificados" onclick="simShowTab(this,'clasificados')">✅ Clasificados</button>
       </div>
 
       <div id="sim-v-grupos" class="sim-view" style="display:block;"></div>
-      <div id="sim-v-tabla" class="sim-view" style="display:none;"></div>
       <div id="sim-v-partidos" class="sim-view" style="display:none;"></div>
       <div id="sim-v-ranking" class="sim-view" style="display:none;"></div>
       <div id="sim-v-clasificados" class="sim-view" style="display:none;"></div>
@@ -3899,8 +3897,10 @@ function simInit(){
   function pickName(){ let n; do{ n=SIM_NOMBRES[simRnd(0,SIM_NOMBRES.length-1)]; }while(usedNames.has(n)); usedNames.add(n); return n; }
 
   SIM = {
-    jornada: 0,
+    jornada: 0,       // 0-3 = fase grupos; 4=32avos; 5=octavos; 6=cuartos; 7=semis; 8=tercero; 9=final
+    fase: 'grupos',   // 'grupos' | 'r32' | 'octavos' | 'cuartos' | 'semis' | 'tercero' | 'final' | 'fin'
     partidos: SIM_PARTIDOS_BASE.map(p=>({...p, resultado:null})),
+    elim: [],         // partidos eliminatorios generados dinámicamente
     grupos: SIM_GRUPOS_NOMBRES.map((nombre,gi)=>({
       id:'g'+gi, nombre, color:SIM_GRUPOS_COLORS[gi],
       usuarios: Array.from({length:7},(_,ui)=>{
@@ -3913,35 +3913,200 @@ function simInit(){
           apuestas: SIM_PARTIDOS_BASE.reduce((acc,p)=>{ acc[p.id]={l:simRnd(0,4),v:simRnd(0,4)}; return acc; },{})
         };
       })
-    }))
+    })),
+    _publicados:[],
+    _publicadosCruces:[],
   };
 }
 
+// ── FASES ELIMINATORIAS ────────────────────────────────────────────────────
+// Dado un partido eliminatorio con resultado, devuelve el ganador
+// En elim puede haber empate → se decide por penales (simRnd decide)
+function simGanador(p){
+  const r=p.resultado;
+  if(!r) return null;
+  if(r.l > r.v) return p.local;
+  if(r.v > r.l) return p.visita;
+  // Empate → penales (ganador aleatorio)
+  return simRnd(0,1)===0 ? p.local : p.visita;
+}
+
+// Genera los 16 cruces de 32avos a partir de las tablas de grupos
+function simGenerarR32(){
+  const grupos='ABCDEFGHIJKL'.split('');
+  const prim={}, seg={};
+  grupos.forEach(g=>{
+    const t=simTablaPosiciones(g);
+    prim[g]=t[0]?.[0]||`1.${g}`;
+    seg[g] =t[1]?.[0]||`2.${g}`;
+  });
+  const mejores3=Object.keys(SIM_EQUIPOS).map(g=>{
+    const t=simTablaPosiciones(g);
+    return t[2]?{grupo:g,nombre:t[2][0],...t[2][1]}:null;
+  }).filter(Boolean)
+    .sort((a,b)=>b.pts-a.pts||b.dg-a.dg||b.gf-a.gf)
+    .slice(0,8).map(x=>x.nombre);
+
+  return [
+    {id:'r32_1', local:prim.A, visita:seg.B,  fecha:'1 jul', estadio:'MetLife, Nueva York'},
+    {id:'r32_2', local:prim.C, visita:seg.D,  fecha:'1 jul', estadio:'AT&T, Dallas'},
+    {id:'r32_3', local:prim.E, visita:seg.F,  fecha:'2 jul', estadio:'SoFi, Los Ángeles'},
+    {id:'r32_4', local:prim.G, visita:seg.H,  fecha:'2 jul', estadio:'Mercedes-Benz, Atlanta'},
+    {id:'r32_5', local:prim.I, visita:seg.J,  fecha:'3 jul', estadio:'Gillette, Boston'},
+    {id:'r32_6', local:prim.K, visita:seg.L,  fecha:'3 jul', estadio:'Arrowhead, Kansas City'},
+    {id:'r32_7', local:prim.B, visita:seg.A,  fecha:'4 jul', estadio:'BC Place, Vancouver'},
+    {id:'r32_8', local:prim.D, visita:seg.C,  fecha:'4 jul', estadio:'NRG, Houston'},
+    {id:'r32_9', local:prim.F, visita:seg.E,  fecha:'5 jul', estadio:'BMO Field, Toronto'},
+    {id:'r32_10',local:prim.H, visita:seg.G,  fecha:'5 jul', estadio:'Hard Rock, Miami'},
+    {id:'r32_11',local:prim.J, visita:seg.I,  fecha:'6 jul', estadio:'Lumen, Seattle'},
+    {id:'r32_12',local:prim.L, visita:seg.K,  fecha:'6 jul', estadio:'Lincoln, Filadelfia'},
+    {id:'r32_13',local:mejores3[0]||'3er 1', visita:mejores3[1]||'3er 2', fecha:'7 jul', estadio:'AT&T, Dallas'},
+    {id:'r32_14',local:mejores3[2]||'3er 3', visita:mejores3[3]||'3er 4', fecha:'7 jul', estadio:'MetLife, Nueva York'},
+    {id:'r32_15',local:mejores3[4]||'3er 5', visita:mejores3[5]||'3er 6', fecha:'8 jul', estadio:'SoFi, Los Ángeles'},
+    {id:'r32_16',local:mejores3[6]||'3er 7', visita:mejores3[7]||'3er 8', fecha:'8 jul', estadio:'Mercedes-Benz, Atlanta'},
+  ].map(p=>({...p, resultado:null, fase:'r32'}));
+}
+
+// Genera los partidos de una fase eliminatoria a partir de los ganadores de la anterior
+function simGenerarFase(partidosAnt, faseId, fechas, estadios){
+  const ganadores=partidosAnt.map(p=>simGanador(p)).filter(Boolean);
+  const partidos=[];
+  for(let i=0;i<ganadores.length;i+=2){
+    partidos.push({
+      id:`${faseId}_${Math.floor(i/2)+1}`,
+      local:  ganadores[i]  ||`Eq.${i+1}`,
+      visita: ganadores[i+1]||`Eq.${i+2}`,
+      fecha:  fechas[Math.floor(i/2)]||fechas[0],
+      estadio:estadios[Math.floor(i/2)]||estadios[0],
+      resultado:null,
+      fase:faseId,
+    });
+  }
+  return partidos;
+}
+
+const SIM_FASES_ELIM = [
+  {id:'r32',    label:'32avos de Final',  fechas:['1 jul','1 jul','2 jul','2 jul','3 jul','3 jul','4 jul','4 jul'],
+   estadios:['MetLife','AT&T Dallas','SoFi','Mercedes-Benz','Gillette','Arrowhead','BC Place','NRG Houston']},
+  {id:'octavos',label:'Octavos de Final', fechas:['11 jul','11 jul','12 jul','12 jul'],
+   estadios:['MetLife','AT&T Dallas','SoFi','Mercedes-Benz']},
+  {id:'cuartos', label:'Cuartos de Final',fechas:['18 jul','18 jul'],
+   estadios:['MetLife','AT&T Dallas']},
+  {id:'semis',   label:'Semifinales',     fechas:['22 jul','23 jul'],
+   estadios:['MetLife','SoFi']},
+  {id:'tercero', label:'Tercer Lugar',    fechas:['25 jul'],
+   estadios:['AT&T Dallas']},
+  {id:'final',   label:'Gran Final 🏆',   fechas:['26 jul'],
+   estadios:['MetLife, Nueva York']},
+];
+
+// Devuelve el índice de fase actual dentro de SIM_FASES_ELIM (-1 si grupos)
+function simFaseElimIdx(){
+  if(SIM.fase==='grupos') return -1;
+  return SIM_FASES_ELIM.findIndex(f=>f.id===SIM.fase);
+}
+
+// Devuelve los partidos de una fase eliminatoria
+function simPartidosFase(faseId){
+  return SIM.elim.filter(p=>p.fase===faseId);
+}
+
 window.simAvanzar = function(){
-  if(SIM.jornada>=3) return;
-  SIM.jornada++;
-  SIM.partidos.filter(p=>p.jornada===SIM.jornada).forEach(p=>{
-    p.resultado={l:simRnd(0,4),v:simRnd(0,4)};
-    SIM.grupos.forEach(g=>{
-      g.usuarios.forEach(u=>{
-        const ap=u.apuestas[p.id];
-        const pts=simCalcPts(p.resultado,ap);
-        u.puntaje+=pts;
-        if(pts>0) u.aciertos++;
+  const btn=document.getElementById('sim-btn-avanzar');
+
+  // ── FASE DE GRUPOS ──────────────────────────────────────────────────────
+  if(SIM.fase==='grupos' && SIM.jornada<3){
+    SIM.jornada++;
+    SIM.partidos.filter(p=>p.jornada===SIM.jornada).forEach(p=>{
+      p.resultado={l:simRnd(0,4),v:simRnd(0,4)};
+      SIM.grupos.forEach(g=>{
+        g.usuarios.forEach(u=>{
+          const ap=u.apuestas[p.id];
+          const pts=simCalcPts(p.resultado,ap);
+          u.puntaje+=pts; if(pts>0) u.aciertos++;
+        });
       });
     });
-  });
-  simRenderAll();
-  // Habilitar publicar si hay resultados
-  const jugados=SIM.partidos.filter(p=>p.resultado).length;
-  const btnPub=document.getElementById('sim-btn-publicar');
-  if(btnPub&&jugados>0){ btnPub.disabled=false; btnPub.style.opacity='1'; }
-  const btn=document.getElementById('sim-btn-avanzar');
-  if(SIM.jornada>=3){
+
+    if(SIM.jornada===3){
+      // Generar 32avos
+      const r32=simGenerarR32();
+      SIM.elim.push(...r32);
+      SIM.fase='grupos_fin';
+      btn.innerHTML='<i class="fas fa-forward"></i> Avanzar a 32avos';
+    } else {
+      btn.innerHTML=`<i class="fas fa-play"></i> Simular jornada ${SIM.jornada+1}`;
+    }
+    simRenderAll();
+    const btnPub=document.getElementById('sim-btn-publicar');
+    if(btnPub){ btnPub.disabled=false; btnPub.style.opacity='1'; }
+    return;
+  }
+
+  // ── AVANZAR A SIGUIENTE FASE ELIMINATORIA ─────────────────────────────
+  const fases=SIM_FASES_ELIM;
+  const idx=simFaseElimIdx();
+
+  if(SIM.fase==='grupos_fin'){
+    // Simular 32avos
+    SIM.fase='r32';
+    simPartidosFase('r32').forEach(p=>{
+      p.resultado={l:simRnd(0,4),v:simRnd(0,4)};
+    });
+    // Generar octavos
+    const r32Done=simPartidosFase('r32');
+    const octavos=simGenerarFase(r32Done,'octavos',
+      ['11 jul','11 jul','12 jul','12 jul','13 jul','13 jul','14 jul','14 jul'],
+      ['MetLife','AT&T Dallas','SoFi','Mercedes-Benz','Gillette','Arrowhead','BC Place','NRG Houston']);
+    SIM.elim.push(...octavos);
+    btn.innerHTML='<i class="fas fa-forward"></i> Simular Octavos';
+    simRenderAll(); return;
+  }
+
+  if(SIM.fase==='r32'){
+    SIM.fase='octavos';
+    simPartidosFase('octavos').forEach(p=>{ p.resultado={l:simRnd(0,4),v:simRnd(0,4)}; });
+    const cuartos=simGenerarFase(simPartidosFase('octavos'),'cuartos',
+      ['18 jul','18 jul','19 jul','19 jul'],
+      ['MetLife','AT&T Dallas','SoFi','Mercedes-Benz']);
+    SIM.elim.push(...cuartos);
+    btn.innerHTML='<i class="fas fa-forward"></i> Simular Cuartos';
+    simRenderAll(); return;
+  }
+
+  if(SIM.fase==='octavos'){
+    SIM.fase='cuartos';
+    simPartidosFase('cuartos').forEach(p=>{ p.resultado={l:simRnd(0,4),v:simRnd(0,4)}; });
+    // Semis + partido 3er lugar
+    const cf=simPartidosFase('cuartos');
+    const ganadores=cf.map(p=>simGanador(p));
+    const perdedores=cf.map(p=>p.resultado.l>p.resultado.v?p.visita:p.resultado.v>p.resultado.l?p.local:simRnd(0,1)===0?p.visita:p.local);
+    SIM.elim.push(
+      {id:'sf1',local:ganadores[0],visita:ganadores[1],fecha:'22 jul',estadio:'MetLife, Nueva York',resultado:null,fase:'semis'},
+      {id:'sf2',local:ganadores[2],visita:ganadores[3],fecha:'23 jul',estadio:'SoFi, Los Ángeles',resultado:null,fase:'semis'},
+      {id:'t3p',local:perdedores[0]||'Perd. CF1',visita:perdedores[1]||'Perd. CF2',fecha:'25 jul',estadio:'AT&T, Dallas',resultado:null,fase:'tercero'},
+    );
+    btn.innerHTML='<i class="fas fa-forward"></i> Simular Semifinales';
+    simRenderAll(); return;
+  }
+
+  if(SIM.fase==='cuartos'){
+    SIM.fase='semis';
+    simPartidosFase('semis').forEach(p=>{ p.resultado={l:simRnd(0,4),v:simRnd(0,4)}; });
+    simPartidosFase('tercero').forEach(p=>{ p.resultado={l:simRnd(0,4),v:simRnd(0,4)}; });
+    const sf=simPartidosFase('semis');
+    const ganadores=sf.map(p=>simGanador(p));
+    SIM.elim.push({id:'fin',local:ganadores[0]||'SF1',visita:ganadores[1]||'SF2',fecha:'26 jul',estadio:'MetLife, Nueva York',resultado:null,fase:'final'});
+    btn.innerHTML='<i class="fas fa-forward"></i> Simular Gran Final';
+    simRenderAll(); return;
+  }
+
+  if(SIM.fase==='semis'){
+    SIM.fase='final';
+    simPartidosFase('final').forEach(p=>{ p.resultado={l:simRnd(0,4),v:simRnd(0,4)}; });
     btn.disabled=true;
-    btn.innerHTML='<i class="fas fa-trophy"></i> Fase de grupos completa';
-  } else {
-    btn.innerHTML=`<i class="fas fa-play"></i> Simular jornada ${SIM.jornada+1}`;
+    btn.innerHTML='<i class="fas fa-trophy"></i> Torneo completado';
+    simRenderAll(); return;
   }
 };
 
@@ -3952,6 +4117,13 @@ window.simReset = function(){
   btn.innerHTML='<i class="fas fa-play"></i> Simular jornada 1';
   const btnPub=document.getElementById('sim-btn-publicar');
   if(btnPub){ btnPub.disabled=true; btnPub.style.opacity='.4'; }
+  const btnLim=document.getElementById('sim-btn-limpiar');
+  if(btnLim){ btnLim.disabled=true; btnLim.style.opacity='.4'; }
+  const badge=document.getElementById('sim-fs-badge');
+  if(badge) badge.style.display='none';
+  const alertEl=document.getElementById('sim-alert-publicado');
+  if(alertEl) alertEl.style.display='none';
+  simLogClear();
   simRenderAll();
 };
 
@@ -4050,7 +4222,7 @@ window.simPublicarFirestore = async function(){
     // ── Escribir cruces de 32avos si la fase de grupos está completa ──
     if(jornada3Completa){
       simLog('━━━ Calculando cruces de 32avos de final...','inf');
-      const cruces=simGenerarCruces32();
+      const cruces=simGenerarR32();
       const batchCruces=writeBatch(db);
       const idsCruces=[];
 
@@ -4084,9 +4256,12 @@ window.simPublicarFirestore = async function(){
     toast(`${ok} resultados publicados en Firestore ✓`,'success');
 
     // Actualizar UI
-    SIM._publicados=jugados.map(p=>SIM_ID_MAP[p.id]).filter(Boolean);
-    simActualizarUIFirestore(SIM._publicados, SIM._publicadosCruces||[]);
+    const badge=document.getElementById('sim-fs-badge');
+    if(badge){ badge.style.display='block'; document.getElementById('sim-fs-count').textContent=ok+(SIM._publicadosCruces?.length||0); }
+    const alertEl=document.getElementById('sim-alert-publicado');
+    if(alertEl) alertEl.style.display='flex';
     if(btnLim){ btnLim.disabled=false; btnLim.style.opacity='1'; }
+    SIM._publicados=jugados.map(p=>SIM_ID_MAP[p.id]).filter(Boolean);
 
   } catch(e){
     simLog(`✗ Error: ${e.message}`,'err');
@@ -4174,14 +4349,36 @@ window.simLimpiarFirestore = async function(){
 };
 
 function simRenderAll(){
-  const total=SIM.partidos.length;
-  const jugados=SIM.partidos.filter(p=>p.resultado).length;
-  document.getElementById('sim-st-partidos').textContent=`${jugados}/${total}`;
-  document.getElementById('sim-st-jornada').textContent=`${SIM.jornada}/3`;
-  const pct=Math.round((jugados/total)*100);
+  const jugadosGrupos=SIM.partidos.filter(p=>p.resultado).length;
+  const jugadosElim=SIM.elim.filter(p=>p.resultado).length;
+  const totalElim=SIM.elim.length;
+  const totalJugados=jugadosGrupos+jugadosElim;
+  const totalPartidos=72+totalElim;
+
+  document.getElementById('sim-st-partidos').textContent=`${totalJugados}/${totalPartidos}`;
+
+  // Etiqueta de fase
+  const faseLabel={
+    'grupos':`Grupos J${SIM.jornada}/3`,
+    'grupos_fin':'Grupos ✓',
+    'r32':'32avos ✓',
+    'octavos':'Octavos ✓',
+    'cuartos':'Cuartos ✓',
+    'semis':'Semis ✓',
+    'final':'Final ✓',
+  }[SIM.fase]||SIM.fase;
+  document.getElementById('sim-st-jornada').textContent=faseLabel;
+
+  const pct=Math.round((jugadosGrupos/72)*100);
   document.getElementById('sim-prog-bar').style.width=pct+'%';
-  document.getElementById('sim-prog-label').textContent=`${jugados} de ${total} partidos completados (${pct}%)`;
-  simRenderGrupos(); simRenderTablaFIFA(); simRenderPartidos(); simRenderRanking(); simRenderClasificados();
+  document.getElementById('sim-prog-label').textContent=
+    `Grupos: ${jugadosGrupos}/72 partidos` +
+    (totalElim>0?`  ·  Elim: ${jugadosElim}/${totalElim}`:'');
+
+  simRenderGrupos();
+  simRenderPartidos();
+  simRenderRanking();
+  simRenderClasificados();
 }
 
 function simRenderGrupos(){
@@ -4212,38 +4409,75 @@ function simRenderGrupos(){
   }).join('')}</div>`;
 }
 
+function simPartidoRow(p, esElim){
+  const r=p.resultado;
+  const empate=r&&r.l===r.v;
+  const ganador=esElim&&r?simGanador(p):null;
+  const scoreHtml=r
+    ?`<span class="sim-score jugado">${r.l} – ${r.v}${empate&&esElim?` <span style="font-size:.6rem;opacity:.7;">(pen)</span>`:''}</span>`
+    :`<span class="sim-score">VS</span>`;
+  return `<div class="sim-partido-card" style="${r&&ganador===p.local?'border-left:3px solid var(--green)':r&&ganador===p.visita?'border-right:3px solid var(--green)':''}">
+    <div class="sim-partido-inner">
+      <div class="sim-team" style="${r&&ganador===p.local?'color:var(--green);':r&&r.l<r.v?'opacity:.5':''}">
+        <span>${p.local}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        ${scoreHtml}
+        <span style="font-size:.65rem;color:var(--muted);">${p.fecha||''}${p.hora?' · '+p.hora:''}</span>
+      </div>
+      <div class="sim-team right" style="${r&&ganador===p.visita?'color:var(--green);':r&&r.v<r.l?'opacity:.5':''}">
+        <span>${p.visita}</span>
+      </div>
+    </div>
+    <div class="sim-meta">
+      <span><i class="fas fa-location-dot"></i> ${p.estadio||'TBD'}</span>
+      ${esElim&&ganador&&r?`<span style="color:var(--green);font-size:.68rem;font-weight:700;"><i class="fas fa-check-circle"></i> Clasifica: ${ganador}</span>`:''}
+    </div>
+  </div>`;
+}
+
 function simRenderPartidos(){
   const c=document.getElementById('sim-v-partidos'); if(!c) return;
   let html='';
+
+  // ── Fase de grupos ──────────────────────────────────────────────────────
+  const fechas={1:'11–14 jun',2:'18–20 jun',3:'24–25 jun'};
   [1,2,3].forEach(j=>{
     const ps=SIM.partidos.filter(p=>p.jornada===j);
-    const fechas={1:'11–14 jun',2:'18–20 jun',3:'24–25 jun'};
-    html+=`<div style="margin-bottom:20px;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--gold);letter-spacing:.04em;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);">
-        Jornada ${j} · ${fechas[j]}
-      </div>`;
-    html+=ps.map(p=>{
-      const r=p.resultado;
-      const scoreHtml=r
-        ?`<span class="sim-score jugado">${r.l} – ${r.v}</span>`
-        :`<span class="sim-score">VS</span>`;
-      return `<div class="sim-partido-card">
-        <div class="sim-partido-inner">
-          <div class="sim-team"><span>${p.local}</span></div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
-            ${scoreHtml}
-            <span style="font-size:.65rem;color:var(--muted);">${p.fecha} · ${p.hora}</span>
-          </div>
-          <div class="sim-team right"><span>${p.visita}</span></div>
-        </div>
-        <div class="sim-meta">
-          <span><i class="fas fa-location-dot"></i> ${p.estadio}</span>
-          <span>Grupo ${p.grupo}</span>
-        </div>
-      </div>`;
-    }).join('');
-    html+='</div>';
+    html+=`<div style="margin-bottom:16px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:.95rem;color:var(--gold);letter-spacing:.04em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);">
+        <i class="fas fa-layer-group" style="font-size:.8rem;opacity:.7;"></i> Jornada ${j} · ${fechas[j]}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px;">
+        ${ps.map(p=>simPartidoRow(p,false)).join('')}
+      </div>
+    </div>`;
   });
+
+  // ── Fases eliminatorias ─────────────────────────────────────────────────
+  const fasesConfig=[
+    {id:'r32',    label:'32avos de Final',   icon:'fas fa-circle-nodes', color:'#60a5fa'},
+    {id:'octavos',label:'Octavos de Final',  icon:'fas fa-shield-halved',color:'#a78bfa'},
+    {id:'cuartos',label:'Cuartos de Final',  icon:'fas fa-trophy',       color:'#34d399'},
+    {id:'semis',  label:'Semifinales',       icon:'fas fa-star-half-stroke',color:'#fbbf24'},
+    {id:'tercero',label:'Tercer Lugar',      icon:'fas fa-medal',        color:'#cd7f32'},
+    {id:'final',  label:'Gran Final 🏆',     icon:'fas fa-crown',        color:'var(--gold)'},
+  ];
+
+  fasesConfig.forEach(fc=>{
+    const ps=SIM.elim.filter(p=>p.fase===fc.id);
+    if(!ps.length) return;
+    html+=`<div style="margin-bottom:16px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:.95rem;color:${fc.color};letter-spacing:.04em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);">
+        <i class="${fc.icon}" style="font-size:.8rem;opacity:.8;"></i> ${fc.label}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px;">
+        ${ps.map(p=>simPartidoRow(p,true)).join('')}
+      </div>
+    </div>`;
+  });
+
+  if(!html) html=`<div class="sim-notice"><i class="fas fa-futbol"></i><p>Simula la primera jornada para ver partidos</p></div>`;
   c.innerHTML=html;
 }
 
@@ -4315,204 +4549,121 @@ function simTablaPosiciones(grupo){
     .sort((a,b)=>b[1].pts-a[1].pts||b[1].dg-a[1].dg||b[1].gf-a[1].gf||a[0].localeCompare(b[0]));
 }
 
-// ── Genera cruces de 32avos según clasificados ──────────────────────────────
-// Formato FIFA: 1.A vs 2.B, 1.C vs 2.D, etc. + 4 cruces de mejores 3eros
-function simGenerarCruces32(){
-  const grupos='ABCDEFGHIJKL'.split('');
-  const primeros={}, segundos={}, terceros={};
-  grupos.forEach(g=>{
-    const tabla=simTablaPosiciones(g);
-    if(tabla[0]) primeros[g]=tabla[0][0];
-    if(tabla[1]) segundos[g]=tabla[1][0];
-    if(tabla[2]) terceros[g]={nombre:tabla[2][0],...tabla[2][1]};
-  });
-
-  // Selección mejores 3eros (top 8 de los 12 terceros)
-  const mejores3eros=Object.entries(terceros)
-    .sort((a,b)=>b[1].pts-a[1].pts||b[1].dg-a[1].dg||b[1].gf-a[1].gf)
-    .slice(0,8)
-    .map(([g,t])=>t.nombre);
-
-  // Cruces oficiales FIFA 2026 (1ero vs 2do de grupos cruzados)
-  const cruces=[
-    {id:'r32_1',  local:primeros.A||'1.A', visita:segundos.B||'2.B', fecha:'1 jul'},
-    {id:'r32_2',  local:primeros.C||'1.C', visita:segundos.D||'2.D', fecha:'1 jul'},
-    {id:'r32_3',  local:primeros.E||'1.E', visita:segundos.F||'2.F', fecha:'2 jul'},
-    {id:'r32_4',  local:primeros.G||'1.G', visita:segundos.H||'2.H', fecha:'2 jul'},
-    {id:'r32_5',  local:primeros.I||'1.I', visita:segundos.J||'2.J', fecha:'3 jul'},
-    {id:'r32_6',  local:primeros.K||'1.K', visita:segundos.L||'2.L', fecha:'3 jul'},
-    {id:'r32_7',  local:primeros.B||'1.B', visita:segundos.A||'2.A', fecha:'4 jul'},
-    {id:'r32_8',  local:primeros.D||'1.D', visita:segundos.C||'2.C', fecha:'4 jul'},
-    {id:'r32_9',  local:primeros.F||'1.F', visita:segundos.E||'2.E', fecha:'5 jul'},
-    {id:'r32_10', local:primeros.H||'1.H', visita:segundos.G||'2.G', fecha:'5 jul'},
-    {id:'r32_11', local:primeros.J||'1.J', visita:segundos.I||'2.I', fecha:'6 jul'},
-    {id:'r32_12', local:primeros.L||'1.L', visita:segundos.K||'2.K', fecha:'6 jul'},
-    {id:'r32_13', local:mejores3eros[0]||'3er 1', visita:mejores3eros[1]||'3er 2', fecha:'7 jul'},
-    {id:'r32_14', local:mejores3eros[2]||'3er 3', visita:mejores3eros[3]||'3er 4', fecha:'7 jul'},
-    {id:'r32_15', local:mejores3eros[4]||'3er 5', visita:mejores3eros[5]||'3er 6', fecha:'8 jul'},
-    {id:'r32_16', local:mejores3eros[6]||'3er 7', visita:mejores3eros[7]||'3er 8', fecha:'8 jul'},
-  ];
-  return cruces;
-}
-
-function simRenderTablaFIFA(){
-  const c = document.getElementById('sim-v-tabla'); if(!c) return;
-  if(SIM.jornada === 0){
-    c.innerHTML = '<div class="sim-notice"><i class="fas fa-lock"></i><p>Simula la primera jornada para ver las tablas</p></div>';
-    return;
-  }
-  const grupos = 'ABCDEFGHIJKL'.split('');
-  let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;">';
-
-  grupos.forEach(g => {
-    const sorted = simTablaPosiciones(g);
-    const partidos = SIM.partidos.filter(p => p.grupo === g);
-    const jugados  = partidos.filter(p => p.resultado).length;
-
-    html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-      <!-- Header grupo -->
-      <div style="background:var(--card2);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--gold);letter-spacing:.06em;">Grupo ${g}</div>
-        <span style="font-size:.7rem;color:var(--muted);">${jugados}/${partidos.length} partidos</span>
-      </div>
-      <!-- Tabla posiciones -->
-      <table style="width:100%;border-collapse:collapse;font-size:.78rem;">
-        <thead>
-          <tr style="border-bottom:1px solid var(--border);">
-            <th style="padding:7px 10px;text-align:left;color:var(--muted);font-weight:600;font-size:.67rem;letter-spacing:.06em;width:28px;">#</th>
-            <th style="padding:7px 10px;text-align:left;color:var(--muted);font-weight:600;font-size:.67rem;letter-spacing:.06em;">Equipo</th>
-            <th style="padding:7px 6px;text-align:center;color:var(--muted);font-weight:600;font-size:.67rem;" title="Partidos jugados">PJ</th>
-            <th style="padding:7px 6px;text-align:center;color:var(--muted);font-weight:600;font-size:.67rem;" title="Ganados">G</th>
-            <th style="padding:7px 6px;text-align:center;color:var(--muted);font-weight:600;font-size:.67rem;" title="Empatados">E</th>
-            <th style="padding:7px 6px;text-align:center;color:var(--muted);font-weight:600;font-size:.67rem;" title="Perdidos">P</th>
-            <th style="padding:7px 6px;text-align:center;color:var(--muted);font-weight:600;font-size:.67rem;" title="Diferencia de goles">DG</th>
-            <th style="padding:7px 10px;text-align:right;color:var(--gold);font-weight:700;font-size:.67rem;letter-spacing:.04em;">PTS</th>
-          </tr>
-        </thead>
-        <tbody>`;
-
-    sorted.forEach(([eq, st], i) => {
-      const isClasif = i < 2;
-      const is3ro    = i === 2;
-      const borderLeft = isClasif ? 'border-left:3px solid var(--green);' : is3ro ? 'border-left:3px solid rgba(245,200,66,.4);' : 'border-left:3px solid transparent;';
-      const bg = isClasif ? 'background:rgba(34,197,94,.05);' : '';
-      const dg = st.dg >= 0 ? '+' + st.dg : '' + st.dg;
-      html += `<tr style="${borderLeft}${bg}border-bottom:1px solid var(--border);">
-        <td style="padding:9px 10px;color:var(--muted);font-size:.75rem;">${i+1}</td>
-        <td style="padding:9px 10px;font-weight:${isClasif?700:400};color:var(--text);">${eq}</td>
-        <td style="padding:9px 6px;text-align:center;color:var(--muted);">${st.pj}</td>
-        <td style="padding:9px 6px;text-align:center;">${st.g}</td>
-        <td style="padding:9px 6px;text-align:center;color:var(--muted);">${st.e}</td>
-        <td style="padding:9px 6px;text-align:center;color:var(--red);">${st.pe}</td>
-        <td style="padding:9px 6px;text-align:center;color:${st.dg>=0?'var(--green)':'var(--red)'};">${dg}</td>
-        <td style="padding:9px 10px;text-align:right;font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--gold);">${st.pts}</td>
-      </tr>`;
-    });
-
-    // Partidos del grupo
-    html += `</tbody></table>
-      <div style="padding:8px 10px;border-top:1px solid var(--border);background:rgba(0,0,0,.15);">`;
-
-    partidos.forEach(p => {
-      const r = p.resultado;
-      html += `<div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);">
-        <span style="font-size:.72rem;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.local}</span>
-        <span style="font-size:.72rem;font-weight:700;font-family:'Bebas Neue',sans-serif;padding:2px 8px;border-radius:4px;background:${r?'var(--card2)':'transparent'};color:${r?'var(--text)':'var(--muted)'};">${r ? r.l+' – '+r.v : '– –'}</span>
-        <span style="font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.visita}</span>
-      </div>`;
-    });
-
-    html += '</div></div>';
-  });
-
-  html += '</div>';
-  c.innerHTML = html;
-}
-
 function simRenderClasificados(){
   const c=document.getElementById('sim-v-clasificados'); if(!c) return;
-  if(SIM.jornada<3){
-    const falta=3-SIM.jornada;
-    c.innerHTML=`<div class="sim-notice"><i class="fas fa-lock"></i><p>Faltan ${falta} jornada${falta!==1?'s':''} para conocer los clasificados</p></div>`;
-    return;
+  let html='';
+
+  // ── Tablas de grupo (siempre visibles si hay al menos 1 jornada) ──────
+  if(SIM.jornada>0){
+    html+=`<div style="font-size:.8rem;color:var(--muted);margin-bottom:14px;">Posiciones de grupos · Los 2 primeros clasifican directamente. Los 8 mejores 3eros también pasan.</div>`;
+    html+=`<div class="sim-clas-grid" style="margin-bottom:24px;">`;
+    'ABCDEFGHIJKL'.split('').forEach(g=>{
+      const sorted=simTablaPosiciones(g);
+      html+=`<div class="sim-clas-card">
+        <div class="sim-clas-head"><i class="fas fa-table" style="opacity:.6;font-size:.8rem;"></i> Grupo ${g}</div>`;
+      sorted.forEach(([eq,st],i)=>{
+        const avanza=i<2||(i===2&&SIM.elim.some(p=>p.fase==='r32'&&(p.local===eq||p.visita===eq)));
+        html+=`<div class="sim-clas-slot ${i<2?'top':''}">
+          <span style="font-size:.68rem;color:var(--muted);min-width:14px;">${i+1}</span>
+          <span style="font-size:.8rem;font-weight:${i<2?700:400};flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i<2?'✓ ':i===2?'△ ':''} ${eq}</span>
+          <span style="font-size:.72rem;color:var(--muted);white-space:nowrap;">${st.pts}p ${st.dg>=0?'+':''}${st.dg}</span>
+        </div>`;
+      });
+      html+='</div>';
+    });
+    html+='</div>';
+  } else {
+    html+=`<div class="sim-notice"><i class="fas fa-lock"></i><p>Simula al menos una jornada para ver posiciones</p></div>`;
+    c.innerHTML=html; return;
   }
 
-  const grupos='ABCDEFGHIJKL'.split('');
-
-  // ── Tablas de posición por grupo ──────────────────────────────────────
-  let html=`<div style="font-size:.8rem;color:var(--muted);margin-bottom:14px;">Los 2 primeros de cada grupo + los 8 mejores 3eros (24 equipos) avanzan a los 32avos de final.</div>`;
-  html+=`<div class="sim-clas-grid">`;
-  grupos.forEach(g=>{
-    const sorted=simTablaPosiciones(g);
-    html+=`<div class="sim-clas-card">
-      <div class="sim-clas-head"><i class="fas fa-table" style="opacity:.6;"></i> Grupo ${g}</div>`;
-    sorted.forEach(([eq,st],i)=>{
-      const badge=i===0?'🥇':i===1?'🥈':i===2?'🎖':' ';
-      html+=`<div class="sim-clas-slot ${i<2?'top':''}">
-        <span style="font-size:.72rem;color:var(--muted);min-width:16px;">${i+1}</span>
-        <span style="font-size:.85rem;font-weight:${i<2?700:400};flex:1;">${i<2?'✓ ':i===2?'△ ':''} ${eq}</span>
-        <span style="font-size:.75rem;color:var(--muted);">${st.pts}pts  ${st.dg>=0?'+':''}${st.dg}</span>
-      </div>`;
-    });
-    html+='</div>';
-  });
-  html+='</div>';
-
-  // ── Cuadro de 32avos ─────────────────────────────────────────────────
-  const cruces=simGenerarCruces32();
-  html+=`<div style="margin-top:28px;margin-bottom:10px;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--gold);letter-spacing:.04em;">
-    <i class="fas fa-sitemap"></i> 32avos de Final — Cruces generados
-  </div>`;
-  html+=`<div style="font-size:.75rem;color:var(--muted);margin-bottom:14px;">Calculados automáticamente según la tabla de posiciones simulada.</div>`;
-
-  // Agrupar cruces en 4 bloques de 4
-  const bloques=[
-    {label:'1–4 jul · Bloque 1', ids:cruces.slice(0,4)},
-    {label:'4–5 jul · Bloque 2', ids:cruces.slice(4,8)},
-    {label:'5–6 jul · Bloque 3', ids:cruces.slice(8,12)},
-    {label:'7–8 jul · Mejores 3eros', ids:cruces.slice(12,16)},
+  // ── Bracket eliminatorio ───────────────────────────────────────────────
+  const fasesConfig=[
+    {id:'r32',    label:'32avos de Final',   color:'#60a5fa', icon:'fas fa-circle-nodes'},
+    {id:'octavos',label:'Octavos de Final',  color:'#a78bfa', icon:'fas fa-shield-halved'},
+    {id:'cuartos',label:'Cuartos de Final',  color:'#34d399', icon:'fas fa-trophy'},
+    {id:'semis',  label:'Semifinales',       color:'#fbbf24', icon:'fas fa-star-half-stroke'},
+    {id:'tercero',label:'Tercer Lugar',      color:'#cd7f32', icon:'fas fa-medal'},
+    {id:'final',  label:'Gran Final 🏆',     color:'var(--gold)', icon:'fas fa-crown'},
   ];
 
-  bloques.forEach(bloque=>{
-    html+=`<div style="margin-bottom:14px;">
-      <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);">${bloque.label}</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px;">`;
-    bloque.ids.forEach(cruce=>{
-      html+=`<div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;">
-        <div style="font-size:.82rem;font-weight:600;">${cruce.local}</div>
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:.8rem;color:var(--muted);padding:3px 10px;background:var(--card);border-radius:6px;white-space:nowrap;">${cruce.fecha}</div>
-        <div style="font-size:.82rem;font-weight:600;text-align:right;">${cruce.visita}</div>
+  fasesConfig.forEach(fc=>{
+    const ps=SIM.elim.filter(p=>p.fase===fc.id);
+    if(!ps.length) return;
+
+    html+=`<div style="margin-bottom:20px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:${fc.color};letter-spacing:.04em;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+        <i class="${fc.icon}" style="font-size:.9rem;opacity:.8;"></i> ${fc.label}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px;">`;
+
+    ps.forEach(p=>{
+      const r=p.resultado;
+      const ganador=r?simGanador(p):null;
+      html+=`<div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;padding:11px 14px;">
+          <div style="font-size:.82rem;font-weight:${r&&ganador===p.local?700:400};color:${r&&ganador===p.local?'var(--green)':r&&ganador===p.visita?'var(--muted)':'var(--text)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.local}</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:${r?'1.1rem':'.8rem'};padding:4px 10px;border-radius:7px;background:${r?'var(--gold)':'var(--card)'};color:${r?'#0a0e1a':'var(--muted)'};white-space:nowrap;text-align:center;min-width:52px;">
+            ${r?`${r.l}–${r.v}`:'VS'}${r&&r.l===r.v?`<div style="font-size:.55rem;letter-spacing:0;">pen</div>`:''}
+          </div>
+          <div style="font-size:.82rem;font-weight:${r&&ganador===p.visita?700:400};color:${r&&ganador===p.visita?'var(--green)':r&&ganador===p.local?'var(--muted)':'var(--text)'};text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.visita}</div>
+        </div>
+        <div style="padding:5px 14px 8px;font-size:.65rem;color:var(--muted);display:flex;justify-content:space-between;border-top:1px solid var(--border);">
+          <span><i class="fas fa-calendar" style="font-size:.6rem;"></i> ${p.fecha||'TBD'}</span>
+          ${ganador?`<span style="color:var(--green);font-weight:700;"><i class="fas fa-arrow-right" style="font-size:.6rem;"></i> ${ganador}</span>`:'<span style="color:var(--muted);">Por jugar</span>'}
+        </div>
       </div>`;
     });
-    html+=`</div></div>`;
+    html+='</div></div>';
   });
 
-  // ── Ranking final polla por grupo ─────────────────────────────────────
-  html+=`<div style="margin-top:28px;margin-bottom:10px;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--gold);letter-spacing:.04em;">
-    <i class="fas fa-trophy"></i> Resultado final — Ranking de la polla por grupo
-  </div>`;
-  html+=`<div class="sim-clas-grid">`;
-  SIM.grupos.forEach(g=>{
-    const sorted=g.usuarios.slice().sort((a,b)=>b.puntaje-a.puntaje||b.aciertos-a.aciertos);
-    html+=`<div class="sim-clas-card">
-      <div class="sim-clas-head" style="color:${g.color};">
-        <div style="width:8px;height:8px;border-radius:50%;background:${g.color};flex-shrink:0;"></div>
-        ${g.nombre}
-      </div>`;
-    sorted.forEach((u,i)=>{
-      const med=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
-      html+=`<div class="sim-clas-slot ${i<3?'top':''}">
-        <span style="font-size:.72rem;color:var(--muted);min-width:16px;">${i+1}</span>
-        <div style="display:flex;align-items:center;gap:7px;flex:1;">
-          <div class="sim-avatar" style="width:22px;height:22px;font-size:10px;background:${u.color}22;color:${u.color};">${u.iniciales}</div>
-          <span style="font-size:.85rem;font-weight:${i<3?700:400};">${med} ${u.nombre}</span>
-        </div>
-        <span style="font-size:.82rem;font-weight:700;color:var(--text);">${u.puntaje}pts</span>
-      </div>`;
+  // ── Campeón ────────────────────────────────────────────────────────────
+  const finalP=SIM.elim.find(p=>p.fase==='final');
+  if(finalP?.resultado){
+    const campeon=simGanador(finalP);
+    const subcampeon=campeon===finalP.local?finalP.visita:finalP.local;
+    const terceroP=SIM.elim.find(p=>p.fase==='tercero');
+    const tercero=terceroP?.resultado?simGanador(terceroP):null;
+    html+=`<div style="margin-top:24px;background:linear-gradient(135deg,rgba(245,200,66,.12),rgba(245,200,66,.04));border:1px solid rgba(245,200,66,.3);border-radius:16px;padding:28px 24px;text-align:center;">
+      <div style="font-size:3rem;margin-bottom:8px;">🏆</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--gold);letter-spacing:.04em;margin-bottom:4px;">¡Campeón del Mundial!</div>
+      <div style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:16px;">${campeon}</div>
+      <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);">
+        <span>🥈 Subcampeón: <strong style="color:var(--text);">${subcampeon}</strong></span>
+        ${tercero?`<span>🥉 Tercer lugar: <strong style="color:var(--text);">${tercero}</strong></span>`:''}
+      </div>
+    </div>`;
+  }
+
+  // ── Ranking final polla por grupo ──────────────────────────────────────
+  if(SIM.grupos.some(g=>g.usuarios.some(u=>u.puntaje>0))){
+    html+=`<div style="margin-top:28px;margin-bottom:10px;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--gold);letter-spacing:.04em;">
+      <i class="fas fa-trophy"></i> Ranking de la polla por grupo
+    </div>
+    <div class="sim-clas-grid">`;
+    SIM.grupos.forEach(g=>{
+      const sorted=g.usuarios.slice().sort((a,b)=>b.puntaje-a.puntaje||b.aciertos-a.aciertos);
+      html+=`<div class="sim-clas-card">
+        <div class="sim-clas-head" style="color:${g.color};">
+          <div style="width:8px;height:8px;border-radius:50%;background:${g.color};flex-shrink:0;"></div>
+          ${g.nombre}
+        </div>`;
+      sorted.forEach((u,i)=>{
+        const med=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+        html+=`<div class="sim-clas-slot ${i<3?'top':''}">
+          <span style="font-size:.68rem;color:var(--muted);min-width:16px;">${i+1}</span>
+          <div style="display:flex;align-items:center;gap:7px;flex:1;">
+            <div class="sim-avatar" style="width:22px;height:22px;font-size:10px;background:${u.color}22;color:${u.color};">${u.iniciales}</div>
+            <span style="font-size:.82rem;font-weight:${i<3?700:400};">${med} ${u.nombre}</span>
+          </div>
+          <span style="font-size:.82rem;font-weight:700;color:var(--text);">${u.puntaje}pts</span>
+        </div>`;
+      });
+      html+='</div>';
     });
     html+='</div>';
-  });
-  html+='</div>';
+  }
+
   c.innerHTML=html;
 }
 
@@ -4524,126 +4675,15 @@ window.simShowTab = function(btn, tab){
   if(el) el.style.display='block';
 };
 
-// ── Inicializar simulador con sync Firestore ───────────────────────────────
+// Inicializar cuando se abre el tab simulador
 const _origShowTab = window.showTab;
 window.showTab = async function(tab){
   await _origShowTab(tab);
-  if(tab==='simulador'){
-    if(!SIM.grupos) simInit();
-    await simSincronizarDesdeFirestore();
+  if(tab==='simulador' && !SIM.grupos){
+    simInit();
+    simRenderAll();
   }
 };
-
-// Carga resultados simulados activos desde Firestore y reconstruye el estado SIM
-async function simSincronizarDesdeFirestore(){
-  // Mostrar spinner en el log
-  const logEl = document.getElementById('sim-fs-log');
-  if(logEl){ logEl.style.display='block'; logEl.innerHTML='<div style="color:#94a3b8">🔄 Verificando Firestore...</div>'; }
-
-  try {
-    // Buscar todos los partidos marcados como simulado:true
-    const snap = await getDocs(query(collection(db,'partidos'), where('simulado','==',true)));
-
-    if(snap.empty){
-      // No hay datos simulados en Firestore — estado limpio
-      if(logEl){ logEl.style.display='none'; logEl.innerHTML=''; }
-      simActualizarUIFirestore([], []);
-      return;
-    }
-
-    // Reconstruir resultados en SIM desde Firestore
-    const firestoreResults = {};
-    const idsCruces = [];
-    snap.docs.forEach(d => {
-      const data = d.data();
-      firestoreResults[d.id] = data;
-      if(data.fase === '32avos') idsCruces.push(d.id);
-    });
-
-    // Mapeo inverso: firestoreId → simId
-    const inversoMap = {};
-    Object.entries(SIM_ID_MAP).forEach(([simId, fsId]) => { inversoMap[fsId] = simId; });
-
-    // Resetear resultados en memoria y reconstruir desde Firestore
-    SIM.partidos.forEach(p => { p.resultado = null; });
-    SIM.grupos.forEach(g => g.usuarios.forEach(u => { u.puntaje = 0; u.aciertos = 0; }));
-
-    let jornadaMaxima = 0;
-    const publicadosIds = [];
-
-    Object.entries(firestoreResults).forEach(([fsId, data]) => {
-      const simId = inversoMap[fsId];
-      if(!simId) return; // es un cruce de 32avos, no partido de grupos
-      const partido = SIM.partidos.find(p => p.id === simId);
-      if(!partido) return;
-      if(data.resultado_local != null && data.resultado_visita != null){
-        partido.resultado = { l: data.resultado_local, v: data.resultado_visita };
-        jornadaMaxima = Math.max(jornadaMaxima, partido.jornada);
-        publicadosIds.push(fsId);
-        // Recalcular puntajes de usuarios ficticios
-        SIM.grupos.forEach(g => {
-          g.usuarios.forEach(u => {
-            const ap = u.apuestas[simId];
-            if(ap){
-              const pts = simCalcPts(partido.resultado, ap);
-              u.puntaje += pts;
-              if(pts > 0) u.aciertos++;
-            }
-          });
-        });
-      }
-    });
-
-    SIM.jornada = jornadaMaxima;
-    SIM._publicados = publicadosIds;
-    SIM._publicadosCruces = idsCruces;
-
-    // Actualizar botones según estado
-    const jugados = publicadosIds.length;
-    const btnAvanzar = document.getElementById('sim-btn-avanzar');
-    const btnPub     = document.getElementById('sim-btn-publicar');
-    const btnLim     = document.getElementById('sim-btn-limpiar');
-
-    if(jornadaMaxima >= 3){
-      if(btnAvanzar){ btnAvanzar.disabled=true; btnAvanzar.innerHTML='<i class="fas fa-trophy"></i> Fase de grupos completa'; }
-    } else if(jornadaMaxima > 0){
-      if(btnAvanzar){ btnAvanzar.disabled=false; btnAvanzar.innerHTML=`<i class="fas fa-play"></i> Simular jornada ${jornadaMaxima+1}`; }
-    }
-
-    if(jugados > 0){
-      if(btnPub){ btnPub.disabled=false; btnPub.style.opacity='1'; }
-      if(btnLim){ btnLim.disabled=false; btnLim.style.opacity='1'; }
-    }
-
-    // Mostrar badge y alerta de datos activos
-    simActualizarUIFirestore(publicadosIds, idsCruces);
-    simRenderAll();
-
-    if(logEl){
-      logEl.innerHTML = `<div style="color:#4ade80">✅ Sincronizado desde Firestore: ${jugados} resultados simulados activos (jornada ${jornadaMaxima}/3)${idsCruces.length ? ` · ${idsCruces.length} cruces de 32avos` : ''}</div>`;
-      setTimeout(()=>{ if(logEl) logEl.style.display='none'; }, 4000);
-    }
-
-  } catch(e) {
-    if(logEl){ logEl.innerHTML = `<div style="color:#f87171">⚠ Error al verificar Firestore: ${e.message}</div>`; }
-    console.warn('simSincronizarDesdeFirestore:', e);
-  }
-}
-
-function simActualizarUIFirestore(publicados, cruces){
-  const total = publicados.length + cruces.length;
-  const badge   = document.getElementById('sim-fs-badge');
-  const alertEl = document.getElementById('sim-alert-publicado');
-  const fsCount = document.getElementById('sim-fs-count');
-  if(total > 0){
-    if(badge)  { badge.style.display='block'; }
-    if(fsCount){ fsCount.textContent = total; }
-    if(alertEl){ alertEl.style.display='flex'; }
-  } else {
-    if(badge)  badge.style.display='none';
-    if(alertEl) alertEl.style.display='none';
-  }
-}
 
 </script>
 
