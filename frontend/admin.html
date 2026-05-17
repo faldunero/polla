@@ -1313,14 +1313,22 @@ async function initAdmin() {
 window.showTab = async (tab) => {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('tab-' + tab).classList.add('active');
+  // Activar tab correcto sin depender de event
+  const tabBtn = document.querySelector(`.tab[onclick*="'${tab}'"]`) || document.querySelector(`.tab[onclick*='"${tab}"']`);
+  if(tabBtn) tabBtn.classList.add('active');
+  const tabPage = document.getElementById('tab-' + tab);
+  if(tabPage) tabPage.classList.add('active');
   if (tab === 'ranking')      await renderRankingGlobal();
   if (tab === 'solicitudes')  await renderSolicitudes();
   if (tab === 'resultados')   await renderResultados();
   if (tab === 'setup')        initSetupTab();
   if (tab === 'selecciones')  await renderSelecciones();
   if (tab === 'estadios')     await renderEstadiosAdmin();
+  if (tab === 'simulador' && (!SIM.grupos || !SIM.grupos.length)) {
+    simInit();
+    simRenderAll();
+  }
+};
 };
 
 // ── SOLICITUDES (directo a Firestore) ────────────────────────────────────
@@ -4673,16 +4681,6 @@ window.simShowTab = function(btn, tab){
   btn.classList.add('active');
   const el=document.getElementById('sim-v-'+tab);
   if(el) el.style.display='block';
-};
-
-// Inicializar cuando se abre el tab simulador
-const _origShowTab = window.showTab;
-window.showTab = async function(tab){
-  await _origShowTab(tab);
-  if(tab==='simulador' && !SIM.grupos){
-    simInit();
-    simRenderAll();
-  }
 };
 
 </script>

@@ -1699,20 +1699,24 @@ const FG_IDX = {
 };
 
 const FASES_ELIM = [
-  {id:'octavos', label:'Octavos de Final', sublabel:'28 jun – 5 jul', icon:'fas fa-shield-halved', iconClass:'fase-acc-icon-octavos',
+  {id:'r32avos', label:'32avos de Final', sublabel:'1–8 jul · 16 partidos', icon:'fas fa-circle-nodes', iconClass:'fase-acc-icon-octavos',
    grupos:[
-    {titulo:'Partidos 1–4 (28–29 jun)', ids:['oct1','oct2','oct3','oct4']},
-    {titulo:'Partidos 5–8 (30 jun – 1 jul)', ids:['oct5','oct6','oct7','oct8']},
-    {titulo:'Partidos 9–12 (2–3 jul)', ids:['oct9','oct10','oct11','oct12']},
-    {titulo:'Partidos 13–16 (4–5 jul)', ids:['oct13','oct14','oct15','oct16']},
+    {titulo:'1–4 jul · Partidos 1–6',  ids:['r32_1','r32_2','r32_3','r32_4','r32_5','r32_6']},
+    {titulo:'4–6 jul · Partidos 7–12', ids:['r32_7','r32_8','r32_9','r32_10','r32_11','r32_12']},
+    {titulo:'7–8 jul · Mejores 3eros', ids:['r32_13','r32_14','r32_15','r32_16']},
    ]},
-  {id:'cuartos', label:'Cuartos de Final', sublabel:'8–11 jul', icon:'fas fa-trophy', iconClass:'fase-acc-icon-cuartos',
-   grupos:[{titulo:'Cuartos de Final', ids:['qf1','qf2','qf3','qf4','qf5','qf6','qf7','qf8']}]},
-  {id:'semis', label:'Semifinales', sublabel:'15–16 jul', icon:'fas fa-star-half-stroke', iconClass:'fase-acc-icon-semis',
-   grupos:[{titulo:'Semifinales', ids:['sf1','sf2','sf3','sf4']}]},
-  {id:'tercero', label:'Tercer Lugar', sublabel:'18 jul', icon:'fas fa-medal', iconClass:'fase-acc-icon-octavos',
+  {id:'octavos', label:'Octavos de Final (R16)', sublabel:'11–14 jul · 8 partidos', icon:'fas fa-shield-halved', iconClass:'fase-acc-icon-octavos',
+   grupos:[
+    {titulo:'11–12 jul · Partidos 1–4', ids:['r16_1','r16_2','r16_3','r16_4']},
+    {titulo:'13–14 jul · Partidos 5–8', ids:['r16_5','r16_6','r16_7','r16_8']},
+   ]},
+  {id:'cuartos', label:'Cuartos de Final', sublabel:'18–19 jul · 4 partidos', icon:'fas fa-trophy', iconClass:'fase-acc-icon-cuartos',
+   grupos:[{titulo:'Cuartos de Final', ids:['qf1','qf2','qf3','qf4']}]},
+  {id:'semis', label:'Semifinales', sublabel:'22–23 jul · 2 partidos', icon:'fas fa-star-half-stroke', iconClass:'fase-acc-icon-semis',
+   grupos:[{titulo:'Semifinales', ids:['sf1','sf2']}]},
+  {id:'tercero', label:'Tercer Lugar', sublabel:'25 jul', icon:'fas fa-medal', iconClass:'fase-acc-icon-octavos',
    grupos:[{titulo:'Partido Tercer Lugar', ids:['3p']}]},
-  {id:'final', label:'Gran Final', sublabel:'19 jul · MetLife Stadium', icon:'fas fa-crown', iconClass:'fase-acc-icon-final',
+  {id:'final', label:'Gran Final 🏆', sublabel:'26 jul · MetLife Stadium', icon:'fas fa-crown', iconClass:'fase-acc-icon-final',
    grupos:[{titulo:'Final del Mundial', ids:['fin']}]},
 ];
 
@@ -1918,14 +1922,15 @@ async function renderResultadosAccordion() {
       html += `<div class="res-elim-group">
         <div class="res-elim-group-title">${subg.titulo}</div>`;
       subg.ids.forEach(id => {
-        // Buscar datos base en globalData.partidos, mergear con resultado de resCache
-        const base = globalData.partidos?.find(p => p.id === id) || null;
+        // resCache es la fuente fresca de Firestore — tiene local, visita, fecha, resultado
         const res  = resCache[id] || null;
-        if (!base && !res) {
-          const fallback = {id, local:'Por confirmar', visita:'Por confirmar', fecha:'–', estadio:'–'};
-          html += renderResPartido(fallback, true);
+        const base = globalData.partidos?.find(p => p.id === id) || null;
+        const merged = { ...(base||{}), ...(res||{}) };
+        // Si no hay nada en Firestore para este id, mostrar placeholder con fecha del fixture admin
+        if(!res && !base){
+          html += renderResPartido({id, local:'Por confirmar', visita:'Por confirmar', fecha:'–', estadio:'–'}, true);
         } else {
-          html += renderResPartido({ ...(base || {}), ...(res || {}) }, true);
+          html += renderResPartido(merged, true);
         }
       });
       html += `</div>`;
