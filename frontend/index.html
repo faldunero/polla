@@ -1910,17 +1910,56 @@ async function renderResultadosAccordion() {
   html += `</div></div>`;
 
   // ── Fases eliminatorias ──
+  // Fixture base de eliminatorias para mostrar aunque no haya resultado
+  const ELIM_BASE = {
+    r32_1:{local:'1.A',visita:'2.B',fecha:'2026-07-01',estadio:'MetLife, Nueva York'},
+    r32_2:{local:'1.C',visita:'2.D',fecha:'2026-07-01',estadio:'AT&T, Dallas'},
+    r32_3:{local:'1.E',visita:'2.F',fecha:'2026-07-02',estadio:'SoFi, Los Ángeles'},
+    r32_4:{local:'1.G',visita:'2.H',fecha:'2026-07-02',estadio:'Mercedes-Benz, Atlanta'},
+    r32_5:{local:'1.I',visita:'2.J',fecha:'2026-07-03',estadio:'Gillette, Boston'},
+    r32_6:{local:'1.K',visita:'2.L',fecha:'2026-07-03',estadio:'Arrowhead, Kansas City'},
+    r32_7:{local:'1.B',visita:'2.A',fecha:'2026-07-04',estadio:'BC Place, Vancouver'},
+    r32_8:{local:'1.D',visita:'2.C',fecha:'2026-07-04',estadio:'NRG, Houston'},
+    r32_9:{local:'1.F',visita:'2.E',fecha:'2026-07-05',estadio:'BMO Field, Toronto'},
+    r32_10:{local:'1.H',visita:'2.G',fecha:'2026-07-05',estadio:'Hard Rock, Miami'},
+    r32_11:{local:'1.J',visita:'2.I',fecha:'2026-07-06',estadio:'Lumen, Seattle'},
+    r32_12:{local:'1.L',visita:'2.K',fecha:'2026-07-06',estadio:'Lincoln, Filadelfia'},
+    r32_13:{local:'Mejor 3ero 1',visita:'Mejor 3ero 2',fecha:'2026-07-07',estadio:'AT&T, Dallas'},
+    r32_14:{local:'Mejor 3ero 3',visita:'Mejor 3ero 4',fecha:'2026-07-07',estadio:'MetLife, Nueva York'},
+    r32_15:{local:'Mejor 3ero 5',visita:'Mejor 3ero 6',fecha:'2026-07-08',estadio:'SoFi, Los Ángeles'},
+    r32_16:{local:'Mejor 3ero 7',visita:'Mejor 3ero 8',fecha:'2026-07-08',estadio:'Mercedes-Benz, Atlanta'},
+    r16_1:{local:'G.32 1',visita:'G.32 2',fecha:'2026-07-11',estadio:'MetLife, Nueva York'},
+    r16_2:{local:'G.32 3',visita:'G.32 4',fecha:'2026-07-11',estadio:'AT&T, Dallas'},
+    r16_3:{local:'G.32 5',visita:'G.32 6',fecha:'2026-07-12',estadio:'SoFi, Los Ángeles'},
+    r16_4:{local:'G.32 7',visita:'G.32 8',fecha:'2026-07-12',estadio:'Mercedes-Benz, Atlanta'},
+    r16_5:{local:'G.32 9',visita:'G.32 10',fecha:'2026-07-13',estadio:'Gillette, Boston'},
+    r16_6:{local:'G.32 11',visita:'G.32 12',fecha:'2026-07-13',estadio:'Arrowhead, Kansas City'},
+    r16_7:{local:'G.32 13',visita:'G.32 14',fecha:'2026-07-14',estadio:'BC Place, Vancouver'},
+    r16_8:{local:'G.32 15',visita:'G.32 16',fecha:'2026-07-14',estadio:'NRG, Houston'},
+    qf1:{local:'G.R16 1',visita:'G.R16 2',fecha:'2026-07-18',estadio:'MetLife, Nueva York'},
+    qf2:{local:'G.R16 3',visita:'G.R16 4',fecha:'2026-07-18',estadio:'AT&T, Dallas'},
+    qf3:{local:'G.R16 5',visita:'G.R16 6',fecha:'2026-07-19',estadio:'SoFi, Los Ángeles'},
+    qf4:{local:'G.R16 7',visita:'G.R16 8',fecha:'2026-07-19',estadio:'Mercedes-Benz, Atlanta'},
+    sf1:{local:'G.CF 1',visita:'G.CF 2',fecha:'2026-07-22',estadio:'MetLife, Nueva York'},
+    sf2:{local:'G.CF 3',visita:'G.CF 4',fecha:'2026-07-23',estadio:'SoFi, Los Ángeles'},
+    '3p':{local:'Perd. SF 1',visita:'Perd. SF 2',fecha:'2026-07-25',estadio:'AT&T, Dallas'},
+    fin:{local:'Gan. SF 1',visita:'Gan. SF 2',fecha:'2026-07-26',estadio:'MetLife, Nueva York'},
+  };
+
   FASES_ELIM.forEach(fase => {
     const todosIds = fase.grupos.flatMap(g => g.ids);
     const comp = todosIds.filter(id => resCache[id]?.resultado_local != null).length;
     const tot  = todosIds.length;
     const ok   = comp === tot && tot > 0;
     const enCurso = faseActual === fase.id;
-    const abrir   = faseActual === fase.id;
+    // Abrir si: es la fase actual, tiene datos en resCache, o tiene datos del simulador
+    const tieneData = todosIds.some(id => resCache[id] != null);
+    const abrir = enCurso || tieneData;
 
     let badge = ok ? '<span class="fase-acc-badge completo">✓ Completa</span>'
       : enCurso ? '<span class="fase-acc-badge en-curso">🔴 En curso</span>'
       : comp > 0 ? `<span class="fase-acc-badge">${comp}/${tot}</span>`
+      : tieneData ? `<span class="fase-acc-badge">0/${tot}</span>`
       : '<span class="fase-acc-badge">Próximamente</span>';
 
     html += `<div class="fase-acc" id="facc-${fase.id}">
@@ -1941,16 +1980,11 @@ async function renderResultadosAccordion() {
       html += `<div class="res-elim-group">
         <div class="res-elim-group-title">${subg.titulo}</div>`;
       subg.ids.forEach(id => {
-        // resCache es la fuente fresca de Firestore — tiene local, visita, fecha, resultado
         const res  = resCache[id] || null;
-        const base = globalData.partidos?.find(p => p.id === id) || null;
-        const merged = { ...(base||{}), ...(res||{}) };
-        // Si no hay nada en Firestore para este id, mostrar placeholder con fecha del fixture admin
-        if(!res && !base){
-          html += renderResPartido({id, local:'Por confirmar', visita:'Por confirmar', fecha:'–', estadio:'–'}, true);
-        } else {
-          html += renderResPartido(merged, true);
-        }
+        const base = ELIM_BASE[id] || null;
+        // Mergear: base (fixture) + Firestore (res) — Firestore gana
+        const merged = { id, ...(base||{}), ...(res||{}) };
+        html += renderResPartido(merged, true);
       });
       html += `</div>`;
     });
