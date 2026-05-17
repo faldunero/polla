@@ -1777,19 +1777,38 @@ function fmtHora(h) {
 function renderResPartido(p, esElim) {
   if (!p) return '';
   const tieneRes = p.resultado_local != null;
-  const localNombre  = p.local  || 'Por definir';
-  const visitaNombre = p.visita || 'Por definir';
-  const esPH = !tieneRes && esElim && (
-    localNombre.includes('.') || localNombre.startsWith('G.') ||
-    localNombre.startsWith('Gan') || localNombre.startsWith('Per')
-  );
+
+  // Limpiar nombre: si viene con emoji prefix (ej "🇦🇷 Argentina"), separarlo
+  function parseName(raw) {
+    if (!raw) return { flag: '', name: 'Por definir' };
+    const s = String(raw).trim();
+    // Detectar si empieza con emoji (code point > 0x1F000)
+    const m = s.match(/^([\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}🏴󠁧󠁢󠁥󠁮󠁧󠁿🏴󠁧󠁢󠁳󠁣󠁴󠁿][^\s]*\s*)/u);
+    if (m) return { flag: '', name: s, hasEmoji: true };
+    return { flag: '', name: s, hasEmoji: false };
+  }
+
+  const loc = parseName(p.local);
+  const vis = parseName(p.visita);
+  const localNombre  = loc.name || 'Por definir';
+  const visitaNombre = vis.name || 'Por definir';
+
+  // Es placeholder solo si NO tiene resultado Y es texto genérico de fixture
+  const isGeneric = (n) => !n || n === 'Por confirmar' || n === 'Por definir' ||
+    /^(1\.|2\.|3er|G\.|Gan|Per|TBD)/i.test(n);
+  const esPH = !tieneRes && esElim && isGeneric(localNombre);
+
+  // Bandera: si el nombre ya tiene emoji propio no agregar otra
+  const flagL = loc.hasEmoji ? '' : (esPH ? '⬜' : getFlag(localNombre));
+  const flagV = vis.hasEmoji ? '' : (esPH ? '⬜' : getFlag(visitaNombre));
+
   const scoreHtml = tieneRes
     ? `<div class="res-score jugado">${p.resultado_local} – ${p.resultado_visita}</div>`
     : `<div class="res-score"><span class="res-vs">VS</span></div>`;
 
   return `<div class="res-match" data-wbsede="${(p.estadio||'').replace(/"/g,'')}">
     <div class="res-team">
-      <span style="font-size:1.15rem;">${esPH ? '⬜' : getFlag(localNombre)}</span>
+      ${flagL ? `<span style="font-size:1.15rem;">${flagL}</span>` : ''}
       <span class="${esPH ? 'res-team-ph' : ''}">${localNombre}</span>
     </div>
     <div class="res-center">
@@ -1799,7 +1818,7 @@ function renderResPartido(p, esElim) {
     </div>
     <div class="res-team right">
       <span class="${esPH ? 'res-team-ph' : ''}">${visitaNombre}</span>
-      <span style="font-size:1.15rem;">${esPH ? '⬜' : getFlag(visitaNombre)}</span>
+      ${flagV ? `<span style="font-size:1.15rem;">${flagV}</span>` : ''}
     </div>
     <div class="res-meta"><i class="fas fa-location-dot"></i>${p.estadio || 'TBD'}</div>
   </div>`;
