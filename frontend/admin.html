@@ -1251,6 +1251,7 @@ const provider = new GoogleAuthProvider();
 
 let currentUser = null;
 let globalPartidos = [];
+let SIM = {}; // declaración temprana — se inicializa en simInit()
 
 // ── Scoring (mismo algoritmo que server.js) ───────────────────────────────
 function calcularPuntaje(real, apuesta) {
@@ -1313,7 +1314,6 @@ async function initAdmin() {
 window.showTab = async (tab) => {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  // Activar tab correcto sin depender de event
   const tabBtn = document.querySelector(`.tab[onclick*="'${tab}'"]`) || document.querySelector(`.tab[onclick*='"${tab}"']`);
   if(tabBtn) tabBtn.classList.add('active');
   const tabPage = document.getElementById('tab-' + tab);
@@ -1328,7 +1328,6 @@ window.showTab = async (tab) => {
     simInit();
     simRenderAll();
   }
-};
 };
 
 // ── SOLICITUDES (directo a Firestore) ────────────────────────────────────
@@ -3884,8 +3883,6 @@ const SIM_EQUIPOS = {
   K:['🇵🇹 Portugal','🇨🇴 Colombia','🇺🇿 Uzbekistán','🇨🇩 RD Congo'],
   L:['🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra','🇭🇷 Croacia','🇬🇭 Ghana','🇵🇦 Panamá'],
 };
-
-let SIM = {};
 
 function simRnd(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
 
