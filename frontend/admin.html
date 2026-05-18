@@ -698,6 +698,9 @@ nav {
             <button class="btn" style="background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3);" onclick="confirmarBorrarFase('elim')">
               <i class="fas fa-trash-can"></i> Eliminar Fases Elim. (32)
             </button>
+            <button class="btn" style="background:rgba(239,68,68,0.4);color:white;border:1px solid rgba(239,68,68,0.8);font-weight:800;" onclick="borrarTodaColeccionPartidos()">
+              <i class="fas fa-bomb"></i> ⚠ Borrar TODA la colección partidos
+            </button>
           </div>
         </div>
       </div>
@@ -3095,6 +3098,33 @@ window.ejecutarBorrar = async () => {
 document.addEventListener('click', e => {
   if (e.target === document.getElementById('modal-borrar')) cerrarModalBorrar();
 });
+
+window.borrarTodaColeccionPartidos = async () => {
+  if(!confirm('⚠ PELIGRO: Se borrarán TODOS los documentos de la colección "partidos", incluyendo cualquier nombre/ID. Esta acción no se puede deshacer.\n\n¿Continuar?')) return;
+  const log = document.getElementById('import-log');
+  log.style.display='block'; log.innerHTML='';
+  ilog('▶ Cargando todos los documentos de "partidos"...','info');
+  try {
+    const snap = await getDocs(collection(db,'partidos'));
+    ilog(`━ Encontrados ${snap.size} documentos`,'info');
+    if(!snap.size){ ilog('Colección ya está vacía','ok'); return; }
+    // Borrar en batches de 500
+    const docs = snap.docs;
+    let ok=0;
+    for(let i=0;i<docs.length;i+=400){
+      const batch = writeBatch(db);
+      docs.slice(i,i+400).forEach(d=>batch.delete(d.ref));
+      await batch.commit();
+      ok += Math.min(400, docs.length-i);
+      ilog(`✓ Borrados ${ok}/${docs.length}...`,'ok');
+    }
+    ilog(`✅ LISTO — ${ok} documentos eliminados. Ahora reimporta el fixture.`,'ok');
+    toast(`${ok} documentos borrados de "partidos"`, 'success');
+  } catch(e) {
+    ilog(`✗ Error: ${e.message}`,'err');
+    toast('Error: '+e.message,'error');
+  }
+};
 
 // ── SELECCIONES ───────────────────────────────────────────────────────────
 let globalPaises = [];
