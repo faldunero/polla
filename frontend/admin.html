@@ -666,6 +666,17 @@ nav {
       <div class="section-title"><i class="fas fa-database"></i> Setup · Importar Fixture a Firestore
         <span style="font-size:0.78rem;font-weight:400;color:var(--muted);font-family:'Barlow',sans-serif;margin-left:10px;">Solo ejecutar una vez por fase. Sobreescribe con setDoc (idempotente).</span>
       </div>
+
+      <!-- Panel diagnóstico -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:0.8rem;font-weight:700;color:var(--text);margin-bottom:3px;"><i class="fas fa-stethoscope" style="color:var(--gold);"></i> Diagnóstico de Firestore</div>
+          <div style="font-size:0.72rem;color:var(--muted);">Ver exactamente qué documentos hay en la colección "partidos"</div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="diagnosticarPartidos()"><i class="fas fa-search"></i> Diagnosticar</button>
+        <div id="diag-result" style="font-size:0.72rem;color:var(--muted);"></div>
+      </div>
+
       <div class="alert alert-warn" style="margin-bottom:20px;">
         <i class="fas fa-triangle-exclamation"></i>
         <strong>Advertencia:</strong> La importación escribe directamente en Firestore. Si ya existen resultados guardados para un partido, serán sobreescritos. Úsalo solo para setup inicial o para corregir datos base.
@@ -2968,27 +2979,20 @@ window.importarGrupos = async () => {
   ilog(`▶ Iniciando Fase de Grupos — ${PARTIDOS_GRUPOS.length} partidos`, 'info');
   ilog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
-  // Get firebase token from currentUser
-  const token = await currentUser.getIdToken();
   let ok = 0, err = 0, lastG = '';
-
-  // Write directly to Firestore via SDK (admin is authenticated)
-  const { getFirestore, setDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  const fdb = getFirestore();
-
-  for (const p of PARTIDOS_GRUPOS) {
-    const { id, ...data } = p;
-    if (data.grupo !== lastG) {
-      ilog(`── GRUPO ${data.grupo}`, 'grp');
-      lastG = data.grupo;
-    }
-    try {
-      await setDoc(doc(fdb, 'partidos', id), data);
-      ilog(`✓ ${id} &nbsp; ${data.local} vs ${data.visita} · ${data.fecha} ${data.hora}`, 'ok');
-      ok++;
-    } catch(e) {
-      ilog(`✗ ${id}: ${e.message}`, 'err'); err++;
-    }
+  // Usar db principal en batches de 400
+  for (let i = 0; i < PARTIDOS_GRUPOS.length; i += 400) {
+    const chunk = PARTIDOS_GRUPOS.slice(i, i + 400);
+    const batch = writeBatch(db);
+    chunk.forEach(p => {
+      const { id, ...data } = p;
+      if (data.grupo !== lastG) { ilog(`── GRUPO ${data.grupo}`, 'grp'); lastG = data.grupo; }
+      // setDoc sin merge → sobreescribe completamente (borra resultado_local del simulador)
+      batch.set(doc(db, 'partidos', id), data);
+      ilog(`✓ ${id}  ${data.local} vs ${data.visita} · ${data.fecha}`, 'ok');
+    });
+    try { await batch.commit(); ok += chunk.length; }
+    catch(e) { ilog(`✗ Batch error: ${e.message}`, 'err'); err += chunk.length; }
   }
   ilog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   ilog(`${ok === PARTIDOS_GRUPOS.length ? '✅' : '⚠'} ${ok} importados | ${err} errores`, ok === PARTIDOS_GRUPOS.length ? 'ok' : 'err');
@@ -3005,24 +3009,18 @@ window.importarElim = async () => {
   ilog(`▶ Iniciando Fases Eliminatorias — ${PARTIDOS_ELIM.length} partidos`, 'info');
   ilog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
-  const { getFirestore, setDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-  const fdb = getFirestore();
-
   let ok = 0, err = 0, lastF = '';
+  const batch = writeBatch(db);
   for (const p of PARTIDOS_ELIM) {
     const { id, ...data } = p;
-    if (data.fase !== lastF) {
-      ilog(`── ${data.fase.toUpperCase()}`, 'grp');
-      lastF = data.fase;
-    }
-    try {
-      await setDoc(doc(fdb, 'partidos', id), data);
-      ilog(`✓ ${id} &nbsp; ${data.local} vs ${data.visita} · ${data.fecha}`, 'ok');
-      ok++;
-    } catch(e) {
-      ilog(`✗ ${id}: ${e.message}`, 'err'); err++;
-    }
+    if (data.fase !== lastF) { ilog(`── ${data.fase.toUpperCase()}`, 'grp'); lastF = data.fase; }
+    batch.set(doc(db, 'partidos', id), data);
+    ilog(`✓ ${id}  ${data.local} vs ${data.visita} · ${data.fecha}`, 'ok');
+    ok++;
   }
+  try { await batch.commit(); }
+  catch(e) { ilog(`✗ Batch error: ${e.message}`, 'err'); err = ok; ok = 0; }
+
   ilog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   ilog(`${ok === PARTIDOS_ELIM.length ? '✅' : '⚠'} ${ok} importados | ${err} errores`, ok === PARTIDOS_ELIM.length ? 'ok' : 'err');
   btn.disabled = false;
@@ -3066,14 +3064,10 @@ window.ejecutarBorrar = async () => {
   ilog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
   try {
-    const { getFirestore, deleteDoc, doc } =
-      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    const fdb = getFirestore();
-
     let ok = 0, err = 0;
     for (const id of ids) {
       try {
-        await deleteDoc(doc(fdb, 'partidos', id));
+        await deleteDoc(doc(db, 'partidos', id));
         ilog(`✓ Eliminado: ${id}`, 'ok');
         ok++;
       } catch(e) {
@@ -3098,6 +3092,40 @@ window.ejecutarBorrar = async () => {
 document.addEventListener('click', e => {
   if (e.target === document.getElementById('modal-borrar')) cerrarModalBorrar();
 });
+
+window.diagnosticarPartidos = async () => {
+  const el = document.getElementById('diag-result');
+  const log = document.getElementById('import-log');
+  el.textContent = 'Cargando...';
+  log.style.display='block'; log.innerHTML='';
+  try {
+    const snap = await getDocs(collection(db,'partidos'));
+    const docs = snap.docs.map(d=>({id:d.id,...d.data()}));
+    const conFg    = docs.filter(d=>d.id.startsWith('fg')).length;
+    const conR32   = docs.filter(d=>d.id.startsWith('r32')).length;
+    const conR16   = docs.filter(d=>d.id.startsWith('r16')).length;
+    const conQF    = docs.filter(d=>d.id.startsWith('qf')).length;
+    const conSF    = docs.filter(d=>d.id.startsWith('sf')).length;
+    const conOtros = docs.filter(d=>!d.id.match(/^(fg|r32|r16|qf|sf|3p|fin)/)).length;
+    const conRes   = docs.filter(d=>d.resultado_local!=null).length;
+    const conSim   = docs.filter(d=>d.simulado===true).length;
+    el.innerHTML = `<span style="color:var(--green);">✓ ${docs.length} docs totales</span>`;
+    ilog(`━━━ DIAGNÓSTICO colección "partidos" (${docs.length} documentos) ━━━`,'info');
+    ilog(`fg* (grupos):     ${conFg}/72`,'ok');
+    ilog(`r32* (32avos):    ${conR32}/16`,'ok');
+    ilog(`r16* (octavos):   ${conR16}/8`,'ok');
+    ilog(`qf* (cuartos):    ${conQF}/4`,'ok');
+    ilog(`sf* (semis):      ${conSF}/2`,'ok');
+    ilog(`Con resultado:    ${conRes}`,'ok');
+    ilog(`Marcados simulado:${conSim}`,'ok');
+    if(conOtros>0){
+      const otros=docs.filter(d=>!d.id.match(/^(fg|r32|r16|qf|sf|3p|fin)/));
+      ilog(`⚠ IDs no reconocidos (${conOtros}): ${otros.map(d=>d.id).join(', ')}`,'err');
+    } else {
+      ilog('✅ Todos los IDs son correctos','ok');
+    }
+  } catch(e){ el.textContent='Error: '+e.message; }
+};
 
 window.borrarTodaColeccionPartidos = async () => {
   if(!confirm('⚠ PELIGRO: Se borrarán TODOS los documentos de la colección "partidos", incluyendo cualquier nombre/ID. Esta acción no se puede deshacer.\n\n¿Continuar?')) return;
