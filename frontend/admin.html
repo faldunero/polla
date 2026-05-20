@@ -1242,6 +1242,9 @@ nav {
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { calcularTablaGrupo, getMejoresTerceros, generarBracket, calcularPuntajePolla,
+  FIXTURE_MAP as FIFA_FIXTURE_MAP, FIXTURE_GRUPOS, FIXTURE_ELIM,
+  GRUPOS as FIFA_GRUPOS, PARTIDOS_GRUPOS_FLAT, PARTIDOS_ELIM_FLAT } from './fifa2026.js';
 import {
   getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc,
   doc, setDoc, query, where, orderBy, writeBatch, serverTimestamp, getDoc, deleteField
@@ -1267,19 +1270,12 @@ let currentUser = null;
 let globalPartidos = [];
 let SIM = {}; // declaración temprana — se inicializa en simInit()
 
-// ── Scoring (mismo algoritmo que server.js) ───────────────────────────────
+// ── Scoring — usa módulo fifa2026.js
 function calcularPuntaje(real, apuesta) {
-  const rl = Number(real.local),    rv = Number(real.visita);
-  const al = Number(apuesta.local), av = Number(apuesta.visita);
-  const exacto     = al === rl && av === rv;
-  const empateReal = rl === rv;
-  if (exacto && !empateReal) return 4;
-  if (exacto &&  empateReal) return 2;
-  const gr = rl > rv ? 'L' : rl < rv ? 'V' : 'E';
-  const ga = al > av ? 'L' : al < av ? 'V' : 'E';
-  if (gr === ga && gr !== 'E') return 3;
-  if (gr === 'E' && ga === 'E') return 1;
-  return 0;
+  return calcularPuntajePolla(
+    {local: real.local,   visita: real.visita},
+    {local: apuesta.local, visita: apuesta.visita}
+  );
 }
 
 // ── Auth ──────────────────────────────────────────────────────────────────
@@ -2981,8 +2977,9 @@ window.importarGrupos = async () => {
 
   let ok = 0, err = 0, lastG = '';
   // Usar db principal en batches de 400
-  for (let i = 0; i < PARTIDOS_GRUPOS.length; i += 400) {
-    const chunk = PARTIDOS_GRUPOS.slice(i, i + 400);
+  const _PG = PARTIDOS_GRUPOS_FLAT || PARTIDOS_GRUPOS;
+for (let i = 0; i < _PG.length; i += 400) {
+    const chunk = _PG.slice(i, i + 400);
     const batch = writeBatch(db);
     chunk.forEach(p => {
       const { id, ...data } = p;
@@ -2997,7 +2994,7 @@ window.importarGrupos = async () => {
   ilog('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   ilog(`${ok === PARTIDOS_GRUPOS.length ? '✅' : '⚠'} ${ok} importados | ${err} errores`, ok === PARTIDOS_GRUPOS.length ? 'ok' : 'err');
   btn.disabled = false;
-  btn.innerHTML = `<i class="fas fa-check"></i> Completado (${ok}/${PARTIDOS_GRUPOS.length})`;
+  btn.innerHTML = `<i class="fas fa-check"></i> Completado (${ok}/${_PG.length})`;
   toast(`Grupos: ${ok} partidos importados`, ok === PARTIDOS_GRUPOS.length ? 'success' : 'warn');
 };
 
@@ -3996,41 +3993,28 @@ function simGanador(p){
 
 // Genera los 16 cruces de 32avos a partir de las tablas de grupos
 function simGenerarR32(){
-  const grupos='ABCDEFGHIJKL'.split('');
-  const prim={}, seg={};
-  grupos.forEach(g=>{
-    const t=simTablaPosiciones(g);
-    prim[g]=t[0]?.[0]||`1.${g}`;
-    seg[g] =t[1]?.[0]||`2.${g}`;
-  });
-  const mejores3=Object.keys(SIM_EQUIPOS).map(g=>{
-    const t=simTablaPosiciones(g);
-    return t[2]?{grupo:g,nombre:t[2][0],...t[2][1]}:null;
-  }).filter(Boolean)
-    .sort((a,b)=>b.pts-a.pts||b.dg-a.dg||b.gf-a.gf)
-    .slice(0,8).map(x=>x.nombre);
-
-  return [
-    {id:'r32_1', local:prim.A, visita:seg.B,  fecha:'1 jul', estadio:'MetLife, Nueva York'},
-    {id:'r32_2', local:prim.C, visita:seg.D,  fecha:'1 jul', estadio:'AT&T, Dallas'},
-    {id:'r32_3', local:prim.E, visita:seg.F,  fecha:'2 jul', estadio:'SoFi, Los Ángeles'},
-    {id:'r32_4', local:prim.G, visita:seg.H,  fecha:'2 jul', estadio:'Mercedes-Benz, Atlanta'},
-    {id:'r32_5', local:prim.I, visita:seg.J,  fecha:'3 jul', estadio:'Gillette, Boston'},
-    {id:'r32_6', local:prim.K, visita:seg.L,  fecha:'3 jul', estadio:'Arrowhead, Kansas City'},
-    {id:'r32_7', local:prim.B, visita:seg.A,  fecha:'4 jul', estadio:'BC Place, Vancouver'},
-    {id:'r32_8', local:prim.D, visita:seg.C,  fecha:'4 jul', estadio:'NRG, Houston'},
-    {id:'r32_9', local:prim.F, visita:seg.E,  fecha:'5 jul', estadio:'BMO Field, Toronto'},
-    {id:'r32_10',local:prim.H, visita:seg.G,  fecha:'5 jul', estadio:'Hard Rock, Miami'},
-    {id:'r32_11',local:prim.J, visita:seg.I,  fecha:'6 jul', estadio:'Lumen, Seattle'},
-    {id:'r32_12',local:prim.L, visita:seg.K,  fecha:'6 jul', estadio:'Lincoln, Filadelfia'},
-    {id:'r32_13',local:mejores3[0]||'3er 1', visita:mejores3[1]||'3er 2', fecha:'7 jul', estadio:'AT&T, Dallas'},
-    {id:'r32_14',local:mejores3[2]||'3er 3', visita:mejores3[3]||'3er 4', fecha:'7 jul', estadio:'MetLife, Nueva York'},
-    {id:'r32_15',local:mejores3[4]||'3er 5', visita:mejores3[5]||'3er 6', fecha:'8 jul', estadio:'SoFi, Los Ángeles'},
-    {id:'r32_16',local:mejores3[6]||'3er 7', visita:mejores3[7]||'3er 8', fecha:'8 jul', estadio:'Mercedes-Benz, Atlanta'},
-  ].map(p=>({...p, resultado:null, fase:'r32'}));
+  // Usar motor FIFA del módulo fifa2026.js
+  if(SIM.jornada >= 3){
+    // Construir resCache desde partidos simulados
+    const resCache = {};
+    SIM.partidos.forEach(p=>{
+      if(p.resultado) resCache[SIM_ID_MAP[p.id]||p.id] = {
+        resultado_local: p.resultado.l, resultado_visita: p.resultado.v
+      };
+    });
+    // generarBracket devuelve FIXTURE_ELIM con equipos reales
+    const bracket = generarBracket(resCache);
+    return bracket.filter(p=>p.fase==='32avos').map(p=>({
+      id: p.id, local: p.local, visita: p.visita,
+      fecha: p.fecha.replace('2026-0','').replace('-',' jul').replace('-',' jun'),
+      estadio: p.estadio, resultado: null, fase: 'r32'
+    }));
+  }
+  // Fallback si no hay datos completos
+  return simGenerarR32Fallback();
 }
 
-// Genera los partidos de una fase eliminatoria a partir de los ganadores de la anterior
+function simGenerarR32Fallback(){
 function simGenerarFase(partidosAnt, faseId, fechas, estadios){
   const ganadores=partidosAnt.map(p=>simGanador(p)).filter(Boolean);
   const partidos=[];
