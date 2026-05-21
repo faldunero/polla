@@ -4841,24 +4841,29 @@ function simRenderAll(){
 }
 
 function simRenderGrupos(){
-  const c=document.getElementById('sim-v-grupos'); if(!c) return;
-  c.innerHTML=`<div class="sim-grupos-grid">${SIM.grupos.map(g=>{
-    const sorted=g.usuarios.slice().sort((a,b)=>b.puntaje-a.puntaje||b.aciertos-a.aciertos);
+  const c = document.getElementById('sim-v-grupos'); 
+  if(!c) return;
+
+  c.innerHTML = `<div class="sim-grupos-grid">${SIM.grupos.map(g => {
+    // Ordenar usuarios por puntaje (descendiente) y luego por aciertos
+    const sorted = g.usuarios.slice().sort((a,b) => b.puntaje - a.puntaje || b.aciertos - a.aciertos);
+    
     return `<div class="sim-grupo-card">
       <div class="sim-grupo-head">
         <div style="display:flex;align-items:center;gap:8px;">
           <div style="width:10px;height:10px;border-radius:50%;background:${g.color};flex-shrink:0;"></div>
           <span class="sim-grupo-name" style="color:${g.color}">${g.nombre}</span>
         </div>
-        <span class="badge badge-muted">7 jugadores</span>
+        <span class="badge badge-muted">${g.usuarios.length} jugadores</span>
       </div>
-      ${sorted.map((u,i)=>{
-        const med=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+      
+      ${sorted.map((u, i) => {
+        const med = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
         return `<div class="sim-usr-row">
           <div class="sim-avatar" style="background:${u.color}22;color:${u.color}">${u.iniciales}</div>
           <div style="flex:1;min-width:0;">
             <div style="font-size:.88rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${u.nombre}</div>
-            <div style="font-size:.7rem;color:var(--muted);">${u.aciertos} acierto${u.aciertos!==1?'s':''}</div>
+            <div style="font-size:.7rem;color:var(--muted);">${u.aciertos} acierto${u.aciertos !== 1 ? 's' : ''}</div>
           </div>
           <div style="font-size:.88rem;font-weight:700;color:var(--text);">${u.puntaje}pts</div>
           <div style="font-size:.95rem;min-width:18px;text-align:center;">${med}</div>

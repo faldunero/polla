@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Importar Fase Grupos · La Polla 2026</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:monospace;background:#0d0d0d;color:#fff;padding:28px;line-height:1.5}
+  h1{color:#F0C040;font-size:1.3rem;margin-bottom:6px}
+  .sub{color:#888;font-size:0.82rem;margin-bottom:20px}
+  #btn{background:#DA0015;color:white;border:none;padding:13px 32px;border-radius:6px;font-size:1rem;cursor:pointer;font-weight:700;letter-spacing:0.05em;transition:background 0.2s}
+  #btn:hover{background:#9E000F}
+  #btn:disabled{background:#333;cursor:not-allowed;color:#666}
+  #log{background:#111;border:1px solid #222;padding:16px;border-radius:8px;max-height:62vh;overflow-y:auto;font-size:0.78rem;line-height:1.8;margin-top:18px}
+  .ok{color:#4ade80} .err{color:#f87171} .info{color:#F0C040} .sep{color:#333}
+  .grp{color:#93c5fd;font-weight:700}
+</style>
+</head>
+<body>
+<h1>⚽ Importar Fase de Grupos · Firestore</h1>
+<div class="sub">72 partidos · 12 grupos · Fuente: calendario oficial FIFA · hora = ET = hora Santiago</div>
+<button id="btn" onclick="importar()">▶ Iniciar Importación</button>
+<div id="log"></div>
+<script type="module">
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import {getFirestore,setDoc,doc} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+const app=initializeApp({apiKey:"AIzaSyAqrYCFQN8epqx9HZrd7t1Ywz9wVf2Fx5Y",authDomain:"polla-495421-ab029.firebaseapp.com",projectId:"polla-495421-ab029",storageBucket:"polla-495421-ab029.firebasestorage.app",messagingSenderId:"366484877682",appId:"1:366484877682:web:a7c21e72c012d4b709adeb"});
+const db=getFirestore(app);
+const PARTIDOS=[
+  {
+    "id": "fgA1",
+    "fecha": "2026-06-11",
+    "hora": 0.625,
+    "grupo": "A",
+    "local": "Mexico",
+    "visita": "Sudafrica",
+    "estadio": "Estadio Azteca"
+  },
+  {
+    "id": "fgA2",
+    "fecha": "2026-06-11",
+    "hora": 0.916666667,
+    "grupo": "A",
+    "local": "Corea del Sur",
+    "visita": "Chequia",
+    "estadio": "Estadio Guadalajara"
+  },
+  {
+    "id": "fgB1",
+    "fecha": "2026-06-12",
+    "hora": 0.625,
+    "grupo": "B",
+    "local": "Canada",
+    "visita": "Bosnia y Herzegovina",
+    "estadio": "Estadio Toronto"
+  },
+  {
+    "id": "fgD1",
+    "fecha": "2026-06-12",
+    "hora": 0.875,
+    "grupo": "D",
+    "local": "Estados Unidos",
+    "visita": "Paraguay",
+    "estadio": "Estadio Los Angeles"
+  },
+  {
+    "id": "fgB2",
+    "fecha": "2026-06-13",
+    "hora": 0.625,
+    "grupo": "B",
+    "local": "Qatar",
+    "visita": "Suiza",
+    "estadio": "Estadio Bahia de San Francisco"
+  },
+  {
+    "id": "fgC1",
+    "fecha": "2026-06-13",
+    "hora": 0.75,
+    "grupo": "C",
+    "local": "Brasil",
+    "visita": "Marruecos",
+    "estadio": "Estadio Boston"
+  },
+  {
+    "id": "fgC2",
+    "fecha": "2026-06-13",
+    "hora": 0.875,
+    "grupo": "C",
+    "local": "Haiti",
+    "visita": "Escocia",
+    "estadio": "Estadio Nueva York Nueva Jersey"
+  },
+  {
+    "id": "fgD2",
+    "fecha": "2026-06-14",
+    "hora": 0.0,
+    "grupo": "D",
+    "local": "Australia",
+    "visita": "Turquia",
+    "estadio": "Estadio Vancouver"
+  },
+  {
+    "id": "fgE1",
+    "fecha": "2026-06-14",
+    "hora": 0.541666667,
+    "grupo": "E",
+    "local": "Alemania",
+    "visita": "Curazao",
+    "estadio": "Estadio Filadelfia"
+  },
+  {
+    "id": "fgF1",
+    "fecha": "2026-06-14",
+    "hora": 0.666666667,
+    "grupo": "F",
+    "local": "Paises Bajos",
+    "visita": "Japon",
+    "estadio": "Estadio Dallas"
+  },
+  {
+    "id": "fgE2",
+    "fecha": "2026-06-14",
+    "hora": 0.791666667,
+    "grupo": "E",
+    "local": "Costa de Marfil",
+    "visita": "Ecuador",
+    "estadio": "Estadio Houston"
+  },
+  {
+    "id": "fgF2",
+    "fecha": "2026-06-14",
+    "hora": 0.916666667,
+    "grupo": "F",
+    "local": "Suecia",
+    "visita": "Tunez",
+    "estadio": "Estadio Monterrey"
+  },
+  {
+    "id": "fgH1",
+    "fecha": "2026-06-15",
+    "hora": 0.5,
+    "grupo": "H",
+    "local": "Espana",
+    "visita": "Cabo Verde",
+    "estadio": "Estadio Atlanta"
+  },
+  {
+    "id": "fgG1",
+    "fecha": "2026-06-15",
+    "hora": 0.625,
+    "grupo": "G",
+    "local": "Belgica",
+    "visita": "Egipto",
+    "estadio": "Estadio Seattle"
+  },
+  {
+    "id": "fgH2",
+    "fecha": "2026-06-15",
+    "hora": 0.75,
+    "grupo": "H",
+    "local": "Arabia Saudita",
+    "visita": "Uruguay",
+    "estadio": "Estadio Miami"
+  },
+  {
+    "id": "fgG2",
+    "fecha": "2026-06-15",
+    "hora": 0.875,
+    "grupo": "G",
+    "local": "Iran",
+    "visita": "Nueva Zelanda",
+    "estadio": "Estadio Los Angeles"
+  },
+  {
+    "id": "fgI1",
+    "fecha": "2026-06-16",
+    "hora": 0.625,
+    "grupo": "I",
+    "local": "Francia",
+    "visita": "Senegal",
+    "estadio": "Estadio Nueva York Nueva Jersey"
+  },
+  {
+    "id": "fgI2",
+    "fecha": "2026-06-16",
+    "hora": 0.75,
+    "grupo": "I",
+    "local": "Irak",
+    "visita": "Noruega",
+    "estadio": "Estadio Boston"
+  },
+  {
+    "id": "fgJ1",
+    "fecha": "2026-06-16",
+    "hora": 0.875,
+    "grupo": "J",
+    "local": "Argentina",
+    "visita": "Argelia",
+    "estadio": "Estadio Kansas City"
+  },
+  {
+    "id": "fgJ2",
+    "fecha": "2026-06-17",
+    "hora": 0.0,
+    "grupo": "J",
+    "local": "Austria",
+    "visita": "Jordania",
+    "estadio": "Estadio Bahia de San Francisco"
+  },
+  {
+    "id": "fgK1",
+    "fecha": "2026-06-17",
+    "hora": 0.541666667,
+    "grupo": "K",
+    "local": "Portugal",
+    "visita": "RD Congo",
+    "estadio": "Estadio Houston"
+  },
+  {
+    "id": "fgL1",
+    "fecha": "2026-06-17",
+    "hora": 0.666666667,
+    "grupo": "L",
+    "local": "Inglaterra",
+    "visita": "Croacia",
+    "estadio": "Estadio Dallas"
+  },
+  {
+    "id": "fgL2",
+    "fecha": "2026-06-17",
+    "hora": 0.791666667,
+    "grupo": "L",
+    "local": "Ghana",
+    "visita": "Panama",
+    "estadio": "Estadio Toronto"
+  },
+  {
+    "id": "fgK2",
+    "fecha": "2026-06-17",
+    "hora": 0.916666667,
+    "grupo": "K",
+    "local": "Uzbekistan",
+    "visita": "Colombia",
+    "estadio": "Estadio Ciudad de Mexico"
+  },
+  {
+    "id": "fgA3",
+    "fecha": "2026-06-18",
+    "hora": 0.5,
+    "grupo": "A",
+    "local": "Chequia",
+    "visita": "Sudafrica",
+    "estadio": "Estadio Atlanta"
+  },
+  {
+    "id": "fgB3",
+    "fecha": "2026-06-18",
+    "hora": 0.625,
+    "grupo": "B",
+    "local": "Suiza",
+    "visita": "Bosnia y Herzegovina",
+    "estadio": "Estadio Los Angeles"
+  },
+  {
+    "id": "fgB4",
+    "fecha": "2026-06-18",
+    "hora": 0.75,
+    "grupo": "B",
+    "local": "Canada",
+    "visita": "Qatar",
+    "estadio": "Estadio Vancouver"
+  },
+  {
+    "id": "fgA4",
+    "fecha": "2026-06-18",
+    "hora": 0.875,
+    "grupo": "A",
+    "local": "Mexico",
+    "visita": "Corea del Sur",
+    "estadio": "Estadio Ciudad de Mexico"
+  },
+  {
+    "id": "fgD3",
+    "fecha": "2026-06-19",
+    "hora": 0.625,
+    "grupo": "D",
+    "local": "Estados Unidos",
+    "visita": "Australia",
+    "estadio": "Estadio Bahia de San Francisco"
+  },
+  {
+    "id": "fgC3",
+    "fecha": "2026-06-19",
+    "hora": 0.75,
+    "grupo": "C",
+    "local": "Escocia",
+    "visita": "Marruecos",
+    "estadio": "Estadio Boston"
+  },
+  {
+    "id": "fgC4",
+    "fecha": "2026-06-19",
+    "hora": 0.854166667,
+    "grupo": "C",
+    "local": "Brasil",
+    "visita": "Haiti",
+    "estadio": "Estadio Miami"
+  },
+  {
+    "id": "fgD4",
+    "fecha": "2026-06-19",
+    "hora": 0.958333333,
+    "grupo": "D",
+    "local": "Turquia",
+    "visita": "Paraguay",
+    "estadio": "Estadio Toronto"
+  },
+  {
+    "id": "fgF3",
+    "fecha": "2026-06-20",
+    "hora": 0.541666667,
+    "grupo": "F",
+    "local": "Paises Bajos",
+    "visita": "Suecia",
+    "estadio": "Estadio Houston"
+  },
+  {
+    "id": "fgE3",
+    "fecha": "2026-06-20",
+    "hora": 0.666666667,
+    "grupo": "E",
+    "local": "Alemania",
+    "visita": "Costa de Marfil",
+    "estadio": "Estadio Nueva York Nueva Jersey"
+  },
+  {
+    "id": "fgE4",
+    "fecha": "2026-06-20",
+    "hora": 0.833333333,
+    "grupo": "E",
+    "local": "Ecuador",
+    "visita": "Curazao",
+    "estadio": "Estadio Kansas City"
+  },
+  {
+    "id": "fgF4",
+    "fecha": "2026-06-21",
+    "hora": 0.0,
+    "grupo": "F",
+    "local": "Tunez",
+    "visita": "Japon",
+    "estadio": "Estadio Monterrey"
+  },
+  {
+    "id": "fgH3",
+    "fecha": "2026-06-21",
+    "hora": 0.5,
+    "grupo": "H",
+    "local": "Espana",
+    "visita": "Arabia Saudita",
+    "estadio": "Estadio Atlanta"
+  },
+  {
+    "id": "fgG3",
+    "fecha": "2026-06-21",
+    "hora": 0.625,
+    "grupo": "G",
+    "local": "Belgica",
+    "visita": "Iran",
+    "estadio": "Estadio Los Angeles"
+  },
+  {
+    "id": "fgH4",
+    "fecha": "2026-06-21",
+    "hora": 0.75,
+    "grupo": "H",
+    "local": "Uruguay",
+    "visita": "Cabo Verde",
+    "estadio": "Estadio Miami"
+  },
+  {
+    "id": "fgG4",
+    "fecha": "2026-06-21",
+    "hora": 0.875,
+    "grupo": "G",
+    "local": "Nueva Zelanda",
+    "visita": "Egipto",
+    "estadio": "Estadio Vancouver"
+  },
+  {
+    "id": "fgJ3",
+    "fecha": "2026-06-22",
+    "hora": 0.541666667,
+    "grupo": "J",
+    "local": "Argentina",
+    "visita": "Austria",
+    "estadio": "Estadio Dallas"
+  },
+  {
+    "id": "fgI3",
+    "fecha": "2026-06-22",
+    "hora": 0.708333333,
+    "grupo": "I",
+    "local": "Francia",
+    "visita": "Irak",
+    "estadio": "Estadio Filadelfia"
+  },
+  {
+    "id": "fgI4",
+    "fecha": "2026-06-22",
+    "hora": 0.833333333,
+    "grupo": "I",
+    "local": "Noruega",
+    "visita": "Senegal",
+    "estadio": "Estadio Nueva York Nueva Jersey"
+  },
+  {
+    "id": "fgJ4",
+    "fecha": "2026-06-22",
+    "hora": 0.958333333,
+    "grupo": "J",
+    "local": "Jordania",
+    "visita": "Argelia",
+    "estadio": "Estadio Bahia de San Francisco"
+  },
+  {
+    "id": "fgK3",
+    "fecha": "2026-06-23",
+    "hora": 0.541666667,
+    "grupo": "K",
+    "local": "Portugal",
+    "visita": "Uzbekistan",
+    "estadio": "Estadio Houston"
+  },
+  {
+    "id": "fgL3",
+    "fecha": "2026-06-23",
+    "hora": 0.666666667,
+    "grupo": "L",
+    "local": "Inglaterra",
+    "visita": "Ghana",
+    "estadio": "Estadio Boston"
+  },
+  {
+    "id": "fgL4",
+    "fecha": "2026-06-23",
+    "hora": 0.791666667,
+    "grupo": "L",
+    "local": "Panama",
+    "visita": "Croacia",
+    "estadio": "Estadio Toronto"
+  },
+  {
+    "id": "fgK4",
+    "fecha": "2026-06-23",
+    "hora": 0.916666667,
+    "grupo": "K",
+    "local": "Colombia",
+    "visita": "RD Congo",
+    "estadio": "Estadio Guadalajara"
+  },
+  {
+    "id": "fgB5",
+    "fecha": "2026-06-24",
+    "hora": 0.625,
+    "grupo": "B",
+    "local": "Suiza",
+    "visita": "Canada",
+    "estadio": "Estadio Vancouver"
+  },
+  {
+    "id": "fgB6",
+    "fecha": "2026-06-24",
+    "hora": 0.625,
+    "grupo": "B",
+    "local": "Bosnia y Herzegovina",
+    "visita": "Qatar",
+    "estadio": "Estadio Seattle"
+  },
+  {
+    "id": "fgC5",
+    "fecha": "2026-06-24",
+    "hora": 0.75,
+    "grupo": "C",
+    "local": "Marruecos",
+    "visita": "Haiti",
+    "estadio": "Estadio Atlanta"
+  },
+  {
+    "id": "fgC6",
+    "fecha": "2026-06-24",
+    "hora": 0.75,
+    "grupo": "C",
+    "local": "Escocia",
+    "visita": "Brasil",
+    "estadio": "Estadio Miami"
+  },
+  {
+    "id": "fgA5",
+    "fecha": "2026-06-24",
+    "hora": 0.875,
+    "grupo": "A",
+    "local": "Sudafrica",
+    "visita": "Corea del Sur",
+    "estadio": "Estadio Monterrey"
+  },
+  {
+    "id": "fgA6",
+    "fecha": "2026-06-24",
+    "hora": 0.875,
+    "grupo": "A",
+    "local": "Chequia",
+    "visita": "Mexico",
+    "estadio": "Estadio Ciudad de Mexico"
+  },
+  {
+    "id": "fgE5",
+    "fecha": "2026-06-25",
+    "hora": 0.666666667,
+    "grupo": "E",
+    "local": "Curazao",
+    "visita": "Costa de Marfil",
+    "estadio": "Estadio Filadelfia"
+  },
+  {
+    "id": "fgE6",
+    "fecha": "2026-06-25",
+    "hora": 0.666666667,
+    "grupo": "E",
+    "local": "Ecuador",
+    "visita": "Alemania",
+    "estadio": "Estadio Nueva York Nueva Jersey"
+  },
+  {
+    "id": "fgF5",
+    "fecha": "2026-06-25",
+    "hora": 0.791666667,
+    "grupo": "F",
+    "local": "Tunez",
+    "visita": "Paises Bajos",
+    "estadio": "Estadio Kansas City"
+  },
+  {
+    "id": "fgF6",
+    "fecha": "2026-06-25",
+    "hora": 0.791666667,
+    "grupo": "F",
+    "local": "Japon",
+    "visita": "Suecia",
+    "estadio": "Estadio Dallas"
+  },
+  {
+    "id": "fgD5",
+    "fecha": "2026-06-25",
+    "hora": 0.916666667,
+    "grupo": "D",
+    "local": "Turquia",
+    "visita": "Estados Unidos",
+    "estadio": "Estadio Los Angeles"
+  },
+  {
+    "id": "fgD6",
+    "fecha": "2026-06-25",
+    "hora": 0.916666667,
+    "grupo": "D",
+    "local": "Paraguay",
+    "visita": "Australia",
+    "estadio": "Estadio Bahia de San Francisco"
+  },
+  {
+    "id": "fgI5",
+    "fecha": "2026-06-26",
+    "hora": 0.625,
+    "grupo": "I",
+    "local": "Noruega",
+    "visita": "Francia",
+    "estadio": "Estadio Boston"
+  },
+  {
+    "id": "fgI6",
+    "fecha": "2026-06-26",
+    "hora": 0.625,
+    "grupo": "I",
+    "local": "Senegal",
+    "visita": "Irak",
+    "estadio": "Estadio Toronto"
+  },
+  {
+    "id": "fgH5",
+    "fecha": "2026-06-26",
+    "hora": 0.833333333,
+    "grupo": "H",
+    "local": "Cabo Verde",
+    "visita": "Arabia Saudita",
+    "estadio": "Estadio Houston"
+  },
+  {
+    "id": "fgH6",
+    "fecha": "2026-06-26",
+    "hora": 0.833333333,
+    "grupo": "H",
+    "local": "Uruguay",
+    "visita": "Espana",
+    "estadio": "Estadio Guadalajara"
+  },
+  {
+    "id": "fgG5",
+    "fecha": "2026-06-26",
+    "hora": 0.958333333,
+    "grupo": "G",
+    "local": "Nueva Zelanda",
+    "visita": "Belgica",
+    "estadio": "Estadio Vancouver"
+  },
+  {
+    "id": "fgG6",
+    "fecha": "2026-06-26",
+    "hora": 0.958333333,
+    "grupo": "G",
+    "local": "Egipto",
+    "visita": "Iran",
+    "estadio": "Estadio Miami"
+  },
+  {
+    "id": "fgL5",
+    "fecha": "2026-06-27",
+    "hora": 0.708333333,
+    "grupo": "L",
+    "local": "Panama",
+    "visita": "Inglaterra",
+    "estadio": "Estadio Nueva York Nueva Jersey"
+  },
+  {
+    "id": "fgL6",
+    "fecha": "2026-06-27",
+    "hora": 0.708333333,
+    "grupo": "L",
+    "local": "Croacia",
+    "visita": "Ghana",
+    "estadio": "Estadio Filadelfia"
+  },
+  {
+    "id": "fgK5",
+    "fecha": "2026-06-27",
+    "hora": 0.8125,
+    "grupo": "K",
+    "local": "Colombia",
+    "visita": "Portugal",
+    "estadio": "Estadio Miami"
+  },
+  {
+    "id": "fgK6",
+    "fecha": "2026-06-27",
+    "hora": 0.8125,
+    "grupo": "K",
+    "local": "RD Congo",
+    "visita": "Uzbekistan",
+    "estadio": "Estadio Atlanta"
+  },
+  {
+    "id": "fgJ5",
+    "fecha": "2026-06-27",
+    "hora": 0.916666667,
+    "grupo": "J",
+    "local": "Argelia",
+    "visita": "Austria",
+    "estadio": "Estadio Kansas City"
+  },
+  {
+    "id": "fgJ6",
+    "fecha": "2026-06-27",
+    "hora": 0.916666667,
+    "grupo": "J",
+    "local": "Jordania",
+    "visita": "Argentina",
+    "estadio": "Estadio Dallas"
+  }
+];
+function log(msg,cls=''){const el=document.getElementById('log');el.innerHTML+=`<div class="${cls}">${msg}</div>`;el.scrollTop=el.scrollHeight;}
+window.importar=async function(){
+  const btn=document.getElementById('btn');
+  btn.disabled=true;btn.textContent='⏳ Importando...';
+  log(`<span class="info">Iniciando — ${PARTIDOS.length} partidos desde el calendario oficial FIFA</span>`);
+  log(`<span class="sep">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>`);
+  let ok=0,err=0,lastG='';
+  for(const p of PARTIDOS){
+    const{id,...data}=p;
+    if(data.grupo!==lastG){log(`<span class="sep">──</span> <span class="grp">GRUPO ${data.grupo}</span>`);lastG=data.grupo;}
+    try{
+      await setDoc(doc(db,'partidos',id),data);
+      log(`<span class="ok">✓</span> <span style="color:#666">${id}</span> &nbsp; ${data.local} <span style="color:#555">vs</span> ${data.visita} <span style="color:#444">· ${data.fecha} ${data.hora_santiago||''} · ${data.estadio}</span>`);
+      ok++;
+    }catch(e){log(`<span class="err">✗ ${id}: ${e.message}</span>`);err++;}
+  }
+  log(`<span class="sep">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>`);
+  log(`<span class="${ok===PARTIDOS.length?'ok':'err'}"><strong>✅ ${ok} importados &nbsp;|&nbsp; ❌ ${err} errores</strong></span>`);
+  btn.textContent=`✅ Completado (${ok}/${PARTIDOS.length})`;
+};
+</script>
+</body>
+</html>
