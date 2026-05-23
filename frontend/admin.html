@@ -532,8 +532,15 @@ nav {
 </head>
 <body>
 
+<!-- PANTALLA DE CARGA INICIAL -->
+<div id="loading-screen" style="position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--gold);letter-spacing:0.1em;">⚽ La Polla 2026</div>
+  <div style="width:36px;height:36px;border:3px solid rgba(245,200,66,0.2);border-top-color:var(--gold);border-radius:50%;animation:spin-loader 0.8s linear infinite;"></div>
+  <style>@keyframes spin-loader{to{transform:rotate(360deg);}}</style>
+</div>
+
 <!-- NAV SITIO: visible solo cuando acceso es denegado -->
-<nav id="site-nav" style="display:flex;">
+<nav id="site-nav">
   <a href="index.html" class="site-nav-brand">
     <div class="site-nav-logo">⚽</div>
     <div class="site-nav-brand-text">
@@ -1236,8 +1243,6 @@ nav {
 
 <div id="toast"></div>
 
-<div id="toast"></div>
-
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
@@ -1287,6 +1292,10 @@ window.loginGoogle = async () => {
 window.logout = async () => { await signOut(auth); };
 
 onAuthStateChanged(auth, async user => {
+  // Ocultar pantalla de carga inicial siempre
+  const loadingScreen = document.getElementById('loading-screen');
+  if (loadingScreen) loadingScreen.style.display = 'none';
+
   if (user) {
     if (user.uid !== ADMIN_UID) {
       await signOut(auth);
