@@ -1734,29 +1734,71 @@ async function renderResultadosAccordion() {
 
   html += `</div>`;
 
-  // Paneles de grupos
+  // Paneles de grupos — tabla de posiciones
   gruposKeys.forEach((g, i) => {
-    const partidos = FG_IDX[g].map(id => {
-      // FIXTURE_MAP = fuente de verdad local (local, visita, fecha, hora, estadio, grupo)
-      // resCache    = datos de Firestore (puede tener resultado + puede tener datos completos)
-      // Merge: fixture base → datos Firestore → garantiza que nunca falten campos
-      const base = FIXTURE_MAP[id] || globalData.partidos?.find(p => p.id === id) || null;
-      const res  = resCache[id] || null;
-      if (!base && !res) return null;
-      return { ...(base || {}), ...(res || {}) };
-    }).filter(Boolean);
+    const tabla = calcularTablaGrupo(g, resCache);
+    const jugados = FG_IDX[g].filter(id => resCache[id]?.resultado_local != null).length;
 
-    // Fallback: buscar en globalData.partidos por local+visita si no hay por id
-    const partidosGrupo = partidos.length > 0 ? partidos :
-      (globalData.partidos || []).filter(p => {
-        const pL = (globalData.paises||[]).find(pa => norm(pa.nombre)===norm(p.local));
-        const pV = (globalData.paises||[]).find(pa => norm(pa.nombre)===norm(p.visita));
-        return (pL?.grupo||pV?.grupo) === g;
-      });
+    const rows = tabla.map((t, idx) => {
+      const dg = t.dg > 0 ? `+${t.dg}` : String(t.dg);
+      const trClass = idx < 2 ? 'tabla-clasificado' : idx === 2 ? 'tabla-3ero' : '';
+      const clasificaBadge = jugados > 0
+        ? (idx < 2
+            ? `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#16a34a;margin-left:4px;vertical-align:middle;" title="Clasifica a 32avos"></span>`
+            : idx === 2
+            ? `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#ca8a04;margin-left:4px;vertical-align:middle;" title="3er lugar"></span>`
+            : '')
+        : '';
+      return `<tr class="${trClass}">
+        <td style="padding-left:14px;font-weight:700;color:var(--muted);width:24px;">${idx+1}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:7px;">
+            <span style="font-size:1.1rem;">${getFlag(t.nombre)}</span>
+            <span style="font-weight:600;font-size:0.85rem;">${t.nombre}</span>
+            ${clasificaBadge}
+          </div>
+        </td>
+        <td style="text-align:center;color:var(--muted);">${t.pj}</td>
+        <td style="text-align:center;color:#16a34a;font-weight:700;">${t.g}</td>
+        <td style="text-align:center;color:#ca8a04;">${t.e}</td>
+        <td style="text-align:center;color:#dc2626;">${t.pe}</td>
+        <td style="text-align:center;">${t.gf}</td>
+        <td style="text-align:center;">${t.gc}</td>
+        <td style="text-align:center;font-weight:600;color:${t.dg>0?'#16a34a':t.dg<0?'#dc2626':'inherit'}">${dg}</td>
+        <td style="text-align:center;padding-right:14px;font-family:var(--font-display);font-weight:900;font-size:1rem;">${t.pts}</td>
+      </tr>`;
+    }).join('');
+
+    const sinDatos = jugados === 0;
 
     html += `<div class="res-grupo-panel${i===0?' active':''}" id="rgp-${g}-grupos">
-      <div class="res-partidos-wrap">
-        ${partidosGrupo.map(p => renderResPartido(p, false)).join('') || '<p style="color:var(--muted);font-size:0.82rem;">Sin partidos disponibles aún.</p>'}
+      <div style="padding:12px 16px;">
+        ${sinDatos
+          ? `<div style="text-align:center;padding:20px;color:var(--muted);font-size:0.82rem;"><i class="fas fa-clock" style="margin-bottom:6px;display:block;font-size:1.2rem;opacity:.4;"></i>Sin resultados aún</div>`
+          : `<div style="overflow-x:auto;">
+              <table style="width:100%;border-collapse:collapse;min-width:380px;">
+                <thead>
+                  <tr style="border-bottom:2px solid var(--border);background:var(--off);">
+                    <th style="padding:8px 14px;text-align:left;font-family:var(--font-display);font-size:0.6rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);width:24px;">#</th>
+                    <th style="padding:8px 10px;text-align:left;font-family:var(--font-display);font-size:0.6rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);">Equipo</th>
+                    <th style="padding:8px 6px;text-align:center;font-family:var(--font-display);font-size:0.6rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);" title="Partidos jugados">PJ</th>
+                    <th style="padding:8px 6px;text-align:center;font-family:var(--font-display);font-size:0.6rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#16a34a;" title="Ganados">G</th>
+                    <th style="padding:8px 6px;text-align:center;font-family:var(--font-display);font-size:0.6rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#ca8a04;" title="Empates">E</th>
+                    <th style="padding:8px 6px;text-align:center;font-family:var(--font-display);font-size:0.6rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#dc2626;" title="Perdidos">P</th>
+                    <th style="padding:8px 6px;text-align:center;font-family:var(--font-display);font-size:0.6rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);" title="Goles a favor">GF</th>
+                    <th style="padding:8px 6px;text-align:center;font-family:var(--font-display);font-size:0.6rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);" title="Goles en contra">GC</th>
+                    <th style="padding:8px 6px;text-align:center;font-family:var(--font-display);font-size:0.6rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);" title="Diferencia de goles">DG</th>
+                    <th style="padding:8px 14px;text-align:center;font-family:var(--font-display);font-size:0.6rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink);" title="Puntos">Pts</th>
+                  </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+            <div style="padding:6px 14px 4px;font-size:0.64rem;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;">
+              <span><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#16a34a;margin-right:4px;vertical-align:middle;"></span>Clasifica a 32avos</span>
+              <span><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#ca8a04;margin-right:4px;vertical-align:middle;"></span>Posible 3er lugar</span>
+            </div>`
+        }
       </div>
     </div>`;
   });
