@@ -1980,51 +1980,88 @@ async function renderRankingGlobal() {
 
     // Ranking global
     const totalDisc = ranking.reduce((s,r) => s + r.discrepancias, 0);
-    html += '<div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--gold);letter-spacing:.06em;margin-bottom:12px;">Ranking Global &middot; ' + ranking.length + ' participante' + (ranking.length!==1?'s':'') + ' aprobado' + (ranking.length!==1?'s':'') + '</div>';
+    html += '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1rem;color:var(--gold);letter-spacing:.06em;margin-bottom:12px;">Ranking Global &middot; ' + ranking.length + ' participante' + (ranking.length!==1?'s':'') + ' aprobado' + (ranking.length!==1?'s':'') + '</div>';
     html += '<table class="ranking-table" style="margin-bottom:28px;"><thead><tr>';
     html += '<th style="width:36px;">#</th><th>Jugador</th><th>Grupo</th>';
     html += '<th style="text-align:center;">Apuestas</th><th style="text-align:center;">Aciertos</th>';
     html += '<th style="text-align:center;">Exactos</th><th style="text-align:right;">Puntos</th></tr></thead><tbody>';
 
-    ranking.forEach(function(r, i) {
-      const pos = i+1;
-      const posClass = pos===1?'pos-1':pos===2?'pos-2':pos===3?'pos-3':'pos-n';
-      const disc = r.discrepancias ? ' <span title="' + r.discrepancias + ' discrepancia(s)" style="color:var(--red);font-size:.7rem;">⚠</span>' : '';
-      html += '<tr>';
-      html += '<td><span class="pos-badge ' + posClass + '">' + pos + '</span></td>';
-      html += '<td style="font-weight:600;">' + r.nombre + disc + '</td>';
-      html += '<td style="color:var(--muted);font-size:.82rem;">' + r.grupoNombre + '</td>';
-      html += '<td style="text-align:center;color:var(--muted);">' + r.apuestas + '</td>';
-      html += '<td style="text-align:center;color:var(--muted);">' + r.aciertos + '</td>';
-      html += '<td style="text-align:center;color:var(--muted);">' + r.exactos + '</td>';
-      html += '<td style="text-align:right;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:' + (r.total>0?'var(--gold)':'var(--muted)') + ';">' + r.total + '</td>';
-      html += '</tr>';
-    });
-    html += '</tbody></table>';
+    
+      // Ranking global
+const totalDisc = ranking.reduce((s, r) => s + r.discrepancias, 0);
 
-    // Ranking por grupo
-    html += '<div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--gold);letter-spacing:.06em;margin-bottom:14px;">Ranking por Grupo</div>';
-    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;">';
-    Object.values(porGrupo).forEach(function(g) {
-      html += '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">';
-      html += '<div style="background:var(--card2);padding:10px 16px;border-bottom:1px solid var(--border);font-family:'Bebas Neue',sans-serif;font-size:.95rem;">' + g.nombre + ' <span style="font-size:.7rem;color:var(--muted);font-family:'DM Sans',sans-serif;">' + g.jugadores.length + ' jugador' + (g.jugadores.length!==1?'es':'') + '</span></div>';
-      html += '<table style="width:100%;border-collapse:collapse;font-size:.82rem;"><thead><tr style="border-bottom:1px solid var(--border);">';
-      html += '<th style="padding:7px 12px;color:var(--muted);font-size:.68rem;text-align:left;">#</th>';
-      html += '<th style="padding:7px 12px;color:var(--muted);font-size:.68rem;text-align:left;">Jugador</th>';
-      html += '<th style="padding:7px 8px;color:var(--muted);font-size:.68rem;text-align:center;">Ver.</th>';
-      html += '<th style="padding:7px 12px;color:var(--gold);font-size:.68rem;text-align:right;">Pts</th></tr></thead><tbody>';
-      g.jugadores.forEach(function(r, i) {
-        const pc = i===0?'pos-1':i===1?'pos-2':i===2?'pos-3':'pos-n';
-        html += '<tr style="border-bottom:1px solid var(--border);">';
-        html += '<td style="padding:8px 12px;"><span class="pos-badge ' + pc + '" style="width:24px;height:24px;font-size:.72rem;">' + (i+1) + '</span></td>';
-        html += '<td style="padding:8px 12px;font-weight:500;">' + r.nombre + '</td>';
-        html += '<td style="padding:8px 8px;text-align:center;color:var(--muted);font-size:.78rem;">' + r.verificadas + '</td>';
-        html += '<td style="padding:8px 12px;text-align:right;font-family:'Bebas Neue',sans-serif;font-size:1rem;color:' + (r.total>0?'var(--gold)':'var(--muted)') + ';">' + r.total + '</td>';
-        html += '</tr>';
-      });
-      html += '</tbody></table></div>';
-    });
-    html += '</div>';
+html += `
+  <div style="font-family:'Bebas Neue',sans-serif; font-size:1rem; color:var(--gold); letter-spacing:.06em; margin-bottom:12px;">
+    Ranking Global &middot; ${ranking.length} participante${ranking.length !== 1 ? 's' : ''} aprobado${ranking.length !== 1 ? 's' : ''}
+  </div>
+  <table class="ranking-table" style="margin-bottom:28px;">
+    <thead>
+      <tr>
+        <th style="width:36px;">#</th>
+        <th>Jugador</th>
+        <th>Grupo</th>
+        <th style="text-align:center;">Apuestas</th>
+        <th style="text-align:center;">Aciertos</th>
+        <th style="text-align:center;">Exactos</th>
+        <th style="text-align:right;">Puntos</th>
+      </tr>
+    </thead>
+    <tbody>
+`;
+
+html += '</tbody></table>';
+
+// Ranking por grupo (¡CORREGIDO CON TEMPLATE LITERALS!)
+html += `
+  <div style="font-family:'Bebas Neue',sans-serif; font-size:1rem; color:var(--gold); letter-spacing:.06em; margin-bottom:14px;">
+    Ranking por Grupo
+  </div>
+  <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px;">
+`;
+
+Object.values(porGrupo).forEach(function(g) {
+  html += `
+    <div style="background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden;">
+      <div style="background:var(--card2); padding:10px 16px; border-bottom:1px solid var(--border); font-family:'Bebas Neue',sans-serif; font-size:.95rem;">
+        ${g.nombre} 
+        <span style="font-size:.7rem; color:var(--muted); font-family:'DM Sans',sans-serif;">
+          ${g.jugadores.length} jugador${g.jugadores.length !== 1 ? 'es' : ''}
+        </span>
+      </div>
+      <table style="width:100%; border-collapse:collapse; font-size:.82rem;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="padding:7px 12px; color:var(--muted); font-size:.68rem; text-align:left;">#</th>
+            <th style="padding:7px 12px; color:var(--muted); font-size:.68rem; text-align:left;">Jugador</th>
+            <th style="padding:7px 8px; color:var(--muted); font-size:.68rem; text-align:center;">Ver.</th>
+            <th style="padding:7px 12px; color:var(--gold); font-size:.68rem; text-align:right;">Pts</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  g.jugadores.forEach(function(r, i) {
+    const pc = i === 0 ? 'pos-1' : i === 1 ? 'pos-2' : i === 2 ? 'pos-3' : 'pos-n';
+    const colorPts = r.total > 0 ? 'var(--gold)' : 'var(--muted)';
+    
+    html += `
+      <tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:8px 12px;">
+          <span class="pos-badge ${pc}" style="width:24px; height:24px; font-size:.72rem;">${i + 1}</span>
+        </td>
+        <td style="padding:8px 12px; font-weight:500;">${r.nombre}</td>
+        <td style="padding:8px 8px; text-align:center; color:var(--muted); font-size:.78rem;">${r.verificadas}</td>
+        <td style="padding:8px 12px; text-align:right; font-family:'Bebas Neue',sans-serif; font-size:1rem; color:${colorPts};">
+          ${r.total}
+        </td>
+      </tr>
+    `;
+  });
+
+  html += '</tbody></table></div>';
+});
+
+html += '</div>';
 
     // Veracidad
     if (totalDisc > 0) {
