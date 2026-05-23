@@ -505,6 +505,27 @@ nav {
 .sim-notice{text-align:center;padding:48px 20px;color:var(--muted);}
 .sim-notice i{font-size:2rem;margin-bottom:12px;display:block;opacity:.4;}
 
+/* ── PLAZOS ─────────────────────────────────────────────────────── */
+.plazo-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:box-shadow .2s;}
+.plazo-card:hover{box-shadow:0 4px 24px rgba(0,0,0,0.18);}
+.plazo-header{display:flex;align-items:flex-start;gap:14px;padding:18px 20px;border-bottom:1px solid var(--border);}
+.plazo-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.plazo-info{flex:1;min-width:0;}
+.plazo-title{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.04em;color:var(--text);}
+.plazo-desc{font-size:0.74rem;color:var(--muted);margin-top:2px;}
+.plazo-estado{font-size:0.74rem;font-weight:600;margin-top:5px;}
+.plazo-toggle-wrap{flex-shrink:0;display:flex;align-items:center;}
+.plazo-lock-label{display:flex;align-items:center;cursor:pointer;user-select:none;}
+.plazo-lock-label input{display:none;}
+.plazo-lock-track{width:38px;height:21px;background:rgba(255,255,255,0.08);border:1px solid var(--border);border-radius:999px;position:relative;transition:background .2s;flex-shrink:0;}
+.plazo-lock-thumb{position:absolute;top:3px;left:3px;width:13px;height:13px;border-radius:50%;background:var(--muted);transition:all .2s;}
+.plazo-lock-label input:checked ~ .plazo-lock-track{background:rgba(239,68,68,0.3);border-color:rgba(239,68,68,0.5);}
+.plazo-lock-label input:checked ~ .plazo-lock-track .plazo-lock-thumb{left:20px;background:#ef4444;}
+.plazo-body{padding:16px 20px;}
+.plazo-field{display:flex;flex-direction:column;gap:8px;}
+.plazo-field-label{font-size:0.75rem;font-weight:600;color:var(--muted);letter-spacing:0.05em;text-transform:uppercase;display:flex;align-items:center;gap:6px;}
+.plazo-dt-input{font-size:0.85rem !important;padding:9px 12px !important;}
+
 /* ── RESET BUTTONS ─────────────────────────────────────────────── */
 .btn-reset-partido{padding:5px 9px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:rgba(239,68,68,0.7);border-radius:7px;font-size:0.72rem;cursor:pointer;transition:all 0.18s;display:inline-flex;align-items:center;gap:4px;font-family:"DM Sans",sans-serif;}
 .btn-reset-partido:hover{background:rgba(239,68,68,0.18);color:var(--red);border-color:rgba(239,68,68,0.4);}
@@ -598,6 +619,7 @@ nav {
       <button class="tab" onclick="showTab('selecciones')"><i class="fas fa-flag"></i> Selecciones</button>
       <button class="tab" onclick="showTab('estadios')"><i class="fas fa-landmark"></i> Estadios</button>
       <button class="tab" onclick="showTab('simulador')"><i class="fas fa-flask"></i> Simulador</button>
+      <button class="tab" onclick="showTab('plazos')"><i class="fas fa-clock"></i> Plazos</button>
     </div>
 
     <!-- TAB GRUPOS -->
@@ -964,6 +986,40 @@ nav {
       <div id="sim-v-ranking" class="sim-view" style="display:none;"></div>
       <div id="sim-v-clasificados" class="sim-view" style="display:none;"></div>
     </div>
+
+    <!-- TAB PLAZOS -->
+    <div id="tab-plazos" class="page">
+      <div class="section-title"><i class="fas fa-clock"></i> Control de Plazos
+        <span style="font-size:0.78rem;font-weight:400;color:var(--muted);font-family:'Barlow',sans-serif;margin-left:10px;">Define hasta cuándo los participantes pueden ingresar sus resultados en cada fase.</span>
+      </div>
+
+      <div class="alert alert-info" style="margin-bottom:20px;">
+        <i class="fas fa-circle-info"></i>
+        <div>
+          <strong>¿Cómo funciona?</strong> — Cuando se supera la fecha límite de una fase, el sistema bloquea automáticamente el ingreso de resultados para esa fase. También puedes forzar el bloqueo manualmente sin depender de la fecha.
+          <br><span style="font-size:0.78rem;opacity:.8;">Los cambios se guardan automáticamente en Firestore al modificar cualquier campo.</span>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:20px;">
+        <div style="font-size:0.8rem;color:var(--muted);">
+          <i class="fas fa-circle" style="color:#22c55e;font-size:.5rem;vertical-align:middle;"></i> Abierto &nbsp;
+          <i class="fas fa-circle" style="color:#f59e0b;font-size:.5rem;vertical-align:middle;"></i> Por cerrar &nbsp;
+          <i class="fas fa-circle" style="color:#ef4444;font-size:.5rem;vertical-align:middle;"></i> Cerrado / Bloqueado
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="loadPlazos()">
+          <i class="fas fa-rotate"></i> Recargar
+        </button>
+      </div>
+
+      <div id="plazos-container" style="display:flex;flex-direction:column;gap:14px;">
+        <div style="text-align:center;padding:40px;color:var(--muted);font-size:0.85rem;">
+          <i class="fas fa-spinner fa-spin" style="margin-bottom:8px;display:block;font-size:1.5rem;"></i>
+          Cargando plazos...
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1348,6 +1404,7 @@ window.showTab = async (tab) => {
     simInit();
     simRenderAll();
   }
+  if (tab === 'plazos') loadPlazos();
 };
 
 // ── SOLICITUDES (directo a Firestore) ────────────────────────────────────
@@ -2269,7 +2326,7 @@ window.ejecutarResetGrupo = async function() {
     const partidos = FG[g];
     const idsConRes = partidos.filter(p => resCache[p.id]?.resultado_local != null).map(p => p.id);
 
-    // Borrar campos de resultado de cada partido
+    // 1) Borrar resultados del grupo en Firestore
     const batchP = writeBatch(db);
     idsConRes.forEach(id => {
       batchP.set(doc(db, 'partidos', id), {
@@ -2281,7 +2338,7 @@ window.ejecutarResetGrupo = async function() {
     });
     await batchP.commit();
 
-    // Resetear puntajes de apuestas relacionadas
+    // 2) Resetear puntajes de apuestas del grupo
     for (const id of idsConRes) {
       const apSnap = await getDocs(query(collection(db, 'apuestas'), where('partidoId', '==', id)));
       if (apSnap.size > 0) {
@@ -2291,19 +2348,172 @@ window.ejecutarResetGrupo = async function() {
         });
         await batchA.commit();
       }
-      // Actualizar cache local
       if (resCache[id]) {
         delete resCache[id].resultado_local;
         delete resCache[id].resultado_visita;
       }
     }
 
-    cerrarResetGrupo();
-    toast(`Grupo ${g}: ${idsConRes.length} resultados reseteados ✓`, 'success');
+    // 3) Recalcular y restaurar los 32 partidos de 32avos ─────────────────────
+    // Esquema fijo FIFA 2026 para r32_1..r32_12
+    const CRUCES_FIJOS = {
+      r32_1:  { local:'1.A', visita:'2.B' },
+      r32_2:  { local:'1.C', visita:'2.D' },
+      r32_3:  { local:'1.E', visita:'2.F' },
+      r32_4:  { local:'1.G', visita:'2.H' },
+      r32_5:  { local:'1.I', visita:'2.J' },
+      r32_6:  { local:'1.K', visita:'2.L' },
+      r32_7:  { local:'1.B', visita:'2.A' },
+      r32_8:  { local:'1.D', visita:'2.C' },
+      r32_9:  { local:'1.F', visita:'2.E' },
+      r32_10: { local:'1.H', visita:'2.G' },
+      r32_11: { local:'1.J', visita:'2.I' },
+      r32_12: { local:'1.L', visita:'2.K' },
+    };
 
-    // Recargar la UI del tab
+    // Mapa de grupo → partidos (FG_IDS_MAP)
+    const ALL_FG_IDS = Object.values(FG).flat().map(p => p.id);
+
+    // Calcular tablas de todos los grupos con los datos que quedan en resCache
+    function calcTablaGrupo(grupoId) {
+      const equipos = {};
+      (FG[grupoId] || []).forEach(p => {
+        [p.local, p.visita].forEach(e => { if (e) equipos[e] = {nombre:e, pj:0,g:0,e:0,pe:0,gf:0,gc:0,dg:0,pts:0}; });
+      });
+      (FG[grupoId] || []).forEach(p => {
+        const res = resCache[p.id];
+        if (res?.resultado_local == null) return;
+        const gl = Number(res.resultado_local), gv = Number(res.resultado_visita);
+        const eqL = equipos[p.local], eqV = equipos[p.visita];
+        if (!eqL || !eqV) return;
+        eqL.pj++; eqV.pj++; eqL.gf+=gl; eqL.gc+=gv; eqV.gf+=gv; eqV.gc+=gl;
+        eqL.dg = eqL.gf-eqL.gc; eqV.dg = eqV.gf-eqV.gc;
+        if (gl > gv)      { eqL.g++; eqL.pts+=3; eqV.pe++; }
+        else if (gl < gv) { eqV.g++; eqV.pts+=3; eqL.pe++; }
+        else              { eqL.e++; eqV.e++; eqL.pts++; eqV.pts++; }
+      });
+      return Object.values(equipos).sort((a,b) =>
+        b.pts-a.pts || b.dg-a.dg || b.gf-a.gf || a.nombre.localeCompare(b.nombre)
+      );
+    }
+
+    // Resolver nombre real o placeholder para un grupo y posición
+    function resolverEquipo(grupoId, pos) {
+      const tabla = calcTablaGrupo(grupoId);
+      const grupoCompleto = (FG[grupoId]||[]).every(p => resCache[p.id]?.resultado_local != null);
+      if (!grupoCompleto || tabla.length < 2) return pos === 0 ? `1.${grupoId}` : `2.${grupoId}`;
+      return tabla[pos]?.nombre || (pos === 0 ? `1.${grupoId}` : `2.${grupoId}`);
+    }
+
+    // Calcular mejores terceros (los 8 de 12 grupos)
+    function calcMejoresTerceros() {
+      const GRUPOS_TODOS = Object.keys(FG);
+      const terceros = [];
+      GRUPOS_TODOS.forEach(gr => {
+        const tabla = calcTablaGrupo(gr);
+        const completo = (FG[gr]||[]).every(p => resCache[p.id]?.resultado_local != null);
+        if (completo && tabla[2]) {
+          terceros.push({ ...tabla[2], grupo: gr });
+        }
+      });
+      // Ordenar: pts desc → dg desc → gf desc → nombre asc
+      terceros.sort((a,b) => b.pts-a.pts || b.dg-a.dg || b.gf-a.gf || a.nombre.localeCompare(b.nombre));
+      return terceros.slice(0, 8); // los 8 mejores
+    }
+
+    // Tabla oficial FIFA de cruces de mejores 3eros según los grupos que clasificaron
+    // Fuente: reglamento FIFA 2026 (los 8 mejores de 12 grupos se sortean en 4 cruces)
+    // Dado que el sorteo de terceros en FIFA 2026 aún no está publicado con tabla predefinida,
+    // usamos el criterio más justo: los 8 mejores 3eros ordenados, cruzados en pares 1v8, 2v7, 3v6, 4v5
+    function asignarCrucesTerceros(mejores8) {
+      if (mejores8.length < 8) {
+        // No hay suficientes grupos completos aún → placeholders
+        return {
+          r32_13: { local:'3er mejor 1', visita:'3er mejor 2' },
+          r32_14: { local:'3er mejor 3', visita:'3er mejor 4' },
+          r32_15: { local:'3er mejor 5', visita:'3er mejor 6' },
+          r32_16: { local:'3er mejor 7', visita:'3er mejor 8' },
+        };
+      }
+      return {
+        r32_13: { local: mejores8[0].nombre, visita: mejores8[7].nombre },
+        r32_14: { local: mejores8[1].nombre, visita: mejores8[6].nombre },
+        r32_15: { local: mejores8[2].nombre, visita: mejores8[5].nombre },
+        r32_16: { local: mejores8[3].nombre, visita: mejores8[4].nombre },
+      };
+    }
+
+    // Construir todos los cruces de 32avos
+    const GRUPOS_CRUCES = {
+      r32_1:  ['A','B'], r32_2:  ['C','D'], r32_3:  ['E','F'],  r32_4:  ['G','H'],
+      r32_5:  ['I','J'], r32_6:  ['K','L'], r32_7:  ['B','A'],  r32_8:  ['D','C'],
+      r32_9:  ['F','E'], r32_10: ['H','G'], r32_11: ['J','I'],  r32_12: ['L','K'],
+    };
+
+    const mejores8 = calcMejoresTerceros();
+    const crucesTerceros = asignarCrucesTerceros(mejores8);
+
+    // Escribir en Firestore todos los 32avos actualizados
+    const batchR32 = writeBatch(db);
+
+    // Partidos 1-12: primer y segundo de grupos
+    Object.entries(GRUPOS_CRUCES).forEach(([id, [gl, gv]]) => {
+      const localNombre  = resolverEquipo(gl, 0);
+      const visitaNombre = resolverEquipo(gv, 1);
+      batchR32.set(doc(db, 'partidos', id), {
+        local:            localNombre,
+        visita:           visitaNombre,
+        resultado_local:  deleteField(),
+        resultado_visita: deleteField(),
+        actualizadoPor:   deleteField(),
+        actualizadoEn:    deleteField(),
+      }, { merge: true });
+      // Actualizar cache local
+      if (!resCache[id]) resCache[id] = {};
+      resCache[id].local  = localNombre;
+      resCache[id].visita = visitaNombre;
+      delete resCache[id].resultado_local;
+      delete resCache[id].resultado_visita;
+    });
+
+    // Partidos 13-16: mejores terceros
+    Object.entries(crucesTerceros).forEach(([id, {local: ln, visita: vn}]) => {
+      batchR32.set(doc(db, 'partidos', id), {
+        local:            ln,
+        visita:           vn,
+        resultado_local:  deleteField(),
+        resultado_visita: deleteField(),
+        actualizadoPor:   deleteField(),
+        actualizadoEn:    deleteField(),
+      }, { merge: true });
+      if (!resCache[id]) resCache[id] = {};
+      resCache[id].local  = ln;
+      resCache[id].visita = vn;
+      delete resCache[id].resultado_local;
+      delete resCache[id].resultado_visita;
+    });
+
+    // Resetear también apuestas de los 16 partidos r32 si tenían resultado
+    const r32Ids = [...Object.keys(GRUPOS_CRUCES), 'r32_13','r32_14','r32_15','r32_16'];
+    for (const id of r32Ids) {
+      const apSnap = await getDocs(query(collection(db, 'apuestas'), where('partidoId', '==', id)));
+      if (apSnap.size > 0) {
+        const batchAp = writeBatch(db);
+        apSnap.docs.forEach(d => {
+          batchAp.update(d.ref, { puntaje: deleteField(), recalculadoEn: deleteField() });
+        });
+        await batchAp.commit();
+      }
+    }
+
+    await batchR32.commit();
+    // ─────────────────────────────────────────────────────────────────────────
+
+    cerrarResetGrupo();
+    toast(`Grupo ${g}: reseteado · 32avos recalculados ✓`, 'success');
+
+    // Recargar UI
     await renderResultados();
-    // Reactivar el tab del grupo reseteado
     setTimeout(() => {
       const tab = document.querySelector(`.grupo-tab[data-grupo="${g}"]`);
       if (tab) tab.click();
@@ -2311,6 +2521,7 @@ window.ejecutarResetGrupo = async function() {
 
   } catch(e) {
     toast('Error: ' + e.message, 'error');
+    console.error(e);
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-rotate-left"></i> Sí, resetear';
@@ -4809,6 +5020,142 @@ window.simShowTab = function(btn, tab){
   btn.classList.add('active');
   const el=document.getElementById('sim-v-'+tab);
   if(el) el.style.display='block';
+};
+
+// ══════════════════════════════════════════════════════════════════
+// TAB PLAZOS — Control de fechas límite para ingresar resultados
+// Almacenamiento: Firestore colección "config" / doc "plazos"
+// ══════════════════════════════════════════════════════════════════
+const PLAZOS_FASES = [
+  { id:'grupos',   label:'Fase de Grupos', icon:'fa-layer-group', color:'#22c55e',
+    desc:'Partidos de la fase de grupos (72 partidos · Grupos A–L)' },
+  { id:'r32',      label:'32avos de Final', icon:'fa-angles-right', color:'#3b82f6',
+    desc:'32avos de final (16 partidos · 1–8 jul)' },
+  { id:'octavos',  label:'Octavos de Final', icon:'fa-trophy', color:'#8b5cf6',
+    desc:'Octavos de final (8 partidos · 11–14 jul)' },
+  { id:'cuartos',  label:'Cuartos de Final', icon:'fa-star-half-stroke', color:'#f59e0b',
+    desc:'Cuartos de final (4 partidos · 18–19 jul)' },
+  { id:'semi',     label:'Semifinales', icon:'fa-fire', color:'#ef4444',
+    desc:'Semifinales (2 partidos · 22–23 jul)' },
+  { id:'tercer',   label:'Tercer Lugar', icon:'fa-medal', color:'#a16207',
+    desc:'Partido por el tercer lugar (25 jul)' },
+  { id:'final',    label:'Gran Final', icon:'fa-crown', color:'#fbbf24',
+    desc:'Final del Mundial (26 jul)' },
+];
+
+let plazosData = {}; // { grupos: { fechaLimite:'2026-07-01T18:00', bloqueado:false }, ... }
+
+async function loadPlazos() {
+  try {
+    const snap = await getDoc(doc(db, 'config', 'plazos'));
+    plazosData = snap.exists() ? snap.data() : {};
+  } catch(e) {
+    console.warn('No se pudieron cargar plazos:', e);
+    plazosData = {};
+  }
+  renderPlazos();
+}
+
+async function savePlazos() {
+  try {
+    await setDoc(doc(db, 'config', 'plazos'), plazosData);
+    toast('Plazos guardados ✓', 'green');
+  } catch(e) {
+    toast('Error al guardar: ' + e.message, 'red');
+  }
+}
+
+function renderPlazos() {
+  const container = document.getElementById('plazos-container');
+  if (!container) return;
+
+  const ahora = new Date();
+
+  container.innerHTML = PLAZOS_FASES.map(fase => {
+    const datos = plazosData[fase.id] || {};
+    const fechaVal  = datos.fechaLimite || '';
+    const bloqueado = datos.bloqueado === true;
+    const fechaDate = fechaVal ? new Date(fechaVal) : null;
+
+    let estadoBadge = '';
+    let estadoColor = '';
+    if (bloqueado) {
+      estadoBadge = '🔒 Bloqueado manualmente';
+      estadoColor = '#ef4444';
+    } else if (!fechaDate) {
+      estadoBadge = '⚪ Sin fecha límite';
+      estadoColor = 'var(--muted)';
+    } else if (ahora > fechaDate) {
+      estadoBadge = '🔴 Plazo vencido';
+      estadoColor = '#ef4444';
+    } else {
+      const diff = Math.ceil((fechaDate - ahora) / 3600000);
+      estadoBadge = diff < 24
+        ? `🟡 Cierra en ${diff}h`
+        : `🟢 Abierto · cierra ${fechaDate.toLocaleDateString('es-CL',{day:'numeric',month:'short'})}`;
+      estadoColor = diff < 24 ? '#f59e0b' : '#22c55e';
+    }
+
+    return `
+    <div class="plazo-card" id="plazo-card-${fase.id}">
+      <div class="plazo-header">
+        <div class="plazo-icon" style="background:${fase.color}18;color:${fase.color};">
+          <i class="fas ${fase.icon}"></i>
+        </div>
+        <div class="plazo-info">
+          <div class="plazo-title">${fase.label}</div>
+          <div class="plazo-desc">${fase.desc}</div>
+          <div class="plazo-estado" style="color:${estadoColor};margin-top:4px;font-size:0.75rem;font-weight:600;">${estadoBadge}</div>
+        </div>
+        <div class="plazo-toggle-wrap">
+          <label class="plazo-lock-label" title="Bloquear manualmente sin importar la fecha">
+            <input type="checkbox" id="blk-${fase.id}" ${bloqueado?'checked':''} onchange="onToggleBloqueo('${fase.id}',this.checked)">
+            <span class="plazo-lock-track"><span class="plazo-lock-thumb"></span></span>
+            <span style="font-size:0.72rem;color:var(--muted);margin-left:6px;">Forzar bloqueo</span>
+          </label>
+        </div>
+      </div>
+      <div class="plazo-body">
+        <div class="plazo-field">
+          <label class="plazo-field-label"><i class="fas fa-calendar-xmark" style="color:${fase.color};"></i> Fecha y hora límite (hora Santiago)</label>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <input type="datetime-local" id="dt-${fase.id}" class="form-input plazo-dt-input"
+              value="${fechaVal}" style="max-width:260px;"
+              onchange="onCambioFecha('${fase.id}',this.value)">
+            <button class="btn btn-outline btn-sm" onclick="clearFecha('${fase.id}')">
+              <i class="fas fa-xmark"></i> Limpiar
+            </button>
+          </div>
+          ${fechaDate ? `<div style="font-size:0.72rem;color:var(--muted);margin-top:5px;">
+            UTC: ${fechaDate.toUTCString()}
+          </div>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.onCambioFecha = function(faseId, valor) {
+  if (!plazosData[faseId]) plazosData[faseId] = {};
+  plazosData[faseId].fechaLimite = valor;
+  savePlazos();
+  setTimeout(renderPlazos, 400);
+};
+
+window.onToggleBloqueo = function(faseId, checked) {
+  if (!plazosData[faseId]) plazosData[faseId] = {};
+  plazosData[faseId].bloqueado = checked;
+  savePlazos();
+  setTimeout(renderPlazos, 400);
+};
+
+window.clearFecha = function(faseId) {
+  if (!plazosData[faseId]) plazosData[faseId] = {};
+  plazosData[faseId].fechaLimite = '';
+  const inp = document.getElementById('dt-' + faseId);
+  if (inp) inp.value = '';
+  savePlazos();
+  setTimeout(renderPlazos, 400);
 };
 
 </script>
