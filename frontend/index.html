@@ -1706,83 +1706,55 @@ async function renderResultadosAccordion() {
   html += `</div></div>`;
 
   // ── Fases eliminatorias ──
-  // ── Calcular cruces reales de 32avos desde tablas de grupo ────────────────
-  // Si hay resultados en Firestore, calcular quién clasificó realmente
-  const clasificadosPorGrupo = {}; // { A: { primero: 'Uruguay', segundo: 'España' }, ... }
-  const gruposConResultados = Object.keys(FG_IDX).filter(g =>
-    FG_IDX[g].some(id => resCache[id]?.resultado_local != null)
-  );
+  // ELIM_BASE: fuente de verdad = Firestore (resCache).
+  // El admin es quien escribe local/visita en cada partido eliminatorio.
+  // Aquí solo usamos los datos del fixture original como fallback de fecha/estadio,
+  // y tomamos local/visita exclusivamente desde resCache.
+  const ELIM_FIXTURE = {
+    r32_1: {local:'1.A',visita:'2.B',fecha:'2026-07-01',estadio:'MetLife Stadium, Nueva York'},
+    r32_2: {local:'1.C',visita:'2.D',fecha:'2026-07-01',estadio:'AT&T Stadium, Dallas'},
+    r32_3: {local:'1.E',visita:'2.F',fecha:'2026-07-02',estadio:'SoFi Stadium, Los Ángeles'},
+    r32_4: {local:'1.G',visita:'2.H',fecha:'2026-07-02',estadio:'Mercedes-Benz Stadium, Atlanta'},
+    r32_5: {local:'1.I',visita:'2.J',fecha:'2026-07-03',estadio:'Gillette Stadium, Boston'},
+    r32_6: {local:'1.K',visita:'2.L',fecha:'2026-07-03',estadio:'Arrowhead Stadium, Kansas City'},
+    r32_7: {local:'1.B',visita:'2.A',fecha:'2026-07-04',estadio:'BC Place, Vancouver'},
+    r32_8: {local:'1.D',visita:'2.C',fecha:'2026-07-04',estadio:'NRG Stadium, Houston'},
+    r32_9: {local:'1.F',visita:'2.E',fecha:'2026-07-05',estadio:'BMO Field, Toronto'},
+    r32_10:{local:'1.H',visita:'2.G',fecha:'2026-07-05',estadio:'Hard Rock Stadium, Miami'},
+    r32_11:{local:'1.J',visita:'2.I',fecha:'2026-07-06',estadio:'Lumen Field, Seattle'},
+    r32_12:{local:'1.L',visita:'2.K',fecha:'2026-07-06',estadio:'Lincoln Financial Field, Filadelfia'},
+    r32_13:{local:'3er mejor 1',visita:'3er mejor 2',fecha:'2026-07-07',estadio:'AT&T Stadium, Dallas'},
+    r32_14:{local:'3er mejor 3',visita:'3er mejor 4',fecha:'2026-07-07',estadio:'MetLife Stadium, Nueva York'},
+    r32_15:{local:'3er mejor 5',visita:'3er mejor 6',fecha:'2026-07-08',estadio:'SoFi Stadium, Los Ángeles'},
+    r32_16:{local:'3er mejor 7',visita:'3er mejor 8',fecha:'2026-07-08',estadio:'Mercedes-Benz Stadium, Atlanta'},
+    r16_1: {local:'G.32 1', visita:'G.32 2', fecha:'2026-07-11',estadio:'MetLife Stadium, Nueva York'},
+    r16_2: {local:'G.32 3', visita:'G.32 4', fecha:'2026-07-11',estadio:'AT&T Stadium, Dallas'},
+    r16_3: {local:'G.32 5', visita:'G.32 6', fecha:'2026-07-12',estadio:'SoFi Stadium, Los Ángeles'},
+    r16_4: {local:'G.32 7', visita:'G.32 8', fecha:'2026-07-12',estadio:'Mercedes-Benz Stadium, Atlanta'},
+    r16_5: {local:'G.32 9', visita:'G.32 10',fecha:'2026-07-13',estadio:'Gillette Stadium, Boston'},
+    r16_6: {local:'G.32 11',visita:'G.32 12',fecha:'2026-07-13',estadio:'Arrowhead Stadium, Kansas City'},
+    r16_7: {local:'G.32 13',visita:'G.32 14',fecha:'2026-07-14',estadio:'BC Place, Vancouver'},
+    r16_8: {local:'G.32 15',visita:'G.32 16',fecha:'2026-07-14',estadio:'NRG Stadium, Houston'},
+    qf1:   {local:'G.R16 1',visita:'G.R16 2',fecha:'2026-07-18',estadio:'MetLife Stadium, Nueva York'},
+    qf2:   {local:'G.R16 3',visita:'G.R16 4',fecha:'2026-07-18',estadio:'AT&T Stadium, Dallas'},
+    qf3:   {local:'G.R16 5',visita:'G.R16 6',fecha:'2026-07-19',estadio:'SoFi Stadium, Los Ángeles'},
+    qf4:   {local:'G.R16 7',visita:'G.R16 8',fecha:'2026-07-19',estadio:'Mercedes-Benz Stadium, Atlanta'},
+    sf1:   {local:'G.CF 1', visita:'G.CF 2', fecha:'2026-07-22',estadio:'MetLife Stadium, Nueva York'},
+    sf2:   {local:'G.CF 3', visita:'G.CF 4', fecha:'2026-07-23',estadio:'SoFi Stadium, Los Ángeles'},
+    '3p':  {local:'Perd. SF 1',visita:'Perd. SF 2',fecha:'2026-07-25',estadio:'AT&T Stadium, Dallas'},
+    fin:   {local:'Gan. SF 1', visita:'Gan. SF 2', fecha:'2026-07-26',estadio:'MetLife Stadium, Nueva York'},
+  };
 
-  gruposConResultados.forEach(g => {
-    const tabla = calcularTablaGrupo(g, resCache);
-    clasificadosPorGrupo[g] = {
-      primero: tabla[0]?.nombre || `1.${g}`,
-      segundo: tabla[1]?.nombre || `2.${g}`,
-      tercero: tabla[2]?.nombre || `3.${g}`,
+  // Construir ELIM_BASE: fecha/estadio del fixture, local/visita desde Firestore si existe
+  const ELIM_BASE = {};
+  Object.entries(ELIM_FIXTURE).forEach(([id, base]) => {
+    const fs = resCache[id] || {};
+    ELIM_BASE[id] = {
+      ...base,
+      local:  fs.local  || base.local,   // Firestore gana sobre placeholder
+      visita: fs.visita || base.visita,
     };
   });
-
-  // Cruces FIFA 2026 — 32avos: 1ero de grupo vs 2do de otro grupo
-  // Esquema oficial: 1A-2B, 1C-2D, 1E-2F, 1G-2H, 1I-2J, 1K-2L,
-  //                  1B-2A, 1D-2C, 1F-2E, 1H-2G, 1J-2I, 1L-2K
-  const crucesDef = [
-    {id:'r32_1', l:'A',lPos:'primero', v:'B',vPos:'segundo', fecha:'2026-07-01', estadio:'MetLife, Nueva York'},
-    {id:'r32_2', l:'C',lPos:'primero', v:'D',vPos:'segundo', fecha:'2026-07-01', estadio:'AT&T, Dallas'},
-    {id:'r32_3', l:'E',lPos:'primero', v:'F',vPos:'segundo', fecha:'2026-07-02', estadio:'SoFi, Los Ángeles'},
-    {id:'r32_4', l:'G',lPos:'primero', v:'H',vPos:'segundo', fecha:'2026-07-02', estadio:'Mercedes-Benz, Atlanta'},
-    {id:'r32_5', l:'I',lPos:'primero', v:'J',vPos:'segundo', fecha:'2026-07-03', estadio:'Gillette, Boston'},
-    {id:'r32_6', l:'K',lPos:'primero', v:'L',vPos:'segundo', fecha:'2026-07-03', estadio:'Arrowhead, Kansas City'},
-    {id:'r32_7', l:'B',lPos:'primero', v:'A',vPos:'segundo', fecha:'2026-07-04', estadio:'BC Place, Vancouver'},
-    {id:'r32_8', l:'D',lPos:'primero', v:'C',vPos:'segundo', fecha:'2026-07-04', estadio:'NRG, Houston'},
-    {id:'r32_9', l:'F',lPos:'primero', v:'E',vPos:'segundo', fecha:'2026-07-05', estadio:'BMO Field, Toronto'},
-    {id:'r32_10',l:'H',lPos:'primero', v:'G',vPos:'segundo', fecha:'2026-07-05', estadio:'Hard Rock, Miami'},
-    {id:'r32_11',l:'J',lPos:'primero', v:'I',vPos:'segundo', fecha:'2026-07-06', estadio:'Lumen, Seattle'},
-    {id:'r32_12',l:'L',lPos:'primero', v:'K',vPos:'segundo', fecha:'2026-07-06', estadio:'Lincoln, Filadelfia'},
-    {id:'r32_13',l:null,lPos:null,     v:null,vPos:null,     fecha:'2026-07-07', estadio:'AT&T, Dallas',      label:'Mejor 3ero 1 vs 2'},
-    {id:'r32_14',l:null,lPos:null,     v:null,vPos:null,     fecha:'2026-07-07', estadio:'MetLife, Nueva York',label:'Mejor 3ero 3 vs 4'},
-    {id:'r32_15',l:null,lPos:null,     v:null,vPos:null,     fecha:'2026-07-08', estadio:'SoFi, Los Ángeles',  label:'Mejor 3ero 5 vs 6'},
-    {id:'r32_16',l:null,lPos:null,     v:null,vPos:null,     fecha:'2026-07-08', estadio:'Mercedes-Benz, Atlanta',label:'Mejor 3ero 7 vs 8'},
-  ];
-
-  function resolverNombre(grupo, pos) {
-    if (clasificadosPorGrupo[grupo]) return clasificadosPorGrupo[grupo][pos];
-    return pos === 'primero' ? `1.${grupo}` : pos === 'segundo' ? `2.${grupo}` : `3.${grupo}`;
-  }
-
-  // Construir ELIM_BASE dinámico
-  const ELIM_BASE = {};
-  crucesDef.forEach(c => {
-    if (c.l) {
-      ELIM_BASE[c.id] = {
-        local:   resolverNombre(c.l, c.lPos),
-        visita:  resolverNombre(c.v, c.vPos),
-        fecha:   c.fecha,
-        estadio: c.estadio,
-      };
-    } else {
-      // Mejores terceros: placeholder hasta que estén definidos
-      ELIM_BASE[c.id] = {
-        local:   c.label?.split(' vs ')[0] || 'Mejor 3ero',
-        visita:  c.label?.split(' vs ')[1] || 'Mejor 3ero',
-        fecha:   c.fecha,
-        estadio: c.estadio,
-      };
-    }
-  });
-
-  // Fases posteriores (octavos en adelante) — placeholders dinámicos
-  ['r16_1','r16_2','r16_3','r16_4','r16_5','r16_6','r16_7','r16_8'].forEach((id,i) => {
-    ELIM_BASE[id] = {local:`G.32 ${i*2+1}`,visita:`G.32 ${i*2+2}`,fecha:'2026-07-11',estadio:'MetLife, Nueva York'};
-  });
-  ELIM_BASE['qf1']={local:'G.R16 1',visita:'G.R16 2',fecha:'2026-07-18',estadio:'MetLife, Nueva York'};
-  ELIM_BASE['qf2']={local:'G.R16 3',visita:'G.R16 4',fecha:'2026-07-18',estadio:'AT&T, Dallas'};
-  ELIM_BASE['qf3']={local:'G.R16 5',visita:'G.R16 6',fecha:'2026-07-19',estadio:'SoFi, Los Ángeles'};
-  ELIM_BASE['qf4']={local:'G.R16 7',visita:'G.R16 8',fecha:'2026-07-19',estadio:'Mercedes-Benz, Atlanta'};
-  ELIM_BASE['sf1']={local:'G.CF 1',visita:'G.CF 2',fecha:'2026-07-22',estadio:'MetLife, Nueva York'};
-  ELIM_BASE['sf2']={local:'G.CF 3',visita:'G.CF 4',fecha:'2026-07-23',estadio:'SoFi, Los Ángeles'};
-  ELIM_BASE['3p']={local:'Perd. SF 1',visita:'Perd. SF 2',fecha:'2026-07-25',estadio:'AT&T, Dallas'};
-  ELIM_BASE['fin']={local:'Gan. SF 1',visita:'Gan. SF 2',fecha:'2026-07-26',estadio:'MetLife, Nueva York'};
-  // ─────────────────────────────────────────────────────────────────────────
 
   FASES_ELIM.forEach(fase => {
     const todosIds = fase.grupos.flatMap(g => g.ids);
