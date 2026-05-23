@@ -4101,6 +4101,9 @@ function simGenerarR32(){
 }
 
 function simGenerarR32Fallback(){
+  // fallback vacío — usa simGenerarR32 por defecto
+}
+
 function simGenerarFase(partidosAnt, faseId, fechas, estadios){
   const ganadores=partidosAnt.map(p=>simGanador(p)).filter(Boolean);
   const partidos=[];
