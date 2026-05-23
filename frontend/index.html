@@ -1256,27 +1256,13 @@ window._showTabla = async function(g){
         </button>
       </div>`;
 
-    // ── Banner clasificados ────────────────────────────────────────
-    const bannerItems=tabla.map((t,i)=>{
-      const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'4️⃣';
-      const borderColor=i===0?'var(--red)':i===1?'#64748b':i===2?'#d97706':'var(--border)';
-      const badge=jugados>0
-        ?(i<2?`<span class="clasif-badge clasifica">✓ Clasifica</span>`
-          :i===2?`<span class="clasif-badge tercero">△ 3er lugar</span>`
-          :`<span class="clasif-badge elim">Eliminado</span>`)
-        :'';
-      return `<div class="clasif-item" style="border-left:3px solid ${borderColor};">
-        <span style="font-size:1.1rem;flex-shrink:0;">${medal}</span>
-        <span style="font-size:1.3rem;flex-shrink:0;">${getFlag(t.nombre)}</span>
-        <span class="clasif-nombre">${t.nombre}</span>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;margin-left:auto;flex-shrink:0;">
-          <span class="clasif-pts">${t.pts} <span style="font-size:.65rem;opacity:.6;">pts</span></span>
-          ${badge}
-        </div>
-      </div>`;
-    }).join('');
+
 
     // ── Tabla principal ──────────────────────────────────────────────
+    // Colores de clasificación: verde=clasifica, ámbar=posible 3ero, gris=eliminado
+    const dotColor = (i) => i < 2 ? '#16a34a' : i === 2 ? '#f59e0b' : '#d1d5db';
+    const dotTitle = (i) => i < 2 ? 'Clasifica a 32avos' : i === 2 ? 'Posible mejor 3ero' : 'Eliminado';
+
     const rows=tabla.map((t,i)=>{
       const dg=t.dg>0?`+${t.dg}`:String(t.dg);
       const trClass=i<2?'tabla-clasificado':i===2?'tabla-3ero':'';
@@ -1284,7 +1270,12 @@ window._showTabla = async function(g){
         ?`<div class="forma-dots">${t.forma.map(f=>`<div class="forma-dot forma-${f}" title="${f==='G'?'Victoria':f==='E'?'Empate':'Derrota'}"></div>`).join('')}</div>`
         :`<span style="color:var(--muted);font-size:.7rem;">—</span>`;
       return `<tr class="${trClass}">
-        <td style="padding-left:14px;">${i+1}</td>
+        <td style="padding-left:14px;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${dotColor(i)};flex-shrink:0;" title="${dotTitle(i)}"></span>
+            <span>${i+1}</span>
+          </div>
+        </td>
         <td><div class="tabla-equipo"><span class="tabla-flag">${getFlag(t.nombre)}</span><span>${t.nombre}</span></div></td>
         <td>${t.pj}</td>
         <td style="color:#16a34a;font-weight:700;">${t.g}</td>
@@ -1318,7 +1309,7 @@ window._showTabla = async function(g){
         </div>
       </div>
 
-      <div class="clasif-banner">${bannerItems}</div>
+      <div class="clasif-banner" style="display:none;">${''}</div>
 
       <div class="tabla-wrap">
         <table class="tabla-posiciones">
@@ -1337,6 +1328,11 @@ window._showTabla = async function(g){
           </tr></thead>
           <tbody>${rows}</tbody>
         </table>
+      </div>
+      <div style="display:flex;gap:14px;padding:8px 18px 12px;flex-wrap:wrap;">
+        <span style="display:flex;align-items:center;gap:5px;font-size:0.68rem;color:var(--muted);"><span style="width:8px;height:8px;border-radius:50%;background:#16a34a;display:inline-block;"></span>Clasifica a 32avos</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:0.68rem;color:var(--muted);"><span style="width:8px;height:8px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>Posible mejor 3ero</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:0.68rem;color:var(--muted);"><span style="width:8px;height:8px;border-radius:50%;background:#d1d5db;display:inline-block;"></span>Eliminado</span>
       </div>`;
   }
 
