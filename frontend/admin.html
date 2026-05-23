@@ -1799,14 +1799,23 @@ async function renderResultados() {
   });
   html += `</div></div>`;
 
+  // Detectar si un nombre es un placeholder (no un equipo real confirmado)
+  function esPlaceholder(nombre) {
+    if (!nombre) return true;
+    return /^(\d+\.[A-L]|G\.\d|G\.R16|G\.CF|3er|Mejor|Perd\.|Gan\.|Perdedor|Ganador)/i.test(nombre);
+  }
+
   FASES_ELIM_ADMIN.forEach(fase => {
     const comp = fase.partidos.filter(p => resCache[p.id]?.resultado_local != null).length;
     const tot  = fase.partidos.length;
     html += buildFaseAccHeader(fase.id, fase.label, fase.sublabel, fase.icon, fase.iconClass, comp, tot, false);
     html += `<div class="fase-body" id="fbody-${fase.id}"><div class="fase-partidos-wrap">`;
     fase.partidos.forEach(p => {
-      const pConNombre = { ...p, local: resCache[p.id]?.local || p.local, visita: resCache[p.id]?.visita || p.visita };
-      html += buildPartidoRow(pConNombre, true);
+      const fs = resCache[p.id];
+      // Usar nombre de Firestore solo si es un equipo real (no placeholder)
+      const localNombre  = (fs?.local  && !esPlaceholder(fs.local))  ? fs.local  : p.local;
+      const visitaNombre = (fs?.visita && !esPlaceholder(fs.visita)) ? fs.visita : p.visita;
+      html += buildPartidoRow({ ...p, local: localNombre, visita: visitaNombre }, true);
     });
     html += `</div></div></div>`;
   });
@@ -1854,8 +1863,10 @@ function buildFaseAccHeader(id, label, sublabel, icon, iconClass, comp, tot, ope
 function buildPartidoRow(p, esElim) {
   const r = resCache[p.id];
   const guardado = r?.resultado_local != null;
-  const localNombre  = r?.local  || p.local;
-  const visitaNombre = r?.visita || p.visita;
+  // p.local y p.visita ya vienen resueltos desde el caller (con esPlaceholder aplicado)
+  // Para grupos (esElim=false) también usamos p.local directamente
+  const localNombre  = p.local;
+  const visitaNombre = p.visita;
   return `<div class="partido-res" id="pres-${p.id}">
     <div class="partido-res-row ${guardado?'guardado':'pendiente'}" id="prow-${p.id}">
       <div class="team-label">
