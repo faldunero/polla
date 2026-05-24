@@ -1575,22 +1575,33 @@ async function renderFasesGestion() {
         </div>
       </div>
       <button
-        class="btn btn-sm"
+        class="btn btn-sm mga-reset-btn"
         style="background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.25);white-space:nowrap;flex-shrink:0;"
         ${sinApuestas ? 'disabled' : ''}
-        onclick="confirmarResetFase('${fase.id}','${fase.label}',${JSON.stringify(ids)})">
+        data-faseid="${fase.id}"
+        data-label="${fase.label}"
+        data-ids="${ids.join(',')}">
         <i class="fas fa-eraser"></i> Resetear
       </button>
     </div>`;
   }).join('');
 
   container.innerHTML = html;
+
+  // Bindear botones via event delegation (evita JSON en atributos HTML)
+  container.querySelectorAll('.mga-reset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const faseId  = btn.dataset.faseid;
+      const label   = btn.dataset.label;
+      const ids     = btn.dataset.ids ? btn.dataset.ids.split(',') : [];
+      confirmarResetFase(btn, faseId, label, ids);
+    });
+  });
 }
 
-window.confirmarResetFase = async function(faseId, faseLabel, ids) {
+window.confirmarResetFase = async function(btn, faseId, faseLabel, ids) {
   if (!confirm(`¿Resetear a 0 todas las apuestas de "${faseLabel}" para este usuario?\n\nSe eliminarán ${ids.length} posibles registros y sus puntajes. No se puede deshacer.`)) return;
 
-  const btn = event.currentTarget;
   btn.disabled = true;
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
