@@ -489,7 +489,8 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
         const snap = await getDoc(doc(db, 'config', 'plazos'));
         plazosConfig = snap.exists() ? snap.data() : {};
       } catch(e) {
-        console.warn('No se pudieron cargar plazos:', e);
+        // Sin permisos o sin conexión → tratar como sin configuración (todo abierto)
+        console.warn('Plazos no disponibles:', e.code || e.message);
         plazosConfig = {};
       }
     }
@@ -703,8 +704,9 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
           cargarGrupos(),
           cargarMiParticipante(),
           cargarMisApuestas(),
-          cargarPlazos(),           // ← plazos desde Firestore
         ]);
+        // Plazos por separado — si falla por permisos no bloquea la app
+        await cargarPlazos();
         renderGrupos();
       } catch (e) {
         toast('Error cargando datos: ' + e.message, 'error');
