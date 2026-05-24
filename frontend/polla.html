@@ -311,7 +311,11 @@
     }
 
     .ranking-table{width:100%;border-collapse:collapse;margin-top:16px}
+    .mundial-grupos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
+    .mundial-grupo-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+    .mundial-grupo-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--card2);border-bottom:1px solid var(--border);}
     .ranking-table th{
+
       text-align:left;padding:10px 16px;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;
       color:var(--muted);border-bottom:1px solid var(--border);
     }
@@ -410,6 +414,7 @@
       <button class="tab active" data-tab="grupos">🏆 Grupos</button>
       <button class="tab" data-tab="apuestas">📋 Mis Apuestas</button>
       <button class="tab" data-tab="ranking">🥇 Ranking</button>
+      <button class="tab" data-tab="mundial">⚽ Mundial</button>
     </div>
 
     <div class="main">
@@ -425,6 +430,10 @@
 
       <div id="tab-ranking" class="page">
         <div id="ranking-content"></div>
+      </div>
+
+      <div id="tab-mundial" class="page">
+        <div id="mundial-content"></div>
       </div>
     </div>
   </div>
@@ -709,6 +718,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
 
         if (tab === 'apuestas') await renderApuestas();
         if (tab === 'ranking') await renderRanking();
+        if (tab === 'mundial') await renderMundial();
       });
     });
 
@@ -1207,6 +1217,132 @@ const FG = FIXTURE_GRUPOS;
       } catch (e) {
         container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>${e.message}</p></div>`;
       }
+    }
+
+    // ── MUNDIAL: tabla de posiciones de los 12 grupos FIFA ────────────────
+    const GRUPOS_FIFA = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+
+    function calcTablaGrupoMundial(grupo) {
+      const equipos = {};
+      globalPartidos
+        .filter(p => p.grupo === grupo)
+        .forEach(p => {
+          [p.local, p.visita].forEach(e => {
+            if (e && !equipos[e]) equipos[e] = {nombre:e,pj:0,g:0,e:0,pe:0,gf:0,gc:0,dg:0,pts:0,forma:[]};
+          });
+          const gl = p.resultado_local ?? null;
+          const gv = p.resultado_visita ?? null;
+          if (gl == null || gv == null) return;
+          const eqL = equipos[p.local], eqV = equipos[p.visita];
+          if (!eqL || !eqV) return;
+          const igl = Number(gl), igv = Number(gv);
+          eqL.pj++; eqV.pj++;
+          eqL.gf += igl; eqL.gc += igv;
+          eqV.gf += igv; eqV.gc += igl;
+          eqL.dg = eqL.gf - eqL.gc;
+          eqV.dg = eqV.gf - eqV.gc;
+          if (igl > igv)      { eqL.g++; eqL.pts+=3; eqV.pe++; eqL.forma.push('G'); eqV.forma.push('P'); }
+          else if (igl < igv) { eqV.g++; eqV.pts+=3; eqL.pe++; eqL.forma.push('P'); eqV.forma.push('G'); }
+          else                { eqL.e++; eqV.e++; eqL.pts++; eqV.pts++; eqL.forma.push('E'); eqV.forma.push('E'); }
+        });
+      return Object.values(equipos).sort((a,b) =>
+        b.pts-a.pts || b.dg-a.dg || b.gf-a.gf || a.nombre.localeCompare(b.nombre)
+      );
+    }
+
+    async function renderMundial() {
+      const container = document.getElementById('mundial-content');
+      container.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Cargando...</p></div>`;
+
+      // Si no están cargados los partidos, cargarlos
+      if (!globalPartidos.length) await cargarPartidos();
+
+      const dotColor = i => i < 2 ? '#16a34a' : i === 2 ? '#f59e0b' : '#6b7280';
+      const dotTitle = i => i < 2 ? 'Clasifica a 32avos' : i === 2 ? 'Posible mejor 3ero' : 'Eliminado';
+      const formaColor = f => f==='G'?'#16a34a':f==='E'?'#ca8a04':'#ef4444';
+
+      let html = `
+        <div style="padding:16px 0 8px;">
+          <div style="font-size:0.72rem;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;">
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#16a34a;margin-right:4px;"></span>Clasifica a 32avos</span>
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;margin-right:4px;"></span>Posible mejor 3ero</span>
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#6b7280;margin-right:4px;"></span>Eliminado</span>
+          </div>
+          <div class="mundial-grupos-grid">`;
+
+      GRUPOS_FIFA.forEach(g => {
+        const tabla = calcTablaGrupoMundial(g);
+        const jugados = globalPartidos.filter(p => p.grupo === g && p.resultado_local != null).length;
+        const sinDatos = jugados === 0;
+
+        html += `<div class="mundial-grupo-card">
+          <div class="mundial-grupo-head">
+            <span style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.06em;">Grupo ${g}</span>
+            <span style="font-size:0.68rem;color:var(--muted);">${jugados}/6 jugados</span>
+          </div>`;
+
+        if (sinDatos) {
+          // Mostrar equipos del grupo sin datos aún
+          const equiposGrupo = [...new Set(
+            globalPartidos.filter(p=>p.grupo===g).flatMap(p=>[p.local,p.visita]).filter(Boolean)
+          )];
+          html += `<div style="padding:10px 14px;">`;
+          equiposGrupo.forEach((e,i) => {
+            html += `<div style="display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid var(--border);">
+              <span style="width:8px;height:8px;border-radius:50%;background:#6b7280;display:inline-block;flex-shrink:0;"></span>
+              <span style="font-size:0.9rem;">${getFlag(e)}</span>
+              <span style="font-size:0.82rem;font-weight:500;">${e}</span>
+            </div>`;
+          });
+          html += `<div style="font-size:0.68rem;color:var(--muted);padding-top:8px;text-align:center;">Sin resultados aún</div>`;
+          html += `</div>`;
+        } else {
+          html += `<table style="width:100%;border-collapse:collapse;">
+            <thead><tr style="border-bottom:1px solid var(--border);background:rgba(0,0,0,0.15);">
+              <th style="padding:5px 8px;font-size:.58rem;color:var(--muted);font-weight:600;text-align:left;letter-spacing:.08em;" colspan="2">EQUIPO</th>
+              <th style="padding:5px 4px;font-size:.58rem;color:var(--muted);font-weight:600;text-align:center;" title="Partidos jugados">PJ</th>
+              <th style="padding:5px 4px;font-size:.58rem;color:#16a34a;font-weight:600;text-align:center;" title="Ganados">G</th>
+              <th style="padding:5px 4px;font-size:.58rem;color:#ca8a04;font-weight:600;text-align:center;" title="Empates">E</th>
+              <th style="padding:5px 4px;font-size:.58rem;color:#ef4444;font-weight:600;text-align:center;" title="Perdidos">P</th>
+              <th style="padding:5px 4px;font-size:.58rem;color:var(--muted);font-weight:600;text-align:center;" title="Diferencia de goles">DG</th>
+              <th style="padding:5px 8px;font-size:.58rem;color:var(--gold);font-weight:700;text-align:center;" title="Puntos">Pts</th>
+            </tr></thead>
+            <tbody>`;
+
+          tabla.forEach((t, i) => {
+            const dg = t.dg > 0 ? `+${t.dg}` : String(t.dg);
+            const formaHtml = t.forma.slice(-3).map(f =>
+              `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${formaColor(f)};margin-left:1px;" title="${f==='G'?'Victoria':f==='E'?'Empate':'Derrota'}"></span>`
+            ).join('');
+            const rowBorder = i < 2 ? 'border-left:3px solid #16a34a;' : i===2 ? 'border-left:3px solid #f59e0b;' : '';
+
+            html += `<tr style="border-bottom:1px solid var(--border);${rowBorder}">
+              <td style="padding:6px 4px 6px 8px;width:16px;">
+                <span style="width:8px;height:8px;border-radius:50%;background:${dotColor(i)};display:inline-block;" title="${dotTitle(i)}"></span>
+              </td>
+              <td style="padding:6px 4px;">
+                <div style="display:flex;align-items:center;gap:5px;">
+                  <span style="font-size:.95rem;">${getFlag(t.nombre)}</span>
+                  <span style="font-size:.78rem;font-weight:${i<2?'700':'400'};">${t.nombre}</span>
+                  ${formaHtml ? `<span style="margin-left:3px;">${formaHtml}</span>` : ''}
+                </div>
+              </td>
+              <td style="text-align:center;font-size:.78rem;color:var(--muted);padding:4px;">${t.pj}</td>
+              <td style="text-align:center;font-size:.78rem;color:#16a34a;font-weight:600;padding:4px;">${t.g}</td>
+              <td style="text-align:center;font-size:.78rem;color:#ca8a04;padding:4px;">${t.e}</td>
+              <td style="text-align:center;font-size:.78rem;color:#ef4444;padding:4px;">${t.pe}</td>
+              <td style="text-align:center;font-size:.78rem;font-weight:600;color:${t.dg>0?'#16a34a':t.dg<0?'#ef4444':'var(--muted)'};padding:4px;">${dg}</td>
+              <td style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--gold);padding:4px 8px;">${t.pts}</td>
+            </tr>`;
+          });
+
+          html += `</tbody></table>`;
+        }
+        html += `</div>`;
+      });
+
+      html += `</div></div>`;
+      container.innerHTML = html;
     }
   </script>
 </body>
