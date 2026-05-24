@@ -652,6 +652,36 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
     }
     window.toast = toast;
 
+    // ── Conversión de hora local estadio → hora Chile (UTC-4 jun-jul) ────
+    const TZ_OFFSETS = {
+      'nueva york':0,'new york':0,'boston':0,'miami':0,'atlanta':0,
+      'filadelfia':0,'philadelphia':0,'toronto':0,
+      'dallas':1,'kansas city':1,'houston':1,
+      'ciudad de mexico':1,'ciudad de méxico':1,'guadalajara':1,'monterrey':1,
+      'denver':2,
+      'los angeles':3,'los ángeles':3,'san francisco':3,'seattle':3,
+      'santa clara':3,'vancouver':3,
+    };
+    function getOffsetEstadio(estadio) {
+      if (!estadio) return 0;
+      const lower = estadio.toLowerCase();
+      for (const [ciudad, offset] of Object.entries(TZ_OFFSETS)) {
+        if (lower.includes(ciudad)) return offset;
+      }
+      return 0;
+    }
+    function fmtHoraChile(h, estadio) {
+      if (!h) return null;
+      const str = String(h).trim();
+      if (!str.match(/^\d{1,2}:\d{2}/)) return null;
+      const [hh, mm] = str.split(':').map(Number);
+      const offset = getOffsetEstadio(estadio);
+      let total = hh * 60 + mm + offset * 60;
+      const sigDia = total >= 24 * 60;
+      total = ((total % 1440) + 1440) % 1440;
+      return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}${sigDia?' (+1d)':''}`;
+    }
+
     function calcularPuntaje(real, apuesta) {
       return calcularPuntajePolla(
         {local: real.local,    visita: real.visita},
@@ -947,7 +977,8 @@ const FG = FIXTURE_GRUPOS;
 
         const localNombre  = p.local  || 'Por definir';
         const visitaNombre = p.visita || 'Por definir';
-        const horaStr = p.hora || '';
+        const horaChile = fmtHoraChile(p.hora, p.estadio);
+        const horaStr = horaChile ? horaChile + ' CL' : (p.hora || '');
         const fechaStr = p.fecha || '';
 
         return `

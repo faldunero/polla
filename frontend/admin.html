@@ -1983,6 +1983,36 @@ function buildFaseAccHeader(id, label, sublabel, icon, iconClass, comp, tot, ope
     </div>`;
 }
 
+// ── Conversión hora local estadio → hora Chile (UTC-4 jun-jul) ───────────
+const TZ_OFFSETS_ADMIN = {
+  'nueva york':0,'new york':0,'boston':0,'miami':0,'atlanta':0,
+  'filadelfia':0,'philadelphia':0,'toronto':0,
+  'dallas':1,'kansas city':1,'houston':1,
+  'ciudad de mexico':1,'ciudad de méxico':1,'guadalajara':1,'monterrey':1,
+  'denver':2,
+  'los angeles':3,'los ángeles':3,'san francisco':3,'seattle':3,
+  'santa clara':3,'vancouver':3,
+};
+function getOffsetAdm(estadio) {
+  if (!estadio) return 0;
+  const lower = estadio.toLowerCase();
+  for (const [c, o] of Object.entries(TZ_OFFSETS_ADMIN)) {
+    if (lower.includes(c)) return o;
+  }
+  return 0;
+}
+function fmtHoraChileAdm(h, estadio) {
+  if (!h) return null;
+  const str = String(h).trim();
+  if (!str.match(/^\d{1,2}:\d{2}/)) return null;
+  const [hh, mm] = str.split(':').map(Number);
+  const offset = getOffsetAdm(estadio);
+  let total = hh * 60 + mm + offset * 60;
+  const sigDia = total >= 1440;
+  total = ((total % 1440) + 1440) % 1440;
+  return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}${sigDia?' (+1d)':''}`;
+}
+
 function buildPartidoRow(p, esElim) {
   const r = resCache[p.id];
   const guardado = r?.resultado_local != null;
@@ -2004,7 +2034,7 @@ function buildPartidoRow(p, esElim) {
           <span class="result-sep">:</span>
           <input type="number" min="0" max="20" class="result-input" id="rv-${p.id}" value="${guardado?r.resultado_visita:''}" placeholder="–">
         </div>
-        <span style="font-size:0.67rem;color:var(--muted);">${p.fecha}${p.hora?' · '+p.hora:''}</span>
+        <span style="font-size:0.67rem;color:var(--muted);">${p.fecha}${p.hora?' · '+(fmtHoraChileAdm(p.hora,p.estadio)||p.hora)+' CL':''}</span>
       </div>
       <div class="team-label right">
         ${esElim
@@ -4949,7 +4979,7 @@ function simPartidoRow(p, esElim){
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
         ${scoreHtml}
-        <span style="font-size:.65rem;color:var(--muted);">${p.fecha||''}${p.hora?' · '+p.hora:''}</span>
+        <span style="font-size:.65rem;color:var(--muted);">${p.fecha||''}${p.hora?' · '+(fmtHoraChileAdm(p.hora,p.estadio)||p.hora)+' CL':''}</span>
       </div>
       <div class="sim-team right" style="${r&&ganador===p.visita?'color:var(--green);':r&&r.v<r.l?'opacity:.5':''}">
         <span>${p.visita}</span>

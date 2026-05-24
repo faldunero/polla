@@ -807,6 +807,9 @@ function renderGrupos(){
           horaStr = fmtTime(m.hora);
         }
       }
+      // Convertir a hora Chile
+      const horaChile = fmtHoraChile(horaStr, m.estadio);
+      const horaDisplay = horaChile ? horaChile + ' CL' : '';
 
       // Fecha: puede ser string "DD mon" o número Excel
       const fechaStr = (typeof m.fecha === 'string' && isNaN(m.fecha))
@@ -828,7 +831,7 @@ function renderGrupos(){
           <div class="match-center-col">
             ${scoreHtml}
             <span class="match-date">
-              <i class="far fa-calendar-alt"></i> ${fechaStr}${horaStr ? ' · ' + horaStr : ''}
+              <i class="far fa-calendar-alt"></i> ${fechaStr}${horaDisplay ? ' · ' + horaDisplay : ''}
             </span>
           </div>
           <div class="match-team right">
@@ -1570,6 +1573,50 @@ function fmtHora(h) {
   return null;
 }
 
+// Convierte hora local del estadio a hora Chile (UTC-4 en jun-jul)
+// Las horas del fixture están en hora local de cada sede
+const TIMEZONE_OFFSETS = {
+  // ET (UTC-4 en verano) → Chile UTC-4 → diff = 0
+  'nueva york': 0, 'new york': 0, 'boston': 0, 'miami': 0,
+  'atlanta': 0, 'filadelfia': 0, 'philadelphia': 0,
+  // CT (UTC-5 en verano) → Chile UTC-4 → diff = +1
+  'dallas': 1, 'kansas city': 1, 'houston': 1,
+  // MT (UTC-6 en verano) → Chile UTC-4 → diff = +2
+  'denver': 2,
+  // PT (UTC-7 en verano) → Chile UTC-4 → diff = +3
+  'los angeles': 3, 'los ángeles': 3, 'san francisco': 3,
+  'seattle': 3, 'santa clara': 3,
+  // Canadá
+  'toronto': 0,      // EDT = UTC-4
+  'vancouver': 3,    // PDT = UTC-7
+  // México
+  'ciudad de mexico': 1, 'ciudad de méxico': 1,  // CDT = UTC-5
+  'guadalajara': 1, 'monterrey': 1,
+};
+
+function getOffsetEstadio(estadio) {
+  if (!estadio) return 0;
+  const lower = estadio.toLowerCase();
+  for (const [ciudad, offset] of Object.entries(TIMEZONE_OFFSETS)) {
+    if (lower.includes(ciudad)) return offset;
+  }
+  return 0; // default ET si no se reconoce
+}
+
+function fmtHoraChile(h, estadio) {
+  const horaStr = fmtHora(h);
+  if (!horaStr) return null;
+  const [hh, mm] = horaStr.split(':').map(Number);
+  const offset = getOffsetEstadio(estadio);
+  let totalMins = hh * 60 + mm + offset * 60;
+  // Manejar cambio de día
+  const sigDia = totalMins >= 24 * 60;
+  totalMins = ((totalMins % (24 * 60)) + 24 * 60) % (24 * 60);
+  const hhCL = Math.floor(totalMins / 60);
+  const mmCL = totalMins % 60;
+  return `${String(hhCL).padStart(2,'0')}:${String(mmCL).padStart(2,'0')}${sigDia ? ' (+1d)' : ''}`;
+}
+
 function renderResPartido(p, esElim) {
   if (!p) return '';
   const tieneRes = p.resultado_local != null;
@@ -1609,7 +1656,7 @@ function renderResPartido(p, esElim) {
     </div>
     <div class="res-center">
       ${scoreHtml}
-      <div class="res-date">${fmtFecha(p.fecha)}${fmtHora(p.hora) ? ' · ' + fmtHora(p.hora) : ''}</div>
+      <div class="res-date">${fmtFecha(p.fecha)}${fmtHoraChile(p.hora, p.estadio) ? ' · ' + fmtHoraChile(p.hora, p.estadio) + ' CL' : ''}</div>
       ${p.estadio ? `<span class="match-weather res-weather-badge"><span class="mw-icon">🌡️</span><span class="mw-t">…</span></span>` : ''}
     </div>
     <div class="res-team right">
