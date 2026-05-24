@@ -464,13 +464,50 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
     const db = getFirestore(firebaseApp);
     const provider = new GoogleAuthProvider();
 
-    const FECHACIERRE = new Date('2026-06-10T23:59:59-05:00');
+    const FECHACIERRE = new Date('2026-06-10T23:59:59-05:00'); // fallback legacy
 
     let currentUser = null;
     let miParticipante = null;
     let globalPartidos = [];
     let globalGrupos = [];
     let misApuestas = {};
+    let plazosConfig = {}; // cargado desde Firestore config/plazos
+
+    // Mapa faseId polla → faseId en config/plazos
+    const FASE_A_PLAZO = {
+      'grupos':  'grupos',
+      'r32avos': 'r32',
+      'octavos': 'octavos',
+      'cuartos': 'cuartos',
+      'semis':   'semi',
+      'tercero': 'tercer',
+      'final':   'final',
+    };
+
+    async function cargarPlazos() {
+      try {
+        const snap = await getDoc(doc(db, 'config', 'plazos'));
+        plazosConfig = snap.exists() ? snap.data() : {};
+      } catch(e) {
+        console.warn('No se pudieron cargar plazos:', e);
+        plazosConfig = {};
+      }
+    }
+
+    // Verifica si una fase está cerrada: bloqueo manual OR fecha vencida
+    function isFaseCerrada(fasePollaId) {
+      const plazoId = FASE_A_PLAZO[fasePollaId] || fasePollaId;
+      const p = plazosConfig[plazoId];
+      if (!p) return false;                                    // sin config = abierto
+      if (p.bloqueado === true) return true;                  // bloqueo manual admin
+      if (p.fechaLimite) return new Date() > new Date(p.fechaLimite); // fecha vencida
+      return false;
+    }
+
+    // Compatibilidad legacy — verifica solo fase grupos
+    function isCerrado() {
+      return isFaseCerrada('grupos');
+    }
 
     const FLAGS = {
   "ARGENTINA":"🇦🇷",
@@ -669,7 +706,8 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
           cargarPartidos(),
           cargarGrupos(),
           cargarMiParticipante(),
-          cargarMisApuestas()
+          cargarMisApuestas(),
+          cargarPlazos(),           // ← plazos desde Firestore
         ]);
         renderGrupos();
       } catch (e) {
@@ -860,7 +898,9 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
       }
 
       await cargarMisApuestas();
-      const cerrado = isCerrado();
+      // Refrescar plazos antes de renderizar (garantiza datos frescos)
+      await cargarPlazos();
+      const cerrado = isCerrado(); // fase grupos — para el banner global
 
       // ── Fixture local (misma fuente de verdad que admin) ──────────────────
       // FG viene del módulo fifa2026.js
@@ -887,7 +927,8 @@ const FG = FIXTURE_GRUPOS;
       ];
 
       // ── Construir fila de partido ──────────────────────────────────────
-      function buildPartidoRow(base) {
+      function buildPartidoRow(base, faseId = 'grupos') {
+        const faseCerrada = isFaseCerrada(faseId);
         const fs  = firestoreById[base.id] || {};
         const p   = { ...base, ...fs };
         const apuesta = misApuestas[p.id];
@@ -922,10 +963,10 @@ const FG = FIXTURE_GRUPOS;
               <div class="score-inputs">
                 <div class="score-inputs-row">
                   <input type="number" min="0" max="20" class="score-input" id="local-${p.id}"
-                    value="${tieneApuesta ? apuesta.golesLocal : ''}" placeholder="–" ${cerrado?'disabled':''}>
+                    value="${tieneApuesta ? apuesta.golesLocal : ''}" placeholder="–" ${faseCerrada?'disabled':''}>
                   <span class="score-sep">:</span>
                   <input type="number" min="0" max="20" class="score-input" id="visita-${p.id}"
-                    value="${tieneApuesta ? apuesta.golesVisita : ''}" placeholder="–" ${cerrado?'disabled':''}>
+                    value="${tieneApuesta ? apuesta.golesVisita : ''}" placeholder="–" ${faseCerrada?'disabled':''}>
                 </div>
                 <span class="score-date">${fechaStr}${horaStr?' · '+horaStr:''}</span>
               </div>
@@ -938,8 +979,9 @@ const FG = FIXTURE_GRUPOS;
               <div class="partido-acciones">
                 ${ptsLabel ? `<span class="pts-badge ${ptsClass}">${ptsLabel}</span>` : ''}
                 ${tieneReal ? `<span class="resultado-real">${p.resultado_local}–${p.resultado_visita}</span>` : ''}
-                ${!cerrado ? `<button class="save-btn" id="save-${p.id}" disabled><i class="fas fa-save"></i> Guardar</button>` : ''}
-                ${tieneApuesta && !ptsLabel ? `<span style="font-size:.65rem;color:var(--green);"><i class="fas fa-check"></i> Guardado</span>` : ''}
+                ${!faseCerrada ? `<button class="save-btn" id="save-${p.id}" disabled data-faseid="${faseId}"><i class="fas fa-save"></i> Guardar</button>` : ''}
+                ${faseCerrada && tieneApuesta ? `<span style="font-size:.65rem;color:var(--muted);"><i class="fas fa-lock"></i> Cerrado</span>` : ''}
+                ${!faseCerrada && tieneApuesta && !ptsLabel ? `<span style="font-size:.65rem;color:var(--green);"><i class="fas fa-check"></i> Guardado</span>` : ''}
               </div>
             </div>
             <div class="partido-meta">
@@ -989,7 +1031,7 @@ const FG = FIXTURE_GRUPOS;
 
       gruposKeys.forEach((g, i) => {
         html += `<div class="grupo-panel${i===0?' active':''}" id="gpanel-${g}">`;
-        FG[g].forEach(base => { html += buildPartidoRow(base); });
+        FG[g].forEach(base => { html += buildPartidoRow(base, 'grupos'); });
         html += `</div>`;
       });
 
@@ -1019,8 +1061,8 @@ const FG = FIXTURE_GRUPOS;
 
         fase.ids.forEach(id => {
           const fs = firestoreById[id];
-          if(fs) html += buildPartidoRow(fs);
-          else   html += buildPartidoRow({id, local:'Por confirmar', visita:'Por confirmar', fecha:'–', estadio:'–'});
+          if(fs) html += buildPartidoRow(fs, fase.id);
+          else   html += buildPartidoRow({id, local:'Por confirmar', visita:'Por confirmar', fecha:'–', estadio:'–'}, fase.id);
         });
 
         html += `</div></div></div>`;
@@ -1039,33 +1081,22 @@ const FG = FIXTURE_GRUPOS;
       });
 
       // ── Eventos inputs/guardar ─────────────────────────────────────────
-      if(!cerrado) {
-        globalPartidos.forEach(p => {
-          const l   = document.getElementById(`local-${p.id}`);
-          const v   = document.getElementById(`visita-${p.id}`);
-          const btn = document.getElementById(`save-${p.id}`);
-          if(l && v && btn) {
-            const enable = () => { btn.disabled = false; };
-            l.addEventListener('input', enable);
-            v.addEventListener('input', enable);
-            btn.addEventListener('click', () => guardarApuesta(p));
-          }
-        });
-        // También bindear partidos del fixture local (grupos) que pueden no estar en globalPartidos
-        Object.values(FG).flat().forEach(base => {
-          const l   = document.getElementById(`local-${base.id}`);
-          const v   = document.getElementById(`visita-${base.id}`);
-          const btn = document.getElementById(`save-${base.id}`);
-          if(l && v && btn && !btn.dataset.bound) {
-            btn.dataset.bound = '1';
-            const enable = () => { btn.disabled = false; };
-            l.addEventListener('input', enable);
-            v.addEventListener('input', enable);
-            const merged = { ...base, ...(firestoreById[base.id]||{}) };
-            btn.addEventListener('click', () => guardarApuesta(merged));
-          }
-        });
-      }
+      // Bindear TODOS los botones guardar (la validación de plazo está en guardarApuesta)
+      container.querySelectorAll('.save-btn').forEach(btn => {
+        const id = btn.id.replace('save-', '');
+        const faseId = btn.dataset.faseid || 'grupos';
+        const l = document.getElementById(`local-${id}`);
+        const v = document.getElementById(`visita-${id}`);
+        if (l && v) {
+          const enable = () => { btn.disabled = false; };
+          l.addEventListener('input', enable);
+          v.addEventListener('input', enable);
+          btn.addEventListener('click', () => {
+            const partido = firestoreById[id] || Object.values(FG).flat().find(p => p.id === id) || { id };
+            guardarApuesta({ ...partido, _faseId: faseId });
+          });
+        }
+      });
     }
 
     window.toggleFaseApuestas = function(id) {
@@ -1076,6 +1107,15 @@ const FG = FIXTURE_GRUPOS;
     };
 
     async function guardarApuesta(partido) {
+      // ── Doble seguridad: verificar plazo en el servidor antes de escribir ──
+      await cargarPlazos(); // refrescar desde Firestore por si cambió
+      const faseId = partido._faseId || 'grupos';
+      if (isFaseCerrada(faseId)) {
+        toast('El plazo para esta fase ya venció. No puedes ingresar apuestas.', 'warn');
+        await renderApuestas(); // re-renderizar para bloquear inputs visualmente
+        return;
+      }
+
       const l = document.getElementById(`local-${partido.id}`).value;
       const v = document.getElementById(`visita-${partido.id}`).value;
 
@@ -1089,7 +1129,7 @@ const FG = FIXTURE_GRUPOS;
         grupoId: miParticipante.grupoId,
         grupoNombre: miParticipante.grupoNombre,
         partidoId: partido.id,
-        fase: partido.fase || (partido.grupo ? `Grupo ${partido.grupo}` : 'General'),
+        fase: partido.fase || (partido.grupo ? `Grupo ${partido.grupo}` : faseId),
         numeroPartido: Number(partido.numero || 0),
         golesLocal: Number(l),
         golesVisita: Number(v),
