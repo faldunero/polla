@@ -1484,6 +1484,7 @@ function renderSolicitudesFiltradas() {
     if (estado !== 'aprobado')  acciones.push(`<button class="btn btn-green btn-sm" onclick="cambiarEstado('${uid}','aprobado')"><i class="fas fa-check"></i> Aprobar</button>`);
     if (estado !== 'rechazado') acciones.push(`<button class="btn btn-danger btn-sm" onclick="cambiarEstado('${uid}','rechazado')"><i class="fas fa-times"></i> Rechazar</button>`);
     if (estado !== 'pendiente') acciones.push(`<button class="btn btn-outline btn-sm" onclick="cambiarEstado('${uid}','pendiente')"><i class="fas fa-rotate-left"></i> Pendiente</button>`);
+    if (estado === 'aprobado')  acciones.push(`<button class="btn btn-sm" title="Gestionar apuestas" style="background:rgba(245,200,66,0.1);color:var(--gold);border:1px solid rgba(245,200,66,0.25);" onclick="abrirGestionApuestas('${uid}','${(s.nombre||s.email).replace(/'/g,"\\'")}','${(s.grupoId||'').replace(/'/g,"\\'")}')"><i class="fas fa-eraser"></i> Apuestas</button>`);
     return `<div class="solicitud-item estado-${estado}" id="sol_${uid}">
       <div class="solicitud-info">
         <h4>${s.nombre || s.email}</h4>
@@ -1512,6 +1513,116 @@ window.cambiarEstado = async (uid, nuevoEstado) => {
     const labels = { aprobado:'Aprobado ✓', rechazado:'Rechazado', pendiente:'Vuelto a pendiente' };
     toast(labels[nuevoEstado] || 'Estado actualizado', nuevoEstado === 'aprobado' ? 'success' : nuevoEstado === 'rechazado' ? 'error' : 'info');
   } catch(e) { toast('Error: ' + e.message, 'error'); }
+};
+
+// ── GESTIÓN DE APUESTAS POR USUARIO Y FASE ───────────────────────────────
+const FASES_RESET = [
+  { id:'grupos',   label:'Fase de Grupos',   icon:'fa-layer-group', ids: null },  // ids = null → calcular desde FG
+  { id:'r32',      label:'32avos de Final',  icon:'fa-angles-right', ids: ['r32_1','r32_2','r32_3','r32_4','r32_5','r32_6','r32_7','r32_8','r32_9','r32_10','r32_11','r32_12','r32_13','r32_14','r32_15','r32_16'] },
+  { id:'octavos',  label:'Octavos de Final', icon:'fa-trophy',       ids: ['r16_1','r16_2','r16_3','r16_4','r16_5','r16_6','r16_7','r16_8'] },
+  { id:'cuartos',  label:'Cuartos de Final', icon:'fa-star-half-stroke', ids: ['qf1','qf2','qf3','qf4'] },
+  { id:'semi',     label:'Semifinales',      icon:'fa-fire',         ids: ['sf1','sf2'] },
+  { id:'tercer',   label:'Tercer Lugar',     icon:'fa-medal',        ids: ['3p'] },
+  { id:'final',    label:'Gran Final',       icon:'fa-crown',        ids: ['fin'] },
+];
+
+let _mgaUid = null, _mgaGrupoId = null;
+
+window.abrirGestionApuestas = async function(uid, nombre, grupoId) {
+  _mgaUid = uid;
+  _mgaGrupoId = grupoId;
+  document.getElementById('mga-nombre').textContent = nombre + (grupoId ? ' · ' + grupoId : '');
+  document.getElementById('modal-gestion-apuestas').style.display = 'flex';
+  await renderFasesGestion();
+};
+
+window.cerrarGestionApuestas = function() {
+  document.getElementById('modal-gestion-apuestas').style.display = 'none';
+  _mgaUid = null;
+  _mgaGrupoId = null;
+};
+
+async function renderFasesGestion() {
+  const container = document.getElementById('mga-fases');
+  container.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted);"><i class="fas fa-spinner fa-spin"></i></div>`;
+
+  // Obtener apuestas del usuario
+  const apSnap = await getDocs(query(collection(db,'apuestas'), where('uid','==',_mgaUid)));
+  const apuestasPorPartido = {};
+  apSnap.docs.forEach(d => { apuestasPorPartido[d.data().partidoId] = { ref: d.ref, ...d.data() }; });
+
+  // Calcular ids de grupos desde FG global
+  const idsGrupos = Object.values(FG || {}).flat().map(p => p.id);
+
+  const html = FASES_RESET.map(fase => {
+    const ids = fase.id === 'grupos' ? idsGrupos : (fase.ids || []);
+    const apuestasEnFase = ids.filter(id => apuestasPorPartido[id]);
+    const conPuntaje = apuestasEnFase.filter(id => apuestasPorPartido[id]?.puntaje != null);
+    const total = apuestasEnFase.length;
+    const sinApuestas = total === 0;
+
+    return `<div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;">
+      <div style="width:36px;height:36px;border-radius:8px;background:rgba(245,200,66,0.1);color:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="fas ${fase.icon}"></i>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;font-size:0.88rem;">${fase.label}</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:2px;">
+          ${sinApuestas
+            ? 'Sin apuestas registradas'
+            : `${total} apuesta${total!==1?'s':''} · ${conPuntaje.length} con puntaje`
+          }
+        </div>
+      </div>
+      <button
+        class="btn btn-sm"
+        style="background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.25);white-space:nowrap;flex-shrink:0;"
+        ${sinApuestas ? 'disabled' : ''}
+        onclick="confirmarResetFase('${fase.id}','${fase.label}',${JSON.stringify(ids)})">
+        <i class="fas fa-eraser"></i> Resetear
+      </button>
+    </div>`;
+  }).join('');
+
+  container.innerHTML = html;
+}
+
+window.confirmarResetFase = async function(faseId, faseLabel, ids) {
+  if (!confirm(`¿Resetear a 0 todas las apuestas de "${faseLabel}" para este usuario?\n\nSe eliminarán ${ids.length} posibles registros y sus puntajes. No se puede deshacer.`)) return;
+
+  const btn = event.currentTarget;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+  try {
+    // Obtener solo las apuestas de este usuario en esta fase
+    const apSnap = await getDocs(query(collection(db,'apuestas'), where('uid','==',_mgaUid)));
+    const aEliminar = apSnap.docs.filter(d => ids.includes(d.data().partidoId));
+
+    if (aEliminar.length === 0) {
+      toast('No había apuestas en esta fase', 'info');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-eraser"></i> Resetear';
+      return;
+    }
+
+    // Borrar en batch (máx 500 por batch)
+    const chunks = [];
+    for (let i = 0; i < aEliminar.length; i += 400) chunks.push(aEliminar.slice(i, i + 400));
+    for (const chunk of chunks) {
+      const b = writeBatch(db);
+      chunk.forEach(d => b.delete(d.ref));
+      await b.commit();
+    }
+
+    toast(`${faseLabel}: ${aEliminar.length} apuesta${aEliminar.length!==1?'s':''} reseteada${aEliminar.length!==1?'s':''} ✓`, 'success');
+    // Refrescar el modal
+    await renderFasesGestion();
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-eraser"></i> Resetear';
+  }
 };
 
 window.eliminarParticipante = async (uid, nombre) => {
@@ -5215,6 +5326,36 @@ window.clearFecha = function(faseId) {
 };
 
 </script>
+
+<!-- MODAL GESTIÓN APUESTAS USUARIO -->
+<div id="modal-gestion-apuestas" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9000;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;">
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.04em;color:var(--gold);">
+          <i class="fas fa-eraser"></i> Gestionar Apuestas
+        </div>
+        <div id="mga-nombre" style="font-size:0.8rem;color:var(--muted);margin-top:2px;"></div>
+      </div>
+      <button onclick="cerrarGestionApuestas()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:4px 8px;">✕</button>
+    </div>
+
+    <div style="padding:16px 24px;">
+      <div class="alert alert-warn" style="margin-bottom:18px;font-size:0.8rem;">
+        <i class="fas fa-triangle-exclamation"></i>
+        Resetear a 0 las apuestas de una fase elimina los puntajes acumulados de esos partidos. <strong>No se puede deshacer.</strong>
+      </div>
+
+      <div id="mga-fases" style="display:flex;flex-direction:column;gap:10px;">
+        <div style="text-align:center;padding:30px;color:var(--muted);"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
+      </div>
+    </div>
+
+    <div style="padding:14px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;">
+      <button class="btn btn-outline" onclick="cerrarGestionApuestas()">Cerrar</button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL RESET GRUPO -->
 <div id="modal-reset-grupo">
