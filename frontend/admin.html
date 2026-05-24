@@ -4302,6 +4302,47 @@ function simGanador(p){
   return simRnd(0,1)===0 ? p.local : p.visita;
 }
 
+// ── simGenerarCruces32: genera los 16 cruces reales desde tablas de grupo ──
+function simGenerarCruces32(){
+  // Tabla de cada grupo: [ [equipo, stats], ... ] ordenada por posición
+  const pos = {};
+  'ABCDEFGHIJKL'.split('').forEach(g => {
+    const tabla = simTablaPosiciones(g); // retorna [[nombre, stats], ...]
+    pos[g] = { primero: tabla[0]?.[0] || `1.${g}`, segundo: tabla[1]?.[0] || `2.${g}`, tercero: tabla[2]?.[0] || `3.${g}`, statsT: tabla[2]?.[1] };
+  });
+
+  // Mejores 8 terceros (solo si hay jornada 3 completa)
+  const terceros = 'ABCDEFGHIJKL'.split('').map(g => {
+    const tabla = simTablaPosiciones(g);
+    const t = tabla[2];
+    return t ? { nombre: t[0], ...t[1], grupo: g } : null;
+  }).filter(Boolean).sort((a,b) => b.pts-a.pts || b.dg-a.dg || b.gf-a.gf || a.nombre.localeCompare(b.nombre));
+  const mejores8 = terceros.slice(0, 8);
+
+  function tercero(i){ return mejores8[i]?.nombre || `3er mejor ${i+1}`; }
+
+  // Esquema fijo FIFA 2026 (32avos)
+  return [
+    {id:'r32_1', local:pos.A.primero, visita:pos.B.segundo, fecha:'1 jul', estadio:'MetLife, Nueva York'},
+    {id:'r32_2', local:pos.C.primero, visita:pos.D.segundo, fecha:'1 jul', estadio:'AT&T, Dallas'},
+    {id:'r32_3', local:pos.E.primero, visita:pos.F.segundo, fecha:'2 jul', estadio:'SoFi, Los Ángeles'},
+    {id:'r32_4', local:pos.G.primero, visita:pos.H.segundo, fecha:'2 jul', estadio:'Mercedes-Benz, Atlanta'},
+    {id:'r32_5', local:pos.I.primero, visita:pos.J.segundo, fecha:'3 jul', estadio:'Gillette, Boston'},
+    {id:'r32_6', local:pos.K.primero, visita:pos.L.segundo, fecha:'3 jul', estadio:'Arrowhead, Kansas City'},
+    {id:'r32_7', local:pos.B.primero, visita:pos.A.segundo, fecha:'4 jul', estadio:'BC Place, Vancouver'},
+    {id:'r32_8', local:pos.D.primero, visita:pos.C.segundo, fecha:'4 jul', estadio:'NRG, Houston'},
+    {id:'r32_9', local:pos.F.primero, visita:pos.E.segundo, fecha:'5 jul', estadio:'BMO Field, Toronto'},
+    {id:'r32_10',local:pos.H.primero, visita:pos.G.segundo, fecha:'5 jul', estadio:'Hard Rock, Miami'},
+    {id:'r32_11',local:pos.J.primero, visita:pos.I.segundo, fecha:'6 jul', estadio:'Lumen, Seattle'},
+    {id:'r32_12',local:pos.L.primero, visita:pos.K.segundo, fecha:'6 jul', estadio:'Lincoln, Filadelfia'},
+    // Mejores 8 terceros: 1°vs8°, 2°vs7°, 3°vs6°, 4°vs5°
+    {id:'r32_13',local:tercero(0), visita:tercero(7), fecha:'7 jul', estadio:'AT&T, Dallas'},
+    {id:'r32_14',local:tercero(1), visita:tercero(6), fecha:'7 jul', estadio:'MetLife, Nueva York'},
+    {id:'r32_15',local:tercero(2), visita:tercero(5), fecha:'8 jul', estadio:'SoFi, Los Ángeles'},
+    {id:'r32_16',local:tercero(3), visita:tercero(4), fecha:'8 jul', estadio:'Mercedes-Benz, Atlanta'},
+  ];
+}
+
 // Genera los 16 cruces de 32avos a partir de las tablas de grupos
 function simGenerarR32(){
   // Usar simTablaPosiciones local
@@ -4323,7 +4364,11 @@ function simGenerarR32(){
 }
 
 function simGenerarR32Fallback(){
-  // fallback vacío — usa simGenerarR32 por defecto
+  // Retorna placeholders cuando no hay suficientes datos de grupos
+  return Array.from({length:16},(_,i)=>({
+    id:`r32_${i+1}`, local:`Eq.${i*2+1}`, visita:`Eq.${i*2+2}`,
+    fecha:'1–8 jul', estadio:'Por definir', resultado:null, fase:'r32'
+  }));
 }
 
 function simGenerarFase(partidosAnt, faseId, fechas, estadios){
