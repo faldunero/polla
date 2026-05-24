@@ -684,8 +684,8 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
 
     function calcularPuntaje(real, apuesta) {
       return calcularPuntajePolla(
-        {local: real.local,    visita: real.visita},
-        {local: apuesta.local, visita: apuesta.visita}
+        { local: real.local,         visita: real.visita },
+        { local: apuesta.golesLocal, visita: apuesta.golesVisita }
       ) ?? 0;
     }
 
@@ -1259,8 +1259,10 @@ const FG = FIXTURE_GRUPOS;
           ) ?? 0;
 
           acumulado[uid].total += pts;
-          if (pts >= 3) acumulado[uid].aciertos++;   // exacto (3 pts) o perfecto si hay más
-          else if (pts > 0) acumulado[uid].parciales++; // parcial (1–2 pts)
+          if (pts === 4)      acumulado[uid].aciertos++;    // exacto: marcador exacto ganador
+          else if (pts === 2) acumulado[uid].aciertos++;    // exacto: empate exacto
+          else if (pts === 3) acumulado[uid].parciales++;   // parcial: ganador correcto sin marcador exacto
+          else if (pts === 1) acumulado[uid].parciales++;   // parcial: empate correcto sin marcador exacto // parcial (1–2 pts)
         });
 
         // 5) Ordenar y asignar posición
@@ -1284,7 +1286,8 @@ const FG = FIXTURE_GRUPOS;
                   Vas ${miPosicion.posicion}° de ${ranking.length} en ${miParticipante.grupoNombre || 'tu grupo'}
                 </div>
                 <div style="font-size:0.75rem;color:var(--muted);margin-top:2px;">
-                  ${miPosicion.total} pts · ${miPosicion.aciertos} exactos · ${miPosicion.parciales} parciales · ${miPosicion.jugados}/${miPosicion.apostados} partidos jugados
+                  ${miPosicion.total} pts · ${miPosicion.aciertos} exactos · ${miPosicion.parciales} parciales · ${miPosicion.jugados}/${miPosicion.apostados} jugados
+                  <span style="font-size:0.65rem;opacity:.7;display:block;margin-top:2px;">Exacto ganador=4pts · Ganador=3pts · Empate exacto=2pts · Empate=1pt</span>
                 </div>
               </div>
               <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--gold);">${miPosicion.total}</div>
@@ -1301,8 +1304,8 @@ const FG = FIXTURE_GRUPOS;
                 <th style="width:36px;">#</th>
                 <th>Jugador</th>
                 <th style="text-align:center;" title="Puntos totales">Pts</th>
-                <th style="text-align:center;" title="Resultados exactos">Exactos</th>
-                <th style="text-align:center;" title="Parciales (ganador correcto)">Parciales</th>
+                <th style="text-align:center;color:#16a34a;" title="Exactos: marcador exacto ganador (4pts) o empate exacto (2pts)">Exactos</th>
+                <th style="text-align:center;color:#f59e0b;" title="Parciales: ganador correcto sin marcador (3pts) o empate correcto (1pt)">Parciales</th>
                 <th></th>
               </tr>
             </thead>
