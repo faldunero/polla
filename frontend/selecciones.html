@@ -178,17 +178,19 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
 </footer>
 
 <script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, getDocs, getDoc, doc, collection } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-const fbApp = initializeApp({
+const fbConfig = {
   apiKey:"AIzaSyAqrYCFQN8epqx9HZrd7t1Ywz9wVf2Fx5Y",
   authDomain:"polla-495421-ab029.firebaseapp.com",
   projectId:"polla-495421-ab029",
   storageBucket:"polla-495421-ab029.firebasestorage.app",
   messagingSenderId:"366484877682",
   appId:"1:366484877682:web:a7c21e72c012d4b709adeb"
-});
+};
+// Evitar error "app already exists" si otro módulo ya inicializó Firebase
+const fbApp = getApps().length ? getApp() : initializeApp(fbConfig);
 const db = getFirestore(fbApp);
 
 const FLAGS_MAP={
@@ -263,9 +265,10 @@ function buildModalPais(p){
 }
 
 async function showPais(nombre){
-  // Buscar en caché local primero para mostrar algo inmediato
-  const cached = paises.find(i => norm(i.nombre) === norm(nombre));
-  if(!cached) return;
+  // Búsqueda tolerante: exacta primero, luego parcial
+  let cached = paises.find(i => norm(i.nombre) === norm(nombre));
+  if(!cached) cached = paises.find(i => norm(i.nombre).includes(norm(nombre)) || norm(nombre).includes(norm(i.nombre)));
+  if(!cached){ console.warn('País no encontrado:', nombre); return; }
 
   const modal = document.getElementById('paisModal');
   const body  = document.getElementById('modal-body');
@@ -284,7 +287,7 @@ async function showPais(nombre){
       if(idx !== -1) paises[idx] = fresh;
       body.innerHTML = buildModalPais(fresh);
     }
-  } catch(e){ /* mantener datos cacheados si falla */ }
+  } catch(e){ console.warn('Error refrescando país:', e); /* mantener datos cacheados */ }
 }
 
 function renderGrupos(){
@@ -330,12 +333,33 @@ function renderGrupos(){
 window._showPais = showPais;
 
 async function init(){
+  const container = document.getElementById('grupos-container');
   try{
     const snap = await getDocs(collection(db,'paises'));
     paises = snap.docs.map(d=>({id:d.id,...d.data()}));
+
+    if(!paises.length){
+      container.innerHTML = `
+        <div style="text-align:center;padding:80px 20px;color:var(--muted);">
+          <i class="fas fa-database" style="font-size:2rem;margin-bottom:12px;display:block;opacity:.4;"></i>
+          <p style="font-size:0.95rem;margin-bottom:8px;">No hay selecciones cargadas aún.</p>
+          <p style="font-size:0.78rem;">El administrador debe importar los datos desde el panel de administración.</p>
+        </div>`;
+      return;
+    }
+
     renderGrupos();
   } catch(e){
-    document.getElementById('grupos-container').innerHTML=`<p style="color:var(--muted);padding:40px 0;text-align:center;">Error cargando datos: ${e.message}</p>`;
+    console.error('Error cargando selecciones:', e);
+    container.innerHTML = `
+      <div style="text-align:center;padding:80px 20px;color:var(--muted);">
+        <i class="fas fa-exclamation-triangle" style="font-size:2rem;margin-bottom:12px;display:block;color:#ef4444;opacity:.7;"></i>
+        <p style="font-size:0.95rem;margin-bottom:8px;color:#ef4444;">Error al cargar las selecciones</p>
+        <p style="font-size:0.78rem;margin-bottom:16px;">${e.message}</p>
+        <button onclick="location.reload()" style="background:var(--red);color:white;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:0.82rem;">
+          <i class="fas fa-rotate"></i> Reintentar
+        </button>
+      </div>`;
   }
 }
 
