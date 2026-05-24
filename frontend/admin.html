@@ -1394,6 +1394,7 @@ window.showTab = async (tab) => {
   if(tabBtn) tabBtn.classList.add('active');
   const tabPage = document.getElementById('tab-' + tab);
   if(tabPage) tabPage.classList.add('active');
+  if (tab === 'grupos')       await renderGruposAdmin();
   if (tab === 'ranking')      await renderRankingGlobal();
   if (tab === 'solicitudes')  await renderSolicitudes();
   if (tab === 'resultados')   await renderResultados();
