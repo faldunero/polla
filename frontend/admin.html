@@ -1955,6 +1955,19 @@ async function renderResultados() {
     return /^(\d+\.[A-L]|G\.\d|G\.R16|G\.CF|3er|Mejor|Perd\.|Gan\.|Perdedor|Ganador)/i.test(nombre);
   }
 
+  // Botón recalcular 32avos si fase grupos está completa
+  const gruposCompletos = Object.keys(FG).every(g =>
+    FG[g].every(p => resCache[p.id]?.resultado_local != null)
+  );
+  if (gruposCompletos) {
+    html += `<div style="padding:12px 16px;border-bottom:1px solid var(--border);background:rgba(245,200,66,.04);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+      <span style="font-size:0.78rem;color:var(--muted);"><i class="fas fa-circle-info" style="color:var(--gold);"></i> Fase de grupos completa — recalcula los cruces de 32avos desde las tablas finales.</span>
+      <button class="btn btn-gold btn-sm" onclick="forzarRecalculo32avos()" id="btn-recalc-32">
+        <i class="fas fa-rotate"></i> Recalcular 32avos
+      </button>
+    </div>`;
+  }
+
   FASES_ELIM_ADMIN.forEach(fase => {
     const comp = fase.partidos.filter(p => resCache[p.id]?.resultado_local != null).length;
     const tot  = fase.partidos.length;
@@ -1962,7 +1975,6 @@ async function renderResultados() {
     html += `<div class="fase-body" id="fbody-${fase.id}"><div class="fase-partidos-wrap">`;
     fase.partidos.forEach(p => {
       const fs = resCache[p.id];
-      // Usar nombre de Firestore solo si es un equipo real (no placeholder)
       const localNombre  = (fs?.local  && !esPlaceholder(fs.local))  ? fs.local  : p.local;
       const visitaNombre = (fs?.visita && !esPlaceholder(fs.visita)) ? fs.visita : p.visita;
       html += buildPartidoRow({ ...p, local: localNombre, visita: visitaNombre }, true);
@@ -2085,6 +2097,19 @@ function buildPartidoRow(p, esElim) {
   </div>`;
 }
 
+
+window.forzarRecalculo32avos = async function() {
+  const btn = document.getElementById('btn-recalc-32');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calculando...'; }
+  try {
+    await recalcular32avos();
+    toast('32avos actualizados con los clasificados reales ✓', 'success');
+    await renderResultados();
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-rotate"></i> Recalcular 32avos'; }
+  }
+};
 
 // ── Recalcula y escribe los 32 partidos de 32avos en Firestore ───────────
 // Se llama automáticamente al guardar cualquier resultado de grupos
