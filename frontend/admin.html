@@ -4609,11 +4609,19 @@ window.simAvanzar = function(){
     simPartidosFase('r32').forEach(p=>{
       p.resultado={l:simRnd(0,4),v:simRnd(0,4)};
     });
-    // Generar octavos
-    const r32Done=simPartidosFase('r32');
-    const octavos=simGenerarFase(r32Done,'octavos',
-      ['11 jul','11 jul','12 jul','12 jul','13 jul','13 jul','14 jul','14 jul'],
-      ['MetLife','AT&T Dallas','SoFi','Mercedes-Benz','Gillette','Arrowhead','BC Place','NRG Houston']);
+    // Bracket fijo: ganador r32_1 vs ganador r32_2, etc.
+    const r32=simPartidosFase('r32');
+    const octavos=[];
+    for(let i=0;i<r32.length;i+=2){
+      octavos.push({
+        id:`oct_${Math.floor(i/2)+1}`,
+        local:  simGanador(r32[i])   || `G.32 ${i+1}`,
+        visita: simGanador(r32[i+1]) || `G.32 ${i+2}`,
+        fecha:  ['11 jul','11 jul','12 jul','12 jul','13 jul','13 jul','14 jul','14 jul'][Math.floor(i/2)],
+        estadio:['MetLife','AT&T Dallas','SoFi','Mercedes-Benz','Gillette','Arrowhead','BC Place','NRG Houston'][Math.floor(i/2)],
+        resultado:null, fase:'octavos'
+      });
+    }
     SIM.elim.push(...octavos);
     btn.innerHTML='<i class="fas fa-forward"></i> Simular Octavos';
     simRenderAll(); return;
@@ -4622,9 +4630,19 @@ window.simAvanzar = function(){
   if(SIM.fase==='r32'){
     SIM.fase='octavos';
     simPartidosFase('octavos').forEach(p=>{ p.resultado={l:simRnd(0,4),v:simRnd(0,4)}; });
-    const cuartos=simGenerarFase(simPartidosFase('octavos'),'cuartos',
-      ['18 jul','18 jul','19 jul','19 jul'],
-      ['MetLife','AT&T Dallas','SoFi','Mercedes-Benz']);
+    // Bracket fijo: ganador oct_1 vs ganador oct_2, etc.
+    const oct=simPartidosFase('octavos');
+    const cuartos=[];
+    for(let i=0;i<oct.length;i+=2){
+      cuartos.push({
+        id:`cf_${Math.floor(i/2)+1}`,
+        local:  simGanador(oct[i])   || `G.Oct ${i+1}`,
+        visita: simGanador(oct[i+1]) || `G.Oct ${i+2}`,
+        fecha:  ['18 jul','18 jul','19 jul','19 jul'][Math.floor(i/2)],
+        estadio:['MetLife','AT&T Dallas','SoFi','Mercedes-Benz'][Math.floor(i/2)],
+        resultado:null, fase:'cuartos'
+      });
+    }
     SIM.elim.push(...cuartos);
     btn.innerHTML='<i class="fas fa-forward"></i> Simular Cuartos';
     simRenderAll(); return;
@@ -4633,14 +4651,11 @@ window.simAvanzar = function(){
   if(SIM.fase==='octavos'){
     SIM.fase='cuartos';
     simPartidosFase('cuartos').forEach(p=>{ p.resultado={l:simRnd(0,4),v:simRnd(0,4)}; });
-    // Semis + partido 3er lugar
+    // Bracket fijo: cf_1vsf_2 → semi1, cf_3vscf_4 → semi2
     const cf=simPartidosFase('cuartos');
-    const ganadores=cf.map(p=>simGanador(p));
-    const perdedores=cf.map(p=>p.resultado.l>p.resultado.v?p.visita:p.resultado.v>p.resultado.l?p.local:simRnd(0,1)===0?p.visita:p.local);
     SIM.elim.push(
-      {id:'sf1',local:ganadores[0],visita:ganadores[1],fecha:'22 jul',estadio:'MetLife, Nueva York',resultado:null,fase:'semis'},
-      {id:'sf2',local:ganadores[2],visita:ganadores[3],fecha:'23 jul',estadio:'SoFi, Los Ángeles',resultado:null,fase:'semis'},
-      {id:'t3p',local:perdedores[0]||'Perd. CF1',visita:perdedores[1]||'Perd. CF2',fecha:'25 jul',estadio:'AT&T, Dallas',resultado:null,fase:'tercero'},
+      {id:'sf1',local:simGanador(cf[0])||'CF1',visita:simGanador(cf[1])||'CF2',fecha:'22 jul',estadio:'MetLife, Nueva York',resultado:null,fase:'semis'},
+      {id:'sf2',local:simGanador(cf[2])||'CF3',visita:simGanador(cf[3])||'CF4',fecha:'23 jul',estadio:'SoFi, Los Ángeles',resultado:null,fase:'semis'},
     );
     btn.innerHTML='<i class="fas fa-forward"></i> Simular Semifinales';
     simRenderAll(); return;
@@ -4649,17 +4664,26 @@ window.simAvanzar = function(){
   if(SIM.fase==='cuartos'){
     SIM.fase='semis';
     simPartidosFase('semis').forEach(p=>{ p.resultado={l:simRnd(0,4),v:simRnd(0,4)}; });
-    simPartidosFase('tercero').forEach(p=>{ p.resultado={l:simRnd(0,4),v:simRnd(0,4)}; });
     const sf=simPartidosFase('semis');
-    const ganadores=sf.map(p=>simGanador(p));
-    SIM.elim.push({id:'fin',local:ganadores[0]||'SF1',visita:ganadores[1]||'SF2',fecha:'26 jul',estadio:'MetLife, Nueva York',resultado:null,fase:'final'});
-    btn.innerHTML='<i class="fas fa-forward"></i> Simular Gran Final';
+    // ✅ Perdedores de SEMIS para el 3er lugar (corrección del bug)
+    const perdedorSF1 = sf[0].resultado.l > sf[0].resultado.v ? sf[0].visita
+                      : sf[0].resultado.v > sf[0].resultado.l ? sf[0].local
+                      : simRnd(0,1)===0 ? sf[0].visita : sf[0].local;
+    const perdedorSF2 = sf[1].resultado.l > sf[1].resultado.v ? sf[1].visita
+                      : sf[1].resultado.v > sf[1].resultado.l ? sf[1].local
+                      : simRnd(0,1)===0 ? sf[1].visita : sf[1].local;
+    SIM.elim.push(
+      {id:'t3p',local:perdedorSF1,visita:perdedorSF2,fecha:'25 jul',estadio:'AT&T, Dallas',resultado:null,fase:'tercero'},
+      {id:'fin',local:simGanador(sf[0])||'SF1',visita:simGanador(sf[1])||'SF2',fecha:'26 jul',estadio:'MetLife, Nueva York',resultado:null,fase:'final'},
+    );
+    btn.innerHTML='<i class="fas fa-forward"></i> Simular Final + 3er Lugar';
     simRenderAll(); return;
   }
 
   if(SIM.fase==='semis'){
     SIM.fase='final';
     simPartidosFase('final').forEach(p=>{ p.resultado={l:simRnd(0,4),v:simRnd(0,4)}; });
+    simPartidosFase('tercero').forEach(p=>{ p.resultado={l:simRnd(0,4),v:simRnd(0,4)}; });
     btn.disabled=true;
     btn.innerHTML='<i class="fas fa-trophy"></i> Torneo completado';
     simRenderAll(); return;
