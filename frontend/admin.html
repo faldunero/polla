@@ -2086,6 +2086,80 @@ function buildPartidoRow(p, esElim) {
 }
 
 
+// ── Recalcula y escribe los 32 partidos de 32avos en Firestore ───────────
+// Se llama automáticamente al guardar cualquier resultado de grupos
+async function recalcular32avos() {
+  // Calcular tabla de un grupo con resCache actual
+  function calcTablaLocal(grupoId) {
+    const equipos = {};
+    (FG[grupoId] || []).forEach(p => {
+      [p.local, p.visita].forEach(e => {
+        if (e && !equipos[e]) equipos[e] = {nombre:e,pj:0,g:0,e:0,pe:0,gf:0,gc:0,dg:0,pts:0};
+      });
+    });
+    (FG[grupoId] || []).forEach(p => {
+      const res = resCache[p.id];
+      if (res?.resultado_local == null) return;
+      const gl = Number(res.resultado_local), gv = Number(res.resultado_visita);
+      const eqL = equipos[p.local], eqV = equipos[p.visita];
+      if (!eqL || !eqV) return;
+      eqL.pj++; eqV.pj++; eqL.gf+=gl; eqL.gc+=gv; eqV.gf+=gv; eqV.gc+=gl;
+      eqL.dg = eqL.gf-eqL.gc; eqV.dg = eqV.gf-eqV.gc;
+      if (gl > gv)      { eqL.g++; eqL.pts+=3; eqV.pe++; }
+      else if (gl < gv) { eqV.g++; eqV.pts+=3; eqL.pe++; }
+      else              { eqL.e++; eqV.e++; eqL.pts++; eqV.pts++; }
+    });
+    return Object.values(equipos).sort((a,b) =>
+      b.pts-a.pts || b.dg-a.dg || b.gf-a.gf || a.nombre.localeCompare(b.nombre)
+    );
+  }
+
+  function resolverEquipo(grupoId, pos) {
+    const tabla = calcTablaLocal(grupoId);
+    const completo = (FG[grupoId]||[]).every(p => resCache[p.id]?.resultado_local != null);
+    if (!completo || tabla.length < 2) return pos === 0 ? `1.${grupoId}` : `2.${grupoId}`;
+    return tabla[pos]?.nombre || (pos === 0 ? `1.${grupoId}` : `2.${grupoId}`);
+  }
+
+  // Mejores 8 terceros
+  const terceros = Object.keys(FG).map(g => {
+    const tabla = calcTablaLocal(g);
+    const completo = (FG[g]||[]).every(p => resCache[p.id]?.resultado_local != null);
+    return completo && tabla[2] ? { ...tabla[2], grupo: g } : null;
+  }).filter(Boolean).sort((a,b) => b.pts-a.pts || b.dg-a.dg || b.gf-a.gf || a.nombre.localeCompare(b.nombre));
+  const mejores8 = terceros.slice(0, 8);
+
+  function tercero(i) { return mejores8[i]?.nombre || `3er mejor ${i+1}`; }
+
+  const CRUCES = {
+    r32_1:  [resolverEquipo('A',0), resolverEquipo('B',1)],
+    r32_2:  [resolverEquipo('C',0), resolverEquipo('D',1)],
+    r32_3:  [resolverEquipo('E',0), resolverEquipo('F',1)],
+    r32_4:  [resolverEquipo('G',0), resolverEquipo('H',1)],
+    r32_5:  [resolverEquipo('I',0), resolverEquipo('J',1)],
+    r32_6:  [resolverEquipo('K',0), resolverEquipo('L',1)],
+    r32_7:  [resolverEquipo('B',0), resolverEquipo('A',1)],
+    r32_8:  [resolverEquipo('D',0), resolverEquipo('C',1)],
+    r32_9:  [resolverEquipo('F',0), resolverEquipo('E',1)],
+    r32_10: [resolverEquipo('H',0), resolverEquipo('G',1)],
+    r32_11: [resolverEquipo('J',0), resolverEquipo('I',1)],
+    r32_12: [resolverEquipo('L',0), resolverEquipo('K',1)],
+    r32_13: [tercero(0), tercero(7)],
+    r32_14: [tercero(1), tercero(6)],
+    r32_15: [tercero(2), tercero(5)],
+    r32_16: [tercero(3), tercero(4)],
+  };
+
+  const batch = writeBatch(db);
+  Object.entries(CRUCES).forEach(([id, [local, visita]]) => {
+    batch.set(doc(db, 'partidos', id), { local, visita }, { merge: true });
+    if (!resCache[id]) resCache[id] = {};
+    resCache[id].local  = local;
+    resCache[id].visita = visita;
+  });
+  await batch.commit();
+}
+
 window.guardarResultado = async (partidoId, esElim) => {
   const l = document.getElementById('rl-' + partidoId)?.value;
   const v = document.getElementById('rv-' + partidoId)?.value;
@@ -2134,6 +2208,15 @@ window.guardarResultado = async (partidoId, esElim) => {
     resCache[partidoId].resultado_visita = Number(v);
     if (updateData.local)  resCache[partidoId].local  = updateData.local;
     if (updateData.visita) resCache[partidoId].visita = updateData.visita;
+
+    // ── Recalcular 32avos automáticamente si es partido de grupos ──────────
+    if (!esElim) {
+      try {
+        await recalcular32avos();
+      } catch(e32) {
+        console.warn('No se pudieron actualizar 32avos:', e32.message);
+      }
+    }
 
     // Actualizar UI
     document.getElementById('prow-'  + partidoId)?.classList.replace('pendiente','guardado');

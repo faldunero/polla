@@ -518,6 +518,13 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
       </div>
       <div id="resultados-accordion"></div>
     </section>
+    <section class="section-wrap" id="goleadores">
+      <div class="section-label">
+        <div class="section-line"></div>
+        <div><h2>Tabla de Goleadores</h2><p>Los mejores artilleros del Mundial 2026 · Actualizado en vivo</p></div>
+      </div>
+      <div id="goleadores-container"></div>
+    </section>
     <section class="section-wrap" id="estadios">
       <div class="section-label">
         <div class="section-line"></div>
@@ -1906,12 +1913,60 @@ async function init(){
     };
     const sp=document.getElementById('stat-paises'); if(sp) sp.textContent=globalData.paises.length;
     renderGrupos(); renderEstadios(); await renderResultadosAccordion();
+    renderGoleadores();
   } catch(e){
     console.error(e);
     const g=document.getElementById('grupos-wrapper');
     if(g) g.innerHTML='<p style="color:var(--muted);padding:20px 0;">Error cargando datos: '+e.message+'</p>';
   }
 }
+// ── GOLEADORES (desde localStorage, publicados por el admin) ─────────────
+function renderGoleadores() {
+  const container = document.getElementById('goleadores-container');
+  if (!container) return;
+  let lista = [];
+  try { lista = JSON.parse(localStorage.getItem('lapolla2026_goleadores') || '[]'); } catch(e) {}
+
+  if (!lista.length) {
+    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);font-size:0.85rem;">
+      <i class="fas fa-futbol" style="font-size:2rem;opacity:.3;display:block;margin-bottom:10px;"></i>
+      La tabla se publicará cuando comiencen los partidos.
+    </div>`;
+    return;
+  }
+
+  const sorted = [...lista].sort((a,b) => b.goles - a.goles || a.nombre.localeCompare(b.nombre));
+  const maxGoles = sorted[0]?.goles || 1;
+
+  let html = `<div style="background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;max-width:680px;margin:0 auto;">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead><tr style="background:var(--off);border-bottom:2px solid var(--border);">
+        <th style="padding:12px 18px;text-align:left;font-family:var(--font-display);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);width:40px;">#</th>
+        <th style="padding:12px 10px;text-align:left;font-family:var(--font-display);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);">Jugador</th>
+        <th style="padding:12px 10px;text-align:left;font-family:var(--font-display);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);">País</th>
+        <th style="padding:12px 18px;text-align:right;font-family:var(--font-display);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--red);">⚽ Goles</th>
+      </tr></thead><tbody>`;
+
+  sorted.forEach((g, i) => {
+    const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+    const pct = Math.round((g.goles / maxGoles) * 100);
+    html += `<tr style="border-bottom:1px solid var(--border);${i===0?'background:rgba(245,200,66,.04);':''}">
+      <td style="padding:12px 18px;font-weight:700;color:${i<3?'var(--red)':'var(--muted)'};">${medal||i+1}</td>
+      <td style="padding:12px 10px;">
+        <div style="font-weight:${i<3?'700':'500'};font-size:.88rem;">${g.nombre}</div>
+        <div style="height:3px;background:rgba(255,255,255,.06);border-radius:99px;margin-top:4px;max-width:120px;">
+          <div style="height:3px;background:var(--red);border-radius:99px;width:${pct}%;"></div>
+        </div>
+      </td>
+      <td style="padding:12px 10px;color:var(--muted);font-size:.85rem;">${getFlag(g.pais)} ${g.pais}</td>
+      <td style="padding:12px 18px;text-align:right;font-family:var(--font-display);font-weight:900;font-size:1.4rem;color:${i===0?'var(--gold)':'var(--ink)'};">${g.goles}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+  container.innerHTML = html;
+}
+
 init();
 </script>
 </body>
