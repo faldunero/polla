@@ -516,99 +516,73 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
     }
 
     const FLAGS = {
-  "ARGENTINA":"🇦🇷",
-  "BRASIL":"🇧🇷",
-  "FRANCE":"🇫🇷",
-  "FRANCIA":"🇫🇷",
-  "ESPAÑA":"🇪🇸",
-  "ESPANA":"🇪🇸",
-  "ALEMANIA":"🇩🇪",
-  "ENGLAND":"🏴",
-  "INGLATERRA":"🏴",
-  "PORTUGAL":"🇵🇹",
-  "USA":"🇺🇸",
-  "MEXICO":"🇲🇽",
-  "MÉXICO":"🇲🇽",
-  "CANADA":"🇨🇦",
-  "CANADÁ":"🇨🇦",
-  "MARRUECOS":"🇲🇦",
-  "CROACIA":"🇭🇷",
-  "PAISES BAJOS":"🇳🇱",
-  "PAÍSES BAJOS":"🇳🇱",
-  "BÉLGICA":"🇧🇪",
-  "BELGICA":"🇧🇪",
-  "URUGUAY":"🇺🇾",
-  "COLOMBIA":"🇨🇴",
-  "CHILE":"🇨🇱",
-  "ECUADOR":"🇪🇨",
-  "PERU":"🇵🇪",
-  "PERÚ":"🇵🇪",
-  "VENEZUELA":"🇻🇪",
-  "JAPON":"🇯🇵",
-  "JAPÓN":"🇯🇵",
-  "COREA DEL SUR":"🇰🇷",
-  "AUSTRALIA":"🇦🇺",
-  "SENEGAL":"🇸🇳",
-  "NIGERIA":"🇳🇬",
-  "GHANA":"🇬🇭",
-  "CAMERUN":"🇨🇲",
-  "CAMERÚN":"🇨🇲",
-  "ARABIA SAUDITA":"🇸🇦",
-  "IRAN":"🇮🇷",
-  "IRÁN":"🇮🇷",
-  "IRAK":"🇮🇶",
-  "IRAK":"🇮🇶",
-  "SUIZA":"🇨🇭",
-  "DINAMARCA":"🇩🇰",
-  "SUECIA":"🇸🇪",
-  "NORUEGA":"🇳🇴",
-  "AUSTRIA":"🇦🇹",
-  "POLONIA":"🇵🇱",
-  "SERBIA":"🇷🇸",
-  "UCRANIA":"🇺🇦",
-  "TURQUIA":"🇹🇷",
-  "TURQUÍA":"🇹🇷",
-  "GRECIA":"🇬🇷",
-  "RUMANIA":"🇷🇴",
-  "HUNGRIA":"🇭🇺",
-  "HUNGRÍA":"🇭🇺",
-  "REPUBLICA CHECA":"🇨🇿",
-  "REPÚBLICA CHECA":"🇨🇿",
-  "CHEQUIA":"🇨🇿",
-  "ESLOVAQUIA":"🇸🇰",
-  "ESLOVENIA":"🇸🇮",
-  "ALBANIA":"🇦🇱",
-  "GEORGIA":"🇬🇪",
-  "COSTA RICA":"🇨🇷",
-  "PANAMA":"🇵🇦",
-  "PANAMÁ":"🇵🇦",
-  "HONDURAS":"🇭🇳",
-  "EL SALVADOR":"🇸🇻",
-  "JAMAICA":"🇯🇲",
-  "BOLIVIA":"🇧🇴",
-  "PARAGUAY":"🇵🇾",
-  "NUEVA ZELANDA":"🇳🇿",
+  "ARGENTINA":"🇦🇷", "BRASIL":"🇧🇷", "FRANCE":"🇫🇷", "FRANCIA":"🇫🇷",
+  "ESPAÑA":"🇪🇸", "ESPANA":"🇪🇸", "ALEMANIA":"🇩🇪",
+  "ENGLAND":"🏴󠁧󠁢󠁥󠁮󠁧󠁿", "INGLATERRA":"🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+  "SCOTLAND":"🏴󠁧󠁢󠁳󠁣󠁴󠁿", "ESCOCIA":"🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+  "WALES":"🏴󠁧󠁢󠁷󠁬󠁳󠁿", "GALES":"🏴󠁧󠁢󠁷󠁬󠁳󠁿",
+  "PORTUGAL":"🇵🇹", "USA":"🇺🇸", "ESTADOS UNIDOS":"🇺🇸",
+  "MEXICO":"🇲🇽", "MÉXICO":"🇲🇽", "CANADA":"🇨🇦", "CANADÁ":"🇨🇦",
+  "MARRUECOS":"🇲🇦", "CROACIA":"🇭🇷",
+  "PAISES BAJOS":"🇳🇱", "PAÍSES BAJOS":"🇳🇱", "HOLANDA":"🇳🇱",
+  "BÉLGICA":"🇧🇪", "BELGICA":"🇧🇪",
+  "URUGUAY":"🇺🇾", "COLOMBIA":"🇨🇴", "CHILE":"🇨🇱",
+  "ECUADOR":"🇪🇨", "PERU":"🇵🇪", "PERÚ":"🇵🇪",
+  "VENEZUELA":"🇻🇪", "BOLIVIA":"🇧🇴", "PARAGUAY":"🇵🇾",
+  "JAPON":"🇯🇵", "JAPÓN":"🇯🇵",
+  "COREA DEL SUR":"🇰🇷", "COREA":"🇰🇷",
+  "AUSTRALIA":"🇦🇺", "NUEVA ZELANDA":"🇳🇿",
+  "SENEGAL":"🇸🇳", "NIGERIA":"🇳🇬", "GHANA":"🇬🇭",
+  "CAMERUN":"🇨🇲", "CAMERÚN":"🇨🇲",
+  "COSTA DE MARFIL":"🇨🇮", "MALI":"🇲🇱",
+  "SUDAFRICA":"🇿🇦", "SUDÁFRICA":"🇿🇦",
+  "ARGELIA":"🇩🇿", "EGIPTO":"🇪🇬",
+  "RD CONGO":"🇨🇩", "CONGO":"🇨🇩",
+  "ARABIA SAUDITA":"🇸🇦", "IRAN":"🇮🇷", "IRÁN":"🇮🇷", "IRAK":"🇮🇶",
+  "QATAR":"🇶🇦", "JORDANIA":"🇯🇴",
+  "UZBEKISTAN":"🇺🇿", "UZBEKISTÁN":"🇺🇿",
   "INDONESIA":"🇮🇩",
-  "ARGELIA":"🇩🇿",
-  "EGIPTO":"🇪🇬",
-  "SUDAFRICA":"🇿🇦",
-  "SUDÁFRICA":"🇿🇦",
-  "COSTA DE MARFIL":"🇨🇮",
-  "MALI":"🇲🇱",
-  "QATAR":"🇶🇦",
+  "SUIZA":"🇨🇭", "DINAMARCA":"🇩🇰", "SUECIA":"🇸🇪",
+  "NORUEGA":"🇳🇴", "AUSTRIA":"🇦🇹", "POLONIA":"🇵🇱",
+  "SERBIA":"🇷🇸", "UCRANIA":"🇺🇦",
+  "TURQUIA":"🇹🇷", "TURQUÍA":"🇹🇷",
+  "GRECIA":"🇬🇷", "RUMANIA":"🇷🇴",
+  "HUNGRIA":"🇭🇺", "HUNGRÍA":"🇭🇺",
+  "REPUBLICA CHECA":"🇨🇿", "REPÚBLICA CHECA":"🇨🇿", "CHEQUIA":"🇨🇿",
+  "ESLOVAQUIA":"🇸🇰", "ESLOVENIA":"🇸🇮",
+  "ALBANIA":"🇦🇱", "GEORGIA":"🇬🇪",
+  "COSTA RICA":"🇨🇷", "PANAMA":"🇵🇦", "PANAMÁ":"🇵🇦",
+  "HONDURAS":"🇭🇳", "EL SALVADOR":"🇸🇻", "JAMAICA":"🇯🇲",
+  "TRINIDAD Y TOBAGO":"🇹🇹",
+  "HAITI":"🇭🇹", "HAITÍ":"🇭🇹",
+  "CURAZAO":"🇨🇼",
+  "TUNEZ":"🇹🇳", "TÚNEZ":"🇹🇳", "CABO VERDE":"🇨🇻",
   "BOSNIA Y HERZEGOVINA":"🇧🇦",
-  "HAITI":"🇭🇹",
-  "HAITÍ":"🇭🇹",
-  "CURAZAO":"🇨🇼",
-  "CURAZAO":"🇨🇼",
-  "TUNEZ":"🇹🇳",
-  "TÚNEZ":"🇹🇳",
-  "CABO VERDE":"🇨🇻",
-  "JORDANIA":"🇯🇴",
-  "UZBEKISTAN":"🇺🇿",
-  "UZBEKISTÁN":"🇺🇿",
-  "RD CONGO":"🇨🇩",
-  "CONGO":"🇨🇩"
+  "RUMANIA":"🇷🇴", "MOLDOVA":"🇲🇩",
+  "ISLANDIA":"🇮🇸", "FINLANDIA":"🇫🇮", "NORUEGA":"🇳🇴",
+  "IRLANDA":"🇮🇪", "IRLANDA DEL NORTE":"🇬🇧",
+  "KAZAJISTAN":"🇰🇿", "KAZAJISTÁN":"🇰🇿",
+  "AZERBAIYAN":"🇦🇿", "AZERBAIYÁN":"🇦🇿",
+  "ARMENIA":"🇦🇲", "BIELORRUSIA":"🇧🇾",
+  "ESTONIA":"🇪🇪", "LETONIA":"🇱🇻", "LITUANIA":"🇱🇹",
+  "MACEDONIA DEL NORTE":"🇲🇰",
+  "MONTENEGRO":"🇲🇪", "KOSOVO":"🇽🇰",
+  "ISRAEL":"🇮🇱",
+  "NUEVA ZELANDA":"🇳🇿",
+  "FILIPINAS":"🇵🇭",
+  "TAILANDIA":"🇹🇭",
+  "VIETNAM":"🇻🇳",
+  "CHINA":"🇨🇳",
+  "INDIA":"🇮🇳",
+  "MARRUECOS":"🇲🇦",
+  "RUANDA":"🇷🇼",
+  "TANZANIA":"🇹🇿",
+  "ZAMBIA":"🇿🇲",
+  "MOZAMBIQUE":"🇲🇿",
+  "ANGOLA":"🇦🇴",
+  "GUINEA":"🇬🇳",
+  "GUINEA ECUATORIAL":"🇬🇶",
+  "BURKINA FASO":"🇧🇫",
 };
 
     function normalizeText(t='') {
@@ -1172,7 +1146,12 @@ const FG = FIXTURE_GRUPOS;
       const faseId = partido._faseId || 'grupos';
       if (isFaseCerrada(faseId)) {
         toast('El plazo para esta fase ya venció. No puedes ingresar apuestas.', 'warn');
-        await renderApuestas(); // re-renderizar para bloquear inputs visualmente
+        const grupoActivo = document.querySelector('.grupo-tab.active')?.dataset?.grupo || null;
+        await renderApuestas();
+        if (grupoActivo) {
+          const tab = document.querySelector(`.grupo-tab[data-grupo="${grupoActivo}"]`);
+          if (tab) tab.click();
+        }
         return;
       }
 
@@ -1212,8 +1191,19 @@ const FG = FIXTURE_GRUPOS;
         }
 
         await cargarMisApuestas();
+
+        // Guardar grupo activo antes de re-renderizar
+        const grupoActivo = document.querySelector('.grupo-tab.active')?.dataset?.grupo || null;
+
         await renderApuestas();
-        toast('Apuesta guardada', 'success');
+
+        // Restaurar el grupo activo
+        if (grupoActivo) {
+          const tab = document.querySelector(`.grupo-tab[data-grupo="${grupoActivo}"]`);
+          if (tab) tab.click();
+        }
+
+        toast('Apuesta guardada ✓', 'success');
       } catch (e) {
         toast(e.message, 'error');
       }
