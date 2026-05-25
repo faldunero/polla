@@ -1413,19 +1413,23 @@ const FG = FIXTURE_GRUPOS;
       container.innerHTML = `<div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Cargando...</p></div>`;
 
       try {
-        // Siempre recargar para tener resultados frescos
         await cargarPartidos();
 
-        // Debug: verificar que los partidos tienen el campo grupo
+        // Si los partidos no tienen campo 'grupo', deducirlo desde el ID (fgA1 → grupo A)
+        globalPartidos.forEach(p => {
+          if (!p.grupo && p.id) {
+            const match = p.id.match(/^fg([A-L])/i);
+            if (match) p.grupo = match[1].toUpperCase();
+          }
+        });
+
         const conGrupo = globalPartidos.filter(p => p.grupo);
-        const sinGrupo = globalPartidos.filter(p => !p.grupo);
-        if (sinGrupo.length > 0) console.warn(`Mundial: ${sinGrupo.length} partidos sin campo 'grupo' en Firestore`);
         if (!conGrupo.length) {
           container.innerHTML = `<div class="empty-state"><i class="fas fa-database"></i><p>Los partidos no tienen campo 'grupo' en Firestore.<br><span style="font-size:.75rem;opacity:.7;">El admin debe reimportar el fixture.</span></p></div>`;
           return;
         }
       } catch(e) {
-        container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error cargando partidos: ${e.message}</p></div>`;
+        container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error: ${e.message}</p></div>`;
         return;
       }
 
