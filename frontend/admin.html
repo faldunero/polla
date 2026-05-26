@@ -2124,8 +2124,18 @@ function buildPartidoRow(p, esElim) {
         </div>
       </div>
     </div>
-    <div style="padding:4px 18px 10px;font-size:0.69rem;color:var(--muted);display:flex;align-items:center;gap:6px;">
+    <div style="padding:4px 18px 10px;font-size:0.69rem;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
       <i class="fas fa-location-dot"></i> ${p.estadio||'TBD'}
+      ${esElim ? `
+        <span style="margin-left:8px;color:var(--muted);opacity:.6;">|</span>
+        <label style="display:flex;align-items:center;gap:5px;color:var(--muted);cursor:pointer;" title="Si hubo empate, indica quién ganó por penales">
+          <i class="fas fa-futbol" style="font-size:.65rem;"></i> Ganador penales:
+          <select id="penal-${p.id}" class="form-input" style="padding:2px 6px;font-size:.72rem;height:24px;width:auto;background:var(--card2);">
+            <option value="">Sin penales</option>
+            <option value="${localNombre}" ${r?.ganador_penal===localNombre?'selected':''}>${localNombre}</option>
+            <option value="${visitaNombre}" ${r?.ganador_penal===visitaNombre?'selected':''}>${visitaNombre}</option>
+          </select>
+        </label>` : ''}
     </div>
   </div>`;
 }
@@ -2184,17 +2194,27 @@ async function recalcularFase(faseActual, faseSiguienteIds) {
     const r = resCache[id];
     if (!r || r.resultado_local == null) return null;
     const gl = Number(r.resultado_local), gv = Number(r.resultado_visita);
-    if (gl > gv) return r.local  || resCache[id]?.local;
-    if (gv > gl) return r.visita || resCache[id]?.visita;
-    return null; // empate → pendiente penales (no resoluble automáticamente)
+    const localNombre  = r.local  || FIXTURE_MAP[id]?.local;
+    const visitaNombre = r.visita || FIXTURE_MAP[id]?.visita;
+    if (gl > gv) return localNombre;
+    if (gv > gl) return visitaNombre;
+    // Empate: en eliminatorias se resuelve por penales
+    // El admin debe haber editado los nombres para indicar quién avanzó,
+    // o bien existe un campo ganador_penal en resCache
+    if (r.ganador_penal) return r.ganador_penal;
+    // Si no hay campo ganador_penal, no podemos determinar automáticamente
+    return null;
   }
 
   function perdedorDe(id) {
     const r = resCache[id];
     if (!r || r.resultado_local == null) return null;
     const gl = Number(r.resultado_local), gv = Number(r.resultado_visita);
-    if (gl > gv) return r.visita;
-    if (gv > gl) return r.local;
+    const localNombre  = r.local  || FIXTURE_MAP[id]?.local;
+    const visitaNombre = r.visita || FIXTURE_MAP[id]?.visita;
+    if (gl > gv) return visitaNombre;
+    if (gv > gl) return localNombre;
+    if (r.ganador_penal) return r.ganador_penal === localNombre ? visitaNombre : localNombre;
     return null;
   }
 
@@ -2359,6 +2379,16 @@ window.guardarResultado = async (partidoId, esElim) => {
       const nv = document.getElementById('ne-visita-' + partidoId)?.value.trim();
       if (nl) updateData.local  = nl;
       if (nv) updateData.visita = nv;
+      // Ganador por penales (cuando hay empate en 90+prórr)
+      const ganadorPenal = document.getElementById('penal-' + partidoId)?.value || '';
+      if (ganadorPenal) {
+        updateData.ganador_penal = ganadorPenal;
+        if (!resCache[partidoId]) resCache[partidoId] = {};
+        resCache[partidoId].ganador_penal = ganadorPenal;
+      } else {
+        updateData.ganador_penal = deleteField();
+        if (resCache[partidoId]) delete resCache[partidoId].ganador_penal;
+      }
     }
 
     // Escribir resultado en Firestore
