@@ -734,6 +734,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
       await signOut(auth);
     };
 
+    let appIniciada = false;
     onAuthStateChanged(auth, async user => {
       if (user) {
         currentUser = user;
@@ -742,11 +743,15 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
         document.getElementById('app').style.display = 'block';
         document.getElementById('user-name').textContent = user.displayName?.split(' ')[0] || user.email;
         document.getElementById('user-avatar').src = user.photoURL || '';
-        await initApp();
+        if (!appIniciada) {
+          appIniciada = true;
+          await initApp();
+        }
       } else {
         currentUser = null;
         miParticipante = null;
         misApuestas = {};
+        appIniciada = false;
         document.getElementById('site-nav').style.display = 'flex';
         document.getElementById('login-screen').style.display = 'flex';
         document.getElementById('app').style.display = 'none';
@@ -1025,7 +1030,9 @@ const FG = FIXTURE_GRUPOS;
           </div>`;
       }
 
-      // ── Construir HTML ─────────────────────────────────────────────────
+      // Guardar estado del acordeón antes de re-renderizar
+      const faseAbierta = document.querySelector('.fase-header.open')?.id?.replace('fh-','') || 'grupos';
+      const grupoActivo = document.querySelector('.grupo-tab.active')?.dataset?.grupo || null;
       let html = '';
       html += bannerPlazos; // banner de fases cerradas (vacío si todo abierto)
 
@@ -1036,7 +1043,7 @@ const FG = FIXTURE_GRUPOS;
       const okG = apuestasGruposTotal === totalGrupos && totalGrupos > 0;
 
       html += `<div class="fase-block">
-        <div class="fase-header open" id="fh-grupos" onclick="toggleFaseApuestas('grupos')">
+        <div class="fase-header ${faseAbierta==='grupos'?'open':''}" id="fh-grupos" onclick="toggleFaseApuestas('grupos')">
           <div class="fase-header-left">
             <div class="fase-icon fase-icon-grupos"><i class="fas fa-layer-group"></i></div>
             <div>
@@ -1049,7 +1056,7 @@ const FG = FIXTURE_GRUPOS;
             <i class="fas fa-chevron-down fase-chevron"></i>
           </div>
         </div>
-        <div class="fase-body open" id="fb-grupos">
+        <div class="fase-body ${faseAbierta==='grupos'?'open':''}" id="fb-grupos">
           <div class="grupo-tabs-wrap" id="gtabs-grupos">`;
 
       gruposKeys.forEach((g, i) => {
@@ -1077,7 +1084,7 @@ const FG = FIXTURE_GRUPOS;
         const tot = fase.ids.length;
         const ok  = apostados === tot && tot > 0;
         html += `<div class="fase-block">
-          <div class="fase-header" id="fh-${fase.id}" onclick="toggleFaseApuestas('${fase.id}')">
+          <div class="fase-header ${faseAbierta===fase.id?'open':''}" id="fh-${fase.id}" onclick="toggleFaseApuestas('${fase.id}')">
             <div class="fase-header-left">
               <div class="fase-icon fase-icon-elim"><i class="fas fa-trophy"></i></div>
               <div>
@@ -1090,7 +1097,7 @@ const FG = FIXTURE_GRUPOS;
               <i class="fas fa-chevron-down fase-chevron"></i>
             </div>
           </div>
-          <div class="fase-body" id="fb-${fase.id}">
+          <div class="fase-body ${faseAbierta===fase.id?'open':''}" id="fb-${fase.id}">
             <div style="padding:10px 14px;background:rgba(245,200,66,.05);border-bottom:1px solid rgba(245,200,66,.15);font-size:0.72rem;color:var(--muted);display:flex;gap:8px;align-items:flex-start;">
               <i class="fas fa-circle-info" style="color:var(--gold);margin-top:1px;flex-shrink:0;"></i>
               <span>El puntaje se calcula sobre el resultado al final de los <strong style="color:var(--text);">90 min + prórroga</strong>. Los penales no cuentan para el marcador.</span>
@@ -1135,6 +1142,11 @@ const FG = FIXTURE_GRUPOS;
           });
         }
       });
+      // Restaurar grupo activo después del render
+      if (grupoActivo) {
+        const tab = document.querySelector(`.grupo-tab[data-grupo="${grupoActivo}"]`);
+        if (tab) tab.click();
+      }
     }
 
     window.toggleFaseApuestas = function(id) {
