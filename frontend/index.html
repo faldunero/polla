@@ -12,6 +12,7 @@
   --gold:#F0C040; --gold2:#C89A00;
   --white:#FFFFFF; --off:#F7F4EF; --ink:#0D0D0D; --ink2:#2A2A2A;
   --muted:#7A7A7A; --border:#E2DDD6;
+  --card:#FFFFFF;
   --font-display:'Barlow Condensed',sans-serif;
   --font-body:'Barlow',sans-serif;
 }
@@ -1938,7 +1939,7 @@ function renderGoleadores() {
   const sorted = [...lista].sort((a,b) => b.goles - a.goles || a.nombre.localeCompare(b.nombre));
   const maxGoles = sorted[0]?.goles || 1;
 
-  let html = `<div style="background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;max-width:680px;margin:0 auto;">
+  let html = `<div style="background:white;border:1px solid var(--border);border-radius:16px;overflow:hidden;max-width:680px;margin:0 auto;">
     <table style="width:100%;border-collapse:collapse;">
       <thead><tr style="background:var(--off);border-bottom:2px solid var(--border);">
         <th style="padding:12px 18px;text-align:left;font-family:var(--font-display);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);width:40px;">#</th>
@@ -2018,7 +2019,7 @@ init();
 </script>
 <!-- MODAL GOLEADORES -->
 <div id="modal-goleadores" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9000;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)cerrarModalGoleadores()">
-  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;width:100%;max-width:580px;max-height:88vh;overflow-y:auto;">
+  <div style="background:white;border:1px solid var(--border);border-radius:16px;width:100%;max-width:580px;max-height:88vh;overflow-y:auto;">
     <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
       <div>
         <div style="font-family:var(--font-display);font-size:1.3rem;letter-spacing:.04em;">⚽ Tabla de Goleadores</div>
