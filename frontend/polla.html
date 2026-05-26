@@ -1091,6 +1091,10 @@ const FG = FIXTURE_GRUPOS;
             </div>
           </div>
           <div class="fase-body" id="fb-${fase.id}">
+            <div style="padding:10px 14px;background:rgba(245,200,66,.05);border-bottom:1px solid rgba(245,200,66,.15);font-size:0.72rem;color:var(--muted);display:flex;gap:8px;align-items:flex-start;">
+              <i class="fas fa-circle-info" style="color:var(--gold);margin-top:1px;flex-shrink:0;"></i>
+              <span>El puntaje se calcula sobre el resultado al final de los <strong style="color:var(--text);">90 min + prórroga</strong>. Los penales no cuentan para el marcador.</span>
+            </div>
             <div class="fase-partidos-wrap">`;
 
         fase.ids.forEach(id => {
