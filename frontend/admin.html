@@ -1968,6 +1968,27 @@ async function renderResultados() {
     </div>`;
   }
 
+  // ── Banners de recálculo por fase eliminatoria ────────────────────────
+  const FASES_RECALC = [
+    { faseAnterior:'r32',     label:'Octavos',    idsAnterior:['r32_1','r32_2','r32_3','r32_4','r32_5','r32_6','r32_7','r32_8','r32_9','r32_10','r32_11','r32_12','r32_13','r32_14','r32_15','r32_16'], idsSiguiente:['r16_1','r16_2','r16_3','r16_4','r16_5','r16_6','r16_7','r16_8'] },
+    { faseAnterior:'octavos', label:'Cuartos',    idsAnterior:['r16_1','r16_2','r16_3','r16_4','r16_5','r16_6','r16_7','r16_8'], idsSiguiente:['qf1','qf2','qf3','qf4'] },
+    { faseAnterior:'cuartos', label:'Semis + 3er',idsAnterior:['qf1','qf2','qf3','qf4'], idsSiguiente:['sf1','sf2','3p'] },
+    { faseAnterior:'semis',   label:'Final + 3er',idsAnterior:['sf1','sf2'], idsSiguiente:['fin','3p'] },
+  ];
+
+  FASES_RECALC.forEach(fr => {
+    const completa = fr.idsAnterior.every(id => resCache[id]?.resultado_local != null);
+    if (!completa) return;
+    const label = fr.faseAnterior === 'r32' ? '32avos' : fr.faseAnterior === 'octavos' ? 'Octavos' : fr.faseAnterior === 'cuartos' ? 'Cuartos' : 'Semis';
+    html += `<div style="padding:10px 16px;border-bottom:1px solid var(--border);background:rgba(59,130,246,.04);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+      <span style="font-size:0.75rem;color:var(--muted);"><i class="fas fa-circle-info" style="color:#3b82f6;"></i> ${label} completados — actualiza los cruces de <strong style="color:var(--text);">${fr.label}</strong>.</span>
+      <button class="btn btn-outline btn-sm fase-recalc-btn" style="color:#3b82f6;border-color:rgba(59,130,246,.3);"
+        data-fase="${fr.faseAnterior}" data-ids="${fr.idsSiguiente.join(',')}">
+        <i class="fas fa-rotate"></i> Recalcular ${fr.label}
+      </button>
+    </div>`;
+  });
+
   FASES_ELIM_ADMIN.forEach(fase => {
     const comp = fase.partidos.filter(p => resCache[p.id]?.resultado_local != null).length;
     const tot  = fase.partidos.length;
@@ -1983,6 +2004,18 @@ async function renderResultados() {
   });
 
   container.innerHTML = html;
+
+  // Botones recálculo por fase
+  container.querySelectorAll('.fase-recalc-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      const origHtml = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      const fase = btn.dataset.fase;
+      const ids  = btn.dataset.ids.split(',');
+      await forzarRecalculoFase(fase, ids);
+    });
+  });
 
   // Tabs de grupo
   container.querySelectorAll('.grupo-tab').forEach(tab => {
@@ -2098,6 +2131,16 @@ function buildPartidoRow(p, esElim) {
 }
 
 
+window.forzarRecalculoFase = async function(faseAnterior, idsSiguiente) {
+  try {
+    await recalcularFase(faseAnterior, idsSiguiente);
+    toast(`Cruces actualizados con ganadores reales ✓`, 'success');
+    await renderResultados();
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+  }
+};
+
 window.forzarRecalculo32avos = async function() {
   const btn = document.getElementById('btn-recalc-32');
   if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calculando...'; }
@@ -2110,6 +2153,117 @@ window.forzarRecalculo32avos = async function() {
     if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-rotate"></i> Recalcular 32avos'; }
   }
 };
+
+// ── Detecta la fase a la que pertenece un partido eliminatorio ────────────
+function detectarFase(partidoId) {
+  if (/^r32_/.test(partidoId))  return 'r32';
+  if (/^r16_/.test(partidoId))  return 'octavos';
+  if (/^qf/.test(partidoId))    return 'cuartos';
+  if (/^sf/.test(partidoId))    return 'semis';
+  if (partidoId === '3p')       return 'semis';
+  if (partidoId === 'fin')      return 'final';
+  return null;
+}
+
+// ── Recalcula los cruces de la fase siguiente basándose en ganadores ──────
+// faseActualIds: IDs de los partidos que ya tienen resultado
+// faseSiguienteIds: IDs de los partidos a actualizar con los ganadores
+async function recalcularFase(faseActual, faseSiguienteIds) {
+  // Obtener ganadores de la fase actual en orden
+  const IDsPorFase = {
+    r32:     ['r32_1','r32_2','r32_3','r32_4','r32_5','r32_6','r32_7','r32_8',
+              'r32_9','r32_10','r32_11','r32_12','r32_13','r32_14','r32_15','r32_16'],
+    octavos: ['r16_1','r16_2','r16_3','r16_4','r16_5','r16_6','r16_7','r16_8'],
+    cuartos: ['qf1','qf2','qf3','qf4'],
+    semis:   ['sf1','sf2'],
+  };
+
+  const ids = IDsPorFase[faseActual] || [];
+
+  function ganadorDe(id) {
+    const r = resCache[id];
+    if (!r || r.resultado_local == null) return null;
+    const gl = Number(r.resultado_local), gv = Number(r.resultado_visita);
+    if (gl > gv) return r.local  || resCache[id]?.local;
+    if (gv > gl) return r.visita || resCache[id]?.visita;
+    return null; // empate → pendiente penales (no resoluble automáticamente)
+  }
+
+  function perdedorDe(id) {
+    const r = resCache[id];
+    if (!r || r.resultado_local == null) return null;
+    const gl = Number(r.resultado_local), gv = Number(r.resultado_visita);
+    if (gl > gv) return r.visita;
+    if (gv > gl) return r.local;
+    return null;
+  }
+
+  const batch = writeBatch(db);
+
+  if (faseActual === 'r32') {
+    // 16 ganadores → 8 partidos de octavos (1vs2, 3vs4, ...)
+    for (let i = 0; i < faseSiguienteIds.length; i++) {
+      const g1 = ganadorDe(ids[i*2]);
+      const g2 = ganadorDe(ids[i*2+1]);
+      if (!g1 && !g2) continue;
+      const local  = g1 || `G.32 ${i*2+1}`;
+      const visita = g2 || `G.32 ${i*2+2}`;
+      batch.set(doc(db,'partidos',faseSiguienteIds[i]), { local, visita }, { merge:true });
+      if (!resCache[faseSiguienteIds[i]]) resCache[faseSiguienteIds[i]] = {};
+      resCache[faseSiguienteIds[i]].local  = local;
+      resCache[faseSiguienteIds[i]].visita = visita;
+    }
+  } else if (faseActual === 'octavos') {
+    // 8 ganadores → 4 cuartos (1vs2, 3vs4, 5vs6, 7vs8)
+    for (let i = 0; i < faseSiguienteIds.length; i++) {
+      const g1 = ganadorDe(ids[i*2]);
+      const g2 = ganadorDe(ids[i*2+1]);
+      if (!g1 && !g2) continue;
+      const local  = g1 || `G.Oct ${i*2+1}`;
+      const visita = g2 || `G.Oct ${i*2+2}`;
+      batch.set(doc(db,'partidos',faseSiguienteIds[i]), { local, visita }, { merge:true });
+      if (!resCache[faseSiguienteIds[i]]) resCache[faseSiguienteIds[i]] = {};
+      resCache[faseSiguienteIds[i]].local  = local;
+      resCache[faseSiguienteIds[i]].visita = visita;
+    }
+  } else if (faseActual === 'cuartos') {
+    // 4 ganadores → sf1 (qf1 vs qf2), sf2 (qf3 vs qf4)
+    // 2 perdedores → 3p
+    const g = ids.map(ganadorDe);
+    const p = ids.map(perdedorDe);
+    const cruces = {
+      sf1: [g[0]||'G.CF 1', g[1]||'G.CF 2'],
+      sf2: [g[2]||'G.CF 3', g[3]||'G.CF 4'],
+      '3p': [p[0]||'Perd. CF 1', p[1]||'Perd. CF 2'], // se actualizará con perdedores de semis
+    };
+    faseSiguienteIds.forEach(id => {
+      if (!cruces[id]) return;
+      const [local, visita] = cruces[id];
+      batch.set(doc(db,'partidos',id), { local, visita }, { merge:true });
+      if (!resCache[id]) resCache[id] = {};
+      resCache[id].local  = local;
+      resCache[id].visita = visita;
+    });
+  } else if (faseActual === 'semis') {
+    // Ganadores → final, perdedores → 3p
+    const g1 = ganadorDe('sf1'), g2 = ganadorDe('sf2');
+    const p1 = perdedorDe('sf1'), p2 = perdedorDe('sf2');
+    if (g1 || g2) {
+      const lf = g1||'G.SF 1', vf = g2||'G.SF 2';
+      batch.set(doc(db,'partidos','fin'), { local:lf, visita:vf }, { merge:true });
+      if (!resCache['fin']) resCache['fin'] = {};
+      resCache['fin'].local = lf; resCache['fin'].visita = vf;
+    }
+    if (p1 || p2) {
+      const l3 = p1||'Perd. SF 1', v3 = p2||'Perd. SF 2';
+      batch.set(doc(db,'partidos','3p'), { local:l3, visita:v3 }, { merge:true });
+      if (!resCache['3p']) resCache['3p'] = {};
+      resCache['3p'].local = l3; resCache['3p'].visita = v3;
+    }
+  }
+
+  await batch.commit();
+}
 
 // ── Recalcula y escribe los 32 partidos de 32avos en Firestore ───────────
 // Se llama automáticamente al guardar cualquier resultado de grupos
@@ -2234,13 +2388,19 @@ window.guardarResultado = async (partidoId, esElim) => {
     if (updateData.local)  resCache[partidoId].local  = updateData.local;
     if (updateData.visita) resCache[partidoId].visita = updateData.visita;
 
-    // ── Recalcular 32avos automáticamente si es partido de grupos ──────────
+    // ── Recalcular fase siguiente automáticamente ─────────────────────────
     if (!esElim) {
+      // Grupos → recalcular 32avos
+      try { await recalcular32avos(); } catch(e) { console.warn('32avos:', e.message); }
+    } else {
+      // Determinar qué fase es este partido y recalcular la siguiente
+      const fase = detectarFase(partidoId);
       try {
-        await recalcular32avos();
-      } catch(e32) {
-        console.warn('No se pudieron actualizar 32avos:', e32.message);
-      }
+        if (fase === 'r32')     await recalcularFase('r32',     ['r16_1','r16_2','r16_3','r16_4','r16_5','r16_6','r16_7','r16_8']);
+        if (fase === 'octavos') await recalcularFase('octavos', ['qf1','qf2','qf3','qf4']);
+        if (fase === 'cuartos') await recalcularFase('cuartos', ['sf1','sf2','3p']);
+        if (fase === 'semis')   await recalcularFase('semis',   ['fin']);
+      } catch(e) { console.warn('Recálculo fase siguiente:', e.message); }
     }
 
     // Actualizar UI
