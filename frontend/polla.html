@@ -1208,14 +1208,21 @@ const FG = FIXTURE_GRUPOS;
 
         await cargarMisApuestas();
 
-        // Guardar grupo activo antes de re-renderizar
-        const grupoActivo = document.querySelector('.grupo-tab.active')?.dataset?.grupo || null;
+        // Guardar estado acordeón antes de re-renderizar
+        const faseActivaAntes = document.querySelector('.fase-header.open')?.id?.replace('fh-','') || 'grupos';
+        const grupoActivoAntes = document.querySelector('.grupo-tab.active')?.dataset?.grupo || null;
 
         await renderApuestas();
 
-        // Restaurar el grupo activo
-        if (grupoActivo) {
-          const tab = document.querySelector(`.grupo-tab[data-grupo="${grupoActivo}"]`);
+        // Restaurar fase y grupo activos
+        const fhRestore = document.getElementById(`fh-${faseActivaAntes}`);
+        const fbRestore = document.getElementById(`fb-${faseActivaAntes}`);
+        if (fhRestore && !fhRestore.classList.contains('open')) {
+          fhRestore.classList.add('open');
+          if (fbRestore) fbRestore.classList.add('open');
+        }
+        if (grupoActivoAntes) {
+          const tab = document.querySelector(`.grupo-tab[data-grupo="${grupoActivoAntes}"]`);
           if (tab) tab.click();
         }
 

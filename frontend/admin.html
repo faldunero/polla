@@ -1968,7 +1968,19 @@ async function renderResultados() {
     </div>`;
   }
 
-  // ── Banners de recálculo por fase eliminatoria ────────────────────────
+  // ── Botón reset total eliminatorias ──────────────────────────────────
+  const ALL_ELIM_IDS = [
+    'r32_1','r32_2','r32_3','r32_4','r32_5','r32_6','r32_7','r32_8',
+    'r32_9','r32_10','r32_11','r32_12','r32_13','r32_14','r32_15','r32_16',
+    'r16_1','r16_2','r16_3','r16_4','r16_5','r16_6','r16_7','r16_8',
+    'qf1','qf2','qf3','qf4','sf1','sf2','3p','fin'
+  ];
+  html += `<div style="padding:10px 16px;border-bottom:1px solid var(--border);background:rgba(239,68,68,.04);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+    <span style="font-size:0.75rem;color:var(--muted);"><i class="fas fa-triangle-exclamation" style="color:var(--red);"></i> Resetear <strong style="color:var(--text);">todas</strong> las fases eliminatorias — borra resultados y restaura placeholders en Firestore.</span>
+    <button class="btn btn-sm" onclick="resetTotalEliminatorias()" style="background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.3);white-space:nowrap;">
+      <i class="fas fa-trash"></i> Reset Total Eliminatorias
+    </button>
+  </div>`;
   const FASES_RECALC = [
     { faseAnterior:'r32',     label:'Octavos',    idsAnterior:['r32_1','r32_2','r32_3','r32_4','r32_5','r32_6','r32_7','r32_8','r32_9','r32_10','r32_11','r32_12','r32_13','r32_14','r32_15','r32_16'], idsSiguiente:['r16_1','r16_2','r16_3','r16_4','r16_5','r16_6','r16_7','r16_8'] },
     { faseAnterior:'octavos', label:'Cuartos',    idsAnterior:['r16_1','r16_2','r16_3','r16_4','r16_5','r16_6','r16_7','r16_8'], idsSiguiente:['qf1','qf2','qf3','qf4'] },
@@ -2140,6 +2152,81 @@ function buildPartidoRow(p, esElim) {
   </div>`;
 }
 
+
+window.resetTotalEliminatorias = async function() {
+  if (!confirm('¿Resetear TODAS las fases eliminatorias?\n\nSe borrarán resultados, puntajes de apuestas y se restaurarán los placeholders originales en Firestore.\n\nNo se puede deshacer.')) return;
+
+  const ALL_ELIM_IDS = [
+    'r32_1','r32_2','r32_3','r32_4','r32_5','r32_6','r32_7','r32_8',
+    'r32_9','r32_10','r32_11','r32_12','r32_13','r32_14','r32_15','r32_16',
+    'r16_1','r16_2','r16_3','r16_4','r16_5','r16_6','r16_7','r16_8',
+    'qf1','qf2','qf3','qf4','sf1','sf2','3p','fin'
+  ];
+
+  // Placeholders originales por fase
+  const PLACEHOLDERS = {
+    r32_1:{local:'1.A',visita:'2.B'}, r32_2:{local:'1.C',visita:'2.D'},
+    r32_3:{local:'1.E',visita:'2.F'}, r32_4:{local:'1.G',visita:'2.H'},
+    r32_5:{local:'1.I',visita:'2.J'}, r32_6:{local:'1.K',visita:'2.L'},
+    r32_7:{local:'1.B',visita:'2.A'}, r32_8:{local:'1.D',visita:'2.C'},
+    r32_9:{local:'1.F',visita:'2.E'}, r32_10:{local:'1.H',visita:'2.G'},
+    r32_11:{local:'1.J',visita:'2.I'},r32_12:{local:'1.L',visita:'2.K'},
+    r32_13:{local:'3er mejor 1',visita:'3er mejor 2'},
+    r32_14:{local:'3er mejor 3',visita:'3er mejor 4'},
+    r32_15:{local:'3er mejor 5',visita:'3er mejor 6'},
+    r32_16:{local:'3er mejor 7',visita:'3er mejor 8'},
+    r16_1:{local:'G.32 1',visita:'G.32 2'},  r16_2:{local:'G.32 3',visita:'G.32 4'},
+    r16_3:{local:'G.32 5',visita:'G.32 6'},  r16_4:{local:'G.32 7',visita:'G.32 8'},
+    r16_5:{local:'G.32 9',visita:'G.32 10'}, r16_6:{local:'G.32 11',visita:'G.32 12'},
+    r16_7:{local:'G.32 13',visita:'G.32 14'},r16_8:{local:'G.32 15',visita:'G.32 16'},
+    qf1:{local:'G.R16 1',visita:'G.R16 2'}, qf2:{local:'G.R16 3',visita:'G.R16 4'},
+    qf3:{local:'G.R16 5',visita:'G.R16 6'}, qf4:{local:'G.R16 7',visita:'G.R16 8'},
+    sf1:{local:'G.CF 1',visita:'G.CF 2'},   sf2:{local:'G.CF 3',visita:'G.CF 4'},
+    '3p':{local:'Perd. SF 1',visita:'Perd. SF 2'},
+    fin:{local:'Gan. SF 1',visita:'Gan. SF 2'},
+  };
+
+  try {
+    // 1) Restaurar placeholders y borrar resultados en Firestore
+    const batch = writeBatch(db);
+    ALL_ELIM_IDS.forEach(id => {
+      const ph = PLACEHOLDERS[id] || {};
+      batch.set(doc(db, 'partidos', id), {
+        local:           ph.local  || id,
+        visita:          ph.visita || id,
+        resultado_local:  deleteField(),
+        resultado_visita: deleteField(),
+        ganador_penal:    deleteField(),
+        actualizadoPor:   deleteField(),
+        actualizadoEn:    deleteField(),
+      }, { merge: true });
+      // Actualizar cache local
+      if (!resCache[id]) resCache[id] = {};
+      resCache[id].local  = ph.local  || id;
+      resCache[id].visita = ph.visita || id;
+      delete resCache[id].resultado_local;
+      delete resCache[id].resultado_visita;
+      delete resCache[id].ganador_penal;
+    });
+    await batch.commit();
+
+    // 2) Borrar apuestas eliminatorias y sus puntajes
+    for (const id of ALL_ELIM_IDS) {
+      const apSnap = await getDocs(query(collection(db, 'apuestas'), where('partidoId', '==', id)));
+      if (apSnap.size > 0) {
+        const b = writeBatch(db);
+        apSnap.docs.forEach(d => b.delete(d.ref));
+        await b.commit();
+      }
+    }
+
+    toast('Reset total eliminatorias completado ✓', 'success');
+    await renderResultados();
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+    console.error(e);
+  }
+};
 
 window.forzarRecalculoFase = async function(faseAnterior, idsSiguiente) {
   try {

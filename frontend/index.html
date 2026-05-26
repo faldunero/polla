@@ -12,7 +12,6 @@
   --gold:#F0C040; --gold2:#C89A00;
   --white:#FFFFFF; --off:#F7F4EF; --ink:#0D0D0D; --ink2:#2A2A2A;
   --muted:#7A7A7A; --border:#E2DDD6;
-  --card:#FFFFFF;
   --font-display:'Barlow Condensed',sans-serif;
   --font-body:'Barlow',sans-serif;
 }
@@ -1915,7 +1914,6 @@ async function init(){
     };
     const sp=document.getElementById('stat-paises'); if(sp) sp.textContent=globalData.paises.length;
     renderGrupos(); renderEstadios(); await renderResultadosAccordion();
-    renderGoleadores();
   } catch(e){
     console.error(e);
     const g=document.getElementById('grupos-wrapper');
@@ -1924,7 +1922,7 @@ async function init(){
 }
 // ── GOLEADORES (desde localStorage, publicados por el admin) ─────────────
 function renderGoleadores() {
-  const container = document.getElementById('modal-goleadores-body');
+  const container = document.getElementById('goleadores-container');
   if (!container) return;
   let lista = [];
   try { lista = JSON.parse(localStorage.getItem('lapolla2026_goleadores') || '[]'); } catch(e) {}
@@ -1940,13 +1938,14 @@ function renderGoleadores() {
   const sorted = [...lista].sort((a,b) => b.goles - a.goles || a.nombre.localeCompare(b.nombre));
   const maxGoles = sorted[0]?.goles || 1;
 
-  let html = `<table style="width:100%;border-collapse:collapse;">
-    <thead><tr style="background:var(--off);border-bottom:2px solid var(--border);">
-      <th style="padding:12px 18px;text-align:left;font-family:var(--font-display);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);width:40px;">#</th>
-      <th style="padding:12px 10px;text-align:left;font-family:var(--font-display);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);">Jugador</th>
-      <th style="padding:12px 10px;text-align:left;font-family:var(--font-display);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);">País</th>
-      <th style="padding:12px 18px;text-align:right;font-family:var(--font-display);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--red);">⚽ Goles</th>
-    </tr></thead><tbody>`;
+  let html = `<div style="background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;max-width:680px;margin:0 auto;">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead><tr style="background:var(--off);border-bottom:2px solid var(--border);">
+        <th style="padding:12px 18px;text-align:left;font-family:var(--font-display);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);width:40px;">#</th>
+        <th style="padding:12px 10px;text-align:left;font-family:var(--font-display);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);">Jugador</th>
+        <th style="padding:12px 10px;text-align:left;font-family:var(--font-display);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);">País</th>
+        <th style="padding:12px 18px;text-align:right;font-family:var(--font-display);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--red);">⚽ Goles</th>
+      </tr></thead><tbody>`;
 
   sorted.forEach((g, i) => {
     const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
@@ -1955,7 +1954,7 @@ function renderGoleadores() {
       <td style="padding:12px 18px;font-weight:700;color:${i<3?'var(--red)':'var(--muted)'};">${medal||i+1}</td>
       <td style="padding:12px 10px;">
         <div style="font-weight:${i<3?'700':'500'};font-size:.88rem;">${g.nombre}</div>
-        <div style="height:3px;background:rgba(0,0,0,.08);border-radius:99px;margin-top:4px;max-width:120px;">
+        <div style="height:3px;background:rgba(255,255,255,.06);border-radius:99px;margin-top:4px;max-width:120px;">
           <div style="height:3px;background:var(--red);border-radius:99px;width:${pct}%;"></div>
         </div>
       </td>
@@ -1964,14 +1963,51 @@ function renderGoleadores() {
     </tr>`;
   });
 
-  html += `</tbody></table>`;
+  html += `</tbody></table></div>`;
   container.innerHTML = html;
 }
 
 // ── MODAL GOLEADORES ─────────────────────────────────────────────────────
 window.abrirModalGoleadores = function() {
-  renderGoleadores();
-  document.getElementById('modal-goleadores').style.display = 'flex';
+  const modal = document.getElementById('modal-goleadores');
+  const body  = document.getElementById('modal-goleadores-body');
+  let lista = [];
+  try { lista = JSON.parse(localStorage.getItem('lapolla2026_goleadores') || '[]'); } catch(e) {}
+
+  if (!lista.length) {
+    body.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">
+      <i class="fas fa-futbol" style="font-size:2rem;opacity:.3;display:block;margin-bottom:12px;"></i>
+      La tabla se publicará cuando comiencen los partidos.
+    </div>`;
+  } else {
+    const sorted = [...lista].sort((a,b) => b.goles - a.goles || a.nombre.localeCompare(b.nombre));
+    const maxGoles = sorted[0]?.goles || 1;
+    let html = `<table style="width:100%;border-collapse:collapse;">
+      <thead><tr style="border-bottom:2px solid #e5e7eb;">
+        <th style="padding:8px 14px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;width:36px;">#</th>
+        <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">Jugador</th>
+        <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">País</th>
+        <th style="padding:8px 14px;text-align:right;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#dc2626;">⚽</th>
+      </tr></thead><tbody>`;
+    sorted.forEach((g, i) => {
+      const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+      const pct = Math.round((g.goles / maxGoles) * 100);
+      html += `<tr style="border-bottom:1px solid #f3f4f6;${i===0?'background:#fffbeb;':''}">
+        <td style="padding:11px 14px;font-weight:700;color:${i<3?'#dc2626':'#6b7280'};">${medal||i+1}</td>
+        <td style="padding:11px 10px;">
+          <div style="font-weight:${i<3?'700':'500'};font-size:.88rem;color:#111;">${g.nombre}</div>
+          <div style="height:3px;background:#f3f4f6;border-radius:99px;margin-top:4px;max-width:120px;">
+            <div style="height:3px;background:#dc2626;border-radius:99px;width:${pct}%;"></div>
+          </div>
+        </td>
+        <td style="padding:11px 10px;color:#6b7280;font-size:.85rem;">${getFlag(g.pais)} ${g.pais}</td>
+        <td style="padding:11px 14px;text-align:right;font-family:var(--font-display);font-weight:900;font-size:1.4rem;color:${i===0?'#d97706':'#111'};">${g.goles}</td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+    body.innerHTML = html;
+  }
+  modal.style.display = 'flex';
 };
 
 window.cerrarModalGoleadores = function() {
@@ -1981,16 +2017,16 @@ window.cerrarModalGoleadores = function() {
 init();
 </script>
 <!-- MODAL GOLEADORES -->
-<div id="modal-goleadores" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9000;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)cerrarModalGoleadores()">
-  <div style="background:white;border:1px solid var(--border);border-radius:16px;width:100%;max-width:580px;max-height:88vh;overflow-y:auto;">
-    <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+<div id="modal-goleadores" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);" onclick="if(event.target===this)cerrarModalGoleadores()">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:580px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+    <div style="padding:18px 22px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:16px 16px 0 0;">
       <div>
-        <div style="font-family:var(--font-display);font-size:1.3rem;letter-spacing:.04em;">⚽ Tabla de Goleadores</div>
-        <div style="font-size:0.72rem;color:var(--muted);margin-top:2px;">Los mejores artilleros del Mundial 2026</div>
+        <div style="font-family:var(--font-display);font-size:1.3rem;letter-spacing:.04em;color:#111;">⚽ Tabla de Goleadores</div>
+        <div style="font-size:0.72rem;color:#6b7280;margin-top:2px;">Los mejores artilleros del Mundial 2026</div>
       </div>
-      <button onclick="cerrarModalGoleadores()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--muted);padding:4px 8px;">✕</button>
+      <button onclick="cerrarModalGoleadores()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#6b7280;padding:4px 8px;">✕</button>
     </div>
-    <div id="modal-goleadores-body" style="padding:16px 20px;"></div>
+    <div id="modal-goleadores-body" style="padding:16px 20px;background:#fff;border-radius:0 0 16px 16px;"></div>
   </div>
 </div>
 
