@@ -440,7 +440,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
       <a href="selecciones.html" class="nav-link">Selecciones</a>
       <a href="index.html#estadios" class="nav-link">Estadios</a>
       <div class="nav-divider"></div>
-      <a href="polla.html" class="btn-nav-polla"><i class="fas fa-futbol"></i> La Polla</a>
+      <a href="polla.html" class="btn-nav-polla"><i class="fas fa-futbol"></i> Ingresar</a>
       <a href="admin.html" class="nav-link" style="font-size:0.72rem;opacity:0.7;">Admin</a>
     </nav>
   </div>
@@ -459,7 +459,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
       <h1>La <span>Polla</span><br>Mundial</h1>
       <p class="hero-sub">Predice, compite y vive el Mundial 2026. Revisa el calendario completo, los grupos, las selecciones y los estadios sede.</p>
       <div class="hero-cta">
-        <a href="polla.html" class="btn-hero"><i class="fas fa-futbol"></i> La Polla</a>
+        <button onclick="abrirModalGoleadores()" class="btn-hero"><i class="fas fa-futbol"></i> Goleadores</button>
         <a href="#grupos" class="btn-hero-outline">Programación</a>
         <a href="#resultados" class="btn-hero-outline">Resultados</a>
         <a href="selecciones.html" class="btn-hero-outline"><i class="fas fa-flag" style="font-family:'Font Awesome 6 Free';"></i> Selecciones</a>
@@ -517,13 +517,6 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
         <div><h2>Resultados del Torneo</h2><p>Resultados en vivo por fase · Actualizado por el admin</p></div>
       </div>
       <div id="resultados-accordion"></div>
-    </section>
-    <section class="section-wrap" id="goleadores">
-      <div class="section-label">
-        <div class="section-line"></div>
-        <div><h2>Tabla de Goleadores</h2><p>Los mejores artilleros del Mundial 2026 · Actualizado en vivo</p></div>
-      </div>
-      <div id="goleadores-container"></div>
     </section>
     <section class="section-wrap" id="estadios">
       <div class="section-label">
@@ -1913,7 +1906,6 @@ async function init(){
     };
     const sp=document.getElementById('stat-paises'); if(sp) sp.textContent=globalData.paises.length;
     renderGrupos(); renderEstadios(); await renderResultadosAccordion();
-    renderGoleadores();
   } catch(e){
     console.error(e);
     const g=document.getElementById('grupos-wrapper');
@@ -1967,7 +1959,68 @@ function renderGoleadores() {
   container.innerHTML = html;
 }
 
+// ── MODAL GOLEADORES ─────────────────────────────────────────────────────
+window.abrirModalGoleadores = function() {
+  const modal = document.getElementById('modal-goleadores');
+  const body  = document.getElementById('modal-goleadores-body');
+  let lista = [];
+  try { lista = JSON.parse(localStorage.getItem('lapolla2026_goleadores') || '[]'); } catch(e) {}
+
+  if (!lista.length) {
+    body.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">
+      <i class="fas fa-futbol" style="font-size:2rem;opacity:.3;display:block;margin-bottom:12px;"></i>
+      La tabla se publicará cuando comiencen los partidos.
+    </div>`;
+  } else {
+    const sorted = [...lista].sort((a,b) => b.goles - a.goles || a.nombre.localeCompare(b.nombre));
+    const maxGoles = sorted[0]?.goles || 1;
+    let html = `<table style="width:100%;border-collapse:collapse;">
+      <thead><tr style="border-bottom:2px solid var(--border);">
+        <th style="padding:8px 14px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);width:36px;">#</th>
+        <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);">Jugador</th>
+        <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);">País</th>
+        <th style="padding:8px 14px;text-align:right;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--red);">⚽</th>
+      </tr></thead><tbody>`;
+    sorted.forEach((g, i) => {
+      const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+      const pct = Math.round((g.goles / maxGoles) * 100);
+      html += `<tr style="border-bottom:1px solid var(--border);${i===0?'background:rgba(245,200,66,.04);':''}">
+        <td style="padding:11px 14px;font-weight:700;color:${i<3?'var(--red)':'var(--muted)'};">${medal||i+1}</td>
+        <td style="padding:11px 10px;">
+          <div style="font-weight:${i<3?'700':'500'};font-size:.88rem;">${g.nombre}</div>
+          <div style="height:3px;background:rgba(0,0,0,.08);border-radius:99px;margin-top:4px;max-width:120px;">
+            <div style="height:3px;background:var(--red);border-radius:99px;width:${pct}%;"></div>
+          </div>
+        </td>
+        <td style="padding:11px 10px;color:var(--muted);font-size:.85rem;">${getFlag(g.pais)} ${g.pais}</td>
+        <td style="padding:11px 14px;text-align:right;font-family:var(--font-display);font-weight:900;font-size:1.4rem;color:${i===0?'var(--gold)':'var(--ink)'};">${g.goles}</td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+    body.innerHTML = html;
+  }
+  modal.style.display = 'flex';
+};
+
+window.cerrarModalGoleadores = function() {
+  document.getElementById('modal-goleadores').style.display = 'none';
+};
+
 init();
 </script>
+<!-- MODAL GOLEADORES -->
+<div id="modal-goleadores" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9000;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)cerrarModalGoleadores()">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;width:100%;max-width:580px;max-height:88vh;overflow-y:auto;">
+    <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-family:var(--font-display);font-size:1.3rem;letter-spacing:.04em;">⚽ Tabla de Goleadores</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:2px;">Los mejores artilleros del Mundial 2026</div>
+      </div>
+      <button onclick="cerrarModalGoleadores()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--muted);padding:4px 8px;">✕</button>
+    </div>
+    <div id="modal-goleadores-body" style="padding:16px 20px;"></div>
+  </div>
+</div>
+
 </body>
 </html>
