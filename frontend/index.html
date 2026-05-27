@@ -52,7 +52,7 @@ header.hero-section::before{content:'';position:absolute;inset:0;background-imag
 .hero-cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
 .btn-hero{font-family:var(--font-display);font-weight:800;font-size:0.95rem;letter-spacing:0.08em;text-transform:uppercase;background:var(--gold);color:var(--ink);padding:13px 28px;border-radius:4px;border:none;cursor:pointer;transition:all 0.22s;box-shadow:0 5px 18px rgba(0,0,0,0.28);display:inline-flex;align-items:center;gap:9px;}
 .btn-hero:hover{background:white;transform:translateY(-3px);}
-.btn-hero-outline{font-family:var(--font-display);font-weight:700;font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.85);border:1.5px solid rgba(255,255,255,0.35);padding:12px 22px;border-radius:4px;cursor:pointer;transition:all 0.2s;background:transparent;}
+.btn-hero-outline{font-family:var(--font-display);font-weight:700;font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.85);border:1.5px solid rgba(255,255,255,0.35);padding:12px 22px;border-radius:4px;cursor:pointer;transition:all 0.2s;background:transparent;text-decoration:none;display:inline-flex;align-items:center;gap:7px;}
 .btn-hero-outline:hover{border-color:white;color:white;background:rgba(255,255,255,0.08);}
 .hero-stats{display:flex;gap:0;flex-shrink:0;align-self:flex-end;}
 .hero-stat{padding:18px 26px;text-align:center;border-left:1px solid rgba(255,255,255,0.15);}
@@ -460,7 +460,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
       <p class="hero-sub">Predice, compite y vive el Mundial 2026. Revisa el calendario completo, los grupos, las selecciones y los estadios sede.</p>
       <div class="hero-cta">
         <button onclick="abrirModalGoleadores()" class="btn-hero"><i class="fas fa-futbol"></i> Goleadores</button>
-        <a href="Guia_LaPolla2026.pdf" download class="btn-hero-icon" title="Descargar Guía PDF"><i class="fas fa-file-pdf"></i><span class="tooltip">Descargar Guía</span></a>
+        <a href="Guia_LaPolla2026.pdf" download class="btn-hero-outline"><i class="fas fa-file-pdf"></i> Guía del Participante</a>
         <a href="#grupos" class="btn-hero-outline">Programación</a>
         <a href="#resultados" class="btn-hero-outline">Resultados</a>
         <a href="selecciones.html" class="btn-hero-outline"><i class="fas fa-flag" style="font-family:'Font Awesome 6 Free';"></i> Selecciones</a>
