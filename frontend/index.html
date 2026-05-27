@@ -1968,11 +1968,20 @@ function renderGoleadores() {
 }
 
 // ── MODAL GOLEADORES ─────────────────────────────────────────────────────
-window.abrirModalGoleadores = function() {
+window.abrirModalGoleadores = async function() {
   const modal = document.getElementById('modal-goleadores');
   const body  = document.getElementById('modal-goleadores-body');
+  body.innerHTML = `<div style="text-align:center;padding:40px;color:#6b7280;"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;margin-bottom:10px;display:block;"></i>Cargando...</div>`;
+  modal.style.display = 'flex';
+
   let lista = [];
-  try { lista = JSON.parse(localStorage.getItem('lapolla2026_goleadores') || '[]'); } catch(e) {}
+  try {
+    const snap = await getDoc(doc(db, 'config', 'goleadores'));
+    lista = snap.exists() ? (snap.data().lista || []) : [];
+  } catch(e) {
+    // fallback localStorage
+    try { lista = JSON.parse(localStorage.getItem('lapolla2026_goleadores') || '[]'); } catch(e2) {}
+  }
 
   if (!lista.length) {
     body.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">

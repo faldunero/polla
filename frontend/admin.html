@@ -1989,11 +1989,17 @@ async function renderResultados() {
   ];
 
   FASES_RECALC.forEach(fr => {
-    const completa = fr.idsAnterior.every(id => resCache[id]?.resultado_local != null);
-    if (!completa) return;
+    const conResultado = fr.idsAnterior.filter(id => resCache[id]?.resultado_local != null).length;
+    if (!conResultado) return; // solo ocultar si no hay ningún resultado aún
+    const total = fr.idsAnterior.length;
+    const completa = conResultado === total;
     const label = fr.faseAnterior === 'r32' ? '32avos' : fr.faseAnterior === 'octavos' ? 'Octavos' : fr.faseAnterior === 'cuartos' ? 'Cuartos' : 'Semis';
     html += `<div style="padding:10px 16px;border-bottom:1px solid var(--border);background:rgba(59,130,246,.04);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-      <span style="font-size:0.75rem;color:var(--muted);"><i class="fas fa-circle-info" style="color:#3b82f6;"></i> ${label} completados — actualiza los cruces de <strong style="color:var(--text);">${fr.label}</strong>.</span>
+      <span style="font-size:0.75rem;color:var(--muted);">
+        <i class="fas fa-circle-info" style="color:#3b82f6;"></i>
+        ${label}: ${conResultado}/${total} con resultado — actualiza cruces de <strong style="color:var(--text);">${fr.label}</strong>.
+        ${!completa ? `<span style="color:#f59e0b;font-size:.7rem;">(fase incompleta)</span>` : ''}
+      </span>
       <button class="btn btn-outline btn-sm fase-recalc-btn" style="color:#3b82f6;border-color:rgba(59,130,246,.3);"
         data-fase="${fr.faseAnterior}" data-ids="${fr.idsSiguiente.join(',')}">
         <i class="fas fa-rotate"></i> Recalcular ${fr.label}
@@ -5806,16 +5812,23 @@ window.clearFecha = function(faseId) {
 // ── GOLEADORES ────────────────────────────────────────────────────────────
 const GOL_KEY = 'lapolla2026_goleadores';
 
-function goleadorCargar() {
-  try { return JSON.parse(localStorage.getItem(GOL_KEY) || '[]'); }
-  catch(e) { return []; }
-}
-function goleadorGuardar(lista) {
-  localStorage.setItem(GOL_KEY, JSON.stringify(lista));
+async function goleadorCargar() {
+  try {
+    const snap = await getDoc(doc(db, 'config', 'goleadores'));
+    return snap.exists() ? (snap.data().lista || []) : [];
+  } catch(e) {
+    console.warn('Goleadores Firestore error, usando localStorage:', e.message);
+    try { return JSON.parse(localStorage.getItem(GOL_KEY) || '[]'); } catch(e2) { return []; }
+  }
 }
 
-function goleadorRenderAdmin() {
-  const lista = goleadorCargar();
+async function goleadorGuardar(lista) {
+  await setDoc(doc(db, 'config', 'goleadores'), { lista }, { merge: false });
+  localStorage.setItem(GOL_KEY, JSON.stringify(lista)); // backup local
+}
+
+async function goleadorRenderAdmin() {
+  const lista = await goleadorCargar();
   const container = document.getElementById('goleadores-tabla');
   if (!container) return;
 
@@ -5857,13 +5870,13 @@ function goleadorRenderAdmin() {
   container.innerHTML = html;
 }
 
-window.goleadorAgregar = function() {
+window.goleadorAgregar = async function() {
   const nombre = document.getElementById('gol-nombre').value.trim();
   const pais   = document.getElementById('gol-pais').value.trim();
   const goles  = parseInt(document.getElementById('gol-goles').value) || 0;
   if (!nombre || !pais) { toast('Completa nombre y país', 'warn'); return; }
 
-  const lista = goleadorCargar();
+  const lista = await goleadorCargar();
   const idx = lista.findIndex(g => g.nombre.toLowerCase() === nombre.toLowerCase());
   if (idx !== -1) {
     lista[idx].goles = goles;
@@ -5873,15 +5886,16 @@ window.goleadorAgregar = function() {
     lista.push({ id: Date.now().toString(), nombre, pais, goles });
     toast(`${nombre} agregado ✓`, 'success');
   }
-  goleadorGuardar(lista);
-  goleadorRenderAdmin();
+  await goleadorGuardar(lista);
+  await goleadorRenderAdmin();
   document.getElementById('gol-nombre').value = '';
   document.getElementById('gol-pais').value   = '';
   document.getElementById('gol-goles').value  = '';
 };
 
-window.goleadorEditar = function(id) {
-  const g = goleadorCargar().find(x => x.id === id);
+window.goleadorEditar = async function(id) {
+  const lista = await goleadorCargar();
+  const g = lista.find(x => x.id === id);
   if (!g) return;
   document.getElementById('gol-nombre').value = g.nombre;
   document.getElementById('gol-pais').value   = g.pais;
@@ -5890,17 +5904,17 @@ window.goleadorEditar = function(id) {
   toast('Edita y haz clic en Agregar para guardar', 'info');
 };
 
-window.goleadorEliminar = function(id) {
-  const lista = goleadorCargar().filter(g => g.id !== id);
-  goleadorGuardar(lista);
-  goleadorRenderAdmin();
+window.goleadorEliminar = async function(id) {
+  const lista = (await goleadorCargar()).filter(g => g.id !== id);
+  await goleadorGuardar(lista);
+  await goleadorRenderAdmin();
   toast('Eliminado ✓', 'success');
 };
 
-window.goleadorLimpiarTodo = function() {
+window.goleadorLimpiarTodo = async function() {
   if (!confirm('¿Eliminar todos los goleadores?')) return;
-  goleadorGuardar([]);
-  goleadorRenderAdmin();
+  await goleadorGuardar([]);
+  await goleadorRenderAdmin();
   toast('Lista limpiada', 'success');
 };
 
