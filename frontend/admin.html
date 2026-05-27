@@ -505,6 +505,20 @@ nav {
 .sim-notice{text-align:center;padding:48px 20px;color:var(--muted);}
 .sim-notice i{font-size:2rem;margin-bottom:12px;display:block;opacity:.4;}
 
+/* ── DASHBOARD ───────────────────────────────────────────────────── */
+.dash-kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:6px;}
+.dash-kpi-label{font-size:0.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.dash-kpi-value{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:.02em;line-height:1;}
+.dash-kpi-sub{font-size:0.72rem;color:var(--muted);}
+.dash-kpi-trend{font-size:0.72rem;font-weight:600;}
+.dash-kpi-skeleton{background:var(--card);border:1px solid var(--border);border-radius:12px;height:100px;animation:dash-pulse 1.4s ease-in-out infinite;}
+@keyframes dash-pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.dash-bar-wrap{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.dash-bar-label{font-size:0.78rem;min-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dash-bar-track{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;}
+.dash-bar-fill{height:100%;border-radius:99px;transition:width .5s ease;}
+.dash-bar-val{font-size:0.72rem;font-weight:700;min-width:30px;text-align:right;}
+
 /* ── PLAZOS ─────────────────────────────────────────────────────── */
 .plazo-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:box-shadow .2s;}
 .plazo-card:hover{box-shadow:0 4px 24px rgba(0,0,0,0.18);}
@@ -611,7 +625,8 @@ nav {
 
   <div class="main">
     <div class="tabs">
-      <button class="tab active" onclick="showTab('grupos')"><i class="fas fa-users"></i> Grupos</button>
+      <button class="tab active" onclick="showTab('dashboard')"><i class="fas fa-chart-line"></i> Dashboard</button>
+      <button class="tab" onclick="showTab('grupos')"><i class="fas fa-users"></i> Grupos</button>
       <button class="tab" onclick="showTab('solicitudes')"><i class="fas fa-bell"></i> Solicitudes</button>
       <button class="tab" onclick="showTab('resultados')"><i class="fas fa-futbol"></i> Resultados</button>
       <button class="tab" onclick="showTab('ranking')"><i class="fas fa-trophy"></i> Ranking global</button>
@@ -623,8 +638,59 @@ nav {
       <button class="tab" onclick="showTab('goleadores')"><i class="fas fa-futbol"></i> Goleadores</button>
     </div>
 
+    <!-- TAB DASHBOARD -->
+    <div id="tab-dashboard" class="page active">
+      <div class="section-title"><i class="fas fa-chart-line"></i> Dashboard
+        <span style="font-size:0.78rem;font-weight:400;color:var(--muted);font-family:'Barlow',sans-serif;margin-left:10px;">Métricas en tiempo real desde Firestore</span>
+        <button class="btn btn-outline btn-sm" onclick="loadDashboard()" style="margin-left:auto;"><i class="fas fa-rotate"></i> Actualizar</button>
+      </div>
+
+      <!-- KPIs principales -->
+      <div id="dash-kpis" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:24px;">
+        <div class="dash-kpi-skeleton"></div><div class="dash-kpi-skeleton"></div>
+        <div class="dash-kpi-skeleton"></div><div class="dash-kpi-skeleton"></div>
+        <div class="dash-kpi-skeleton"></div><div class="dash-kpi-skeleton"></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;">
+        <!-- Participación por grupo -->
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;margin-bottom:14px;color:var(--gold);">
+            <i class="fas fa-users"></i> Participantes por Grupo
+          </div>
+          <div id="dash-grupos-chart"></div>
+        </div>
+
+        <!-- Apuestas por fase -->
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;margin-bottom:14px;color:var(--gold);">
+            <i class="fas fa-futbol"></i> Apuestas por Fase
+          </div>
+          <div id="dash-fases-chart"></div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+        <!-- Top jugadores -->
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;margin-bottom:14px;color:var(--gold);">
+            <i class="fas fa-trophy"></i> Top 5 Jugadores
+          </div>
+          <div id="dash-top-jugadores"></div>
+        </div>
+
+        <!-- Estado del torneo -->
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;margin-bottom:14px;color:var(--gold);">
+            <i class="fas fa-flag-checkered"></i> Estado del Torneo
+          </div>
+          <div id="dash-torneo"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- TAB GRUPOS -->
-    <div id="tab-grupos" class="page active">
+    <div id="tab-grupos" class="page">
       <div class="section">
         <div class="section-title"><i class="fas fa-plus-circle"></i> Crear grupo</div>
         <div class="card">
@@ -1410,6 +1476,7 @@ async function initAdmin() {
     globalPartidos = [];
   }
   await renderGruposAdmin();
+  loadDashboard(); // cargar dashboard en background sin bloquear
 }
 
 // ── TABS ─────────────────────────────────────────────────────────────────
@@ -1420,6 +1487,7 @@ window.showTab = async (tab) => {
   if(tabBtn) tabBtn.classList.add('active');
   const tabPage = document.getElementById('tab-' + tab);
   if(tabPage) tabPage.classList.add('active');
+  if (tab === 'dashboard')    await loadDashboard();
   if (tab === 'grupos')       await renderGruposAdmin();
   if (tab === 'ranking')      await renderRankingGlobal();
   if (tab === 'solicitudes')  await renderSolicitudes();
@@ -5809,7 +5877,171 @@ window.clearFecha = function(faseId) {
   setTimeout(renderPlazos, 400);
 };
 
-// ── GOLEADORES ────────────────────────────────────────────────────────────
+// ── DASHBOARD ─────────────────────────────────────────────────────────────
+async function loadDashboard() {
+  // KPIs skeleton
+  const kpisEl = document.getElementById('dash-kpis');
+  kpisEl.innerHTML = Array(6).fill(`<div class="dash-kpi-skeleton"></div>`).join('');
+
+  try {
+    // Cargar datos en paralelo
+    const [participantesSnap, apuestasSnap, gruposSnap, partidosSnap] = await Promise.all([
+      getDocs(collection(db, 'participantes')),
+      getDocs(collection(db, 'apuestas')),
+      getDocs(collection(db, 'grupos')),
+      getDocs(collection(db, 'partidos')),
+    ]);
+
+    const participantes = participantesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const apuestas      = apuestasSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const grupos        = gruposSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const partidos      = partidosSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // ── Métricas ──────────────────────────────────────────────────────────
+    const totalParticipantes = participantes.length;
+    const aprobados  = participantes.filter(p => p.estado === 'aprobado').length;
+    const pendientes = participantes.filter(p => p.estado === 'pendiente').length;
+    const rechazados = participantes.filter(p => p.estado === 'rechazado').length;
+    const totalApuestas = apuestas.length;
+    const totalGrupos   = grupos.length;
+
+    const partidosConRes = partidos.filter(p => p.resultado_local != null);
+    const totalPartidos  = partidos.filter(p => /^fg[A-L]/i.test(p.id)).length; // solo grupos
+    const pctAvance      = totalPartidos ? Math.round((partidosConRes.filter(p => /^fg[A-L]/i.test(p.id)).length / totalPartidos) * 100) : 0;
+
+    const apuestasConPuntaje = apuestas.filter(a => a.puntaje != null && a.puntaje > 0).length;
+    const totalPuntos = apuestas.reduce((s, a) => s + (Number(a.puntaje) || 0), 0);
+    const promPuntos  = aprobados ? (totalPuntos / aprobados).toFixed(1) : '—';
+
+    // Participantes que apostaron en las últimas 24h (simulado por createdAt si existe)
+    const hace24h = Date.now() - 86400000;
+    const activosRecientes = apuestas.filter(a => a.creadoEn?.toMillis?.() > hace24h || a.actualizadoEn?.toMillis?.() > hace24h).length;
+
+    // ── KPIs ─────────────────────────────────────────────────────────────
+    kpisEl.innerHTML = [
+      { label:'Participantes totales', value: totalParticipantes, sub:`${aprobados} aprobados · ${pendientes} pendientes · ${rechazados} rechazados`, color:'#22c55e' },
+      { label:'Grupos activos',        value: totalGrupos,        sub:`${Math.round(aprobados/Math.max(totalGrupos,1))} jugadores/grupo promedio`, color:'#3b82f6' },
+      { label:'Total apuestas',        value: totalApuestas,      sub:`${apuestasConPuntaje} con puntaje · ${totalApuestas - apuestasConPuntaje} sin resultado aún`, color:'#f59e0b' },
+      { label:'Puntos repartidos',     value: totalPuntos,        sub:`Promedio ${promPuntos} pts por jugador`, color:RED },
+      { label:'Avance Fase Grupos',    value: pctAvance+'%',      sub:`${partidosConRes.filter(p=>/^fg[A-L]/i.test(p.id)).length}/${totalPartidos} partidos con resultado`, color:'#8b5cf6' },
+      { label:'Actividad reciente',    value: activosRecientes,   sub:'Apuestas en las últimas 24 horas', color:'#06b6d4' },
+    ].map(k => `
+      <div class="dash-kpi">
+        <div class="dash-kpi-label">${k.label}</div>
+        <div class="dash-kpi-value" style="color:${k.color};">${k.value}</div>
+        <div class="dash-kpi-sub">${k.sub}</div>
+      </div>`).join('');
+
+    // ── Participantes por grupo ───────────────────────────────────────────
+    const porGrupo = {};
+    grupos.forEach(g => { porGrupo[g.id] = { nombre: g.nombre, total: 0, aprobados: 0 }; });
+    participantes.forEach(p => {
+      if (!porGrupo[p.grupoId]) return;
+      porGrupo[p.grupoId].total++;
+      if (p.estado === 'aprobado') porGrupo[p.grupoId].aprobados++;
+    });
+    const maxPartic = Math.max(...Object.values(porGrupo).map(g => g.total), 1);
+    document.getElementById('dash-grupos-chart').innerHTML = Object.values(porGrupo)
+      .sort((a,b) => b.total - a.total)
+      .map(g => `
+        <div class="dash-bar-wrap">
+          <div class="dash-bar-label" title="${g.nombre}">${g.nombre}</div>
+          <div class="dash-bar-track">
+            <div class="dash-bar-fill" style="width:${Math.round(g.total/maxPartic*100)}%;background:#3b82f6;"></div>
+          </div>
+          <div class="dash-bar-val" style="color:#3b82f6;">${g.total}</div>
+        </div>`).join('') || '<div style="color:var(--muted);font-size:.8rem;">Sin grupos</div>';
+
+    // ── Apuestas por fase ─────────────────────────────────────────────────
+    const faseMap = {
+      grupos:'Fase Grupos', r32:'32avos', octavos:'Octavos',
+      cuartos:'Cuartos', semi:'Semis', tercer:'3er Lugar', final:'Final'
+    };
+    function detectFaseApuesta(id) {
+      if (/^fg[A-L]/i.test(id)) return 'grupos';
+      if (/^r32_/.test(id))     return 'r32';
+      if (/^r16_/.test(id))     return 'octavos';
+      if (/^qf/.test(id))       return 'cuartos';
+      if (/^sf/.test(id))       return 'semi';
+      if (id === '3p')          return 'tercer';
+      if (id === 'fin')         return 'final';
+      return 'otros';
+    }
+    const porFase = {};
+    apuestas.forEach(a => {
+      const f = detectFaseApuesta(a.partidoId || '');
+      porFase[f] = (porFase[f] || 0) + 1;
+    });
+    const maxFase = Math.max(...Object.values(porFase), 1);
+    const FASE_COLORS = { grupos:'#22c55e', r32:'#3b82f6', octavos:'#8b5cf6', cuartos:'#f59e0b', semi:'#ef4444', tercer:'#a16207', final:'#fbbf24' };
+    document.getElementById('dash-fases-chart').innerHTML = Object.entries(faseMap)
+      .map(([id, label]) => `
+        <div class="dash-bar-wrap">
+          <div class="dash-bar-label">${label}</div>
+          <div class="dash-bar-track">
+            <div class="dash-bar-fill" style="width:${Math.round((porFase[id]||0)/maxFase*100)}%;background:${FASE_COLORS[id]||'#6b7280'};"></div>
+          </div>
+          <div class="dash-bar-val" style="color:${FASE_COLORS[id]||'#6b7280'};">${porFase[id]||0}</div>
+        </div>`).join('');
+
+    // ── Top 5 jugadores ───────────────────────────────────────────────────
+    const puntajesPorUid = {};
+    apuestas.forEach(a => {
+      if (!puntajesPorUid[a.uid]) puntajesPorUid[a.uid] = 0;
+      puntajesPorUid[a.uid] += Number(a.puntaje) || 0;
+    });
+    const top5 = Object.entries(puntajesPorUid)
+      .sort((a,b) => b[1] - a[1]).slice(0,5)
+      .map(([uid, pts]) => {
+        const p = participantes.find(x => x.uid === uid);
+        return { nombre: p?.nombre || p?.email || uid.slice(0,8), pts };
+      });
+    const maxPts = top5[0]?.pts || 1;
+    const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+    document.getElementById('dash-top-jugadores').innerHTML = top5.length
+      ? top5.map((j,i) => `
+          <div class="dash-bar-wrap">
+            <div class="dash-bar-label">${medals[i]} ${j.nombre}</div>
+            <div class="dash-bar-track">
+              <div class="dash-bar-fill" style="width:${Math.round(j.pts/maxPts*100)}%;background:${i===0?'var(--gold)':i===1?'#94a3b8':i===2?'#b45309':'#6b7280'};"></div>
+            </div>
+            <div class="dash-bar-val" style="color:var(--gold);">${j.pts}</div>
+          </div>`).join('')
+      : '<div style="color:var(--muted);font-size:.8rem;">Sin puntajes aún</div>';
+
+    // ── Estado del torneo ─────────────────────────────────────────────────
+    const fases = [
+      { label:'Fase de Grupos',   ids: partidos.filter(p=>/^fg[A-L]/i.test(p.id)) },
+      { label:'32avos de Final',  ids: partidos.filter(p=>/^r32_/.test(p.id)) },
+      { label:'Octavos de Final', ids: partidos.filter(p=>/^r16_/.test(p.id)) },
+      { label:'Cuartos de Final', ids: partidos.filter(p=>/^qf/.test(p.id)) },
+      { label:'Semifinales',      ids: partidos.filter(p=>/^sf/.test(p.id)) },
+      { label:'3er Lugar',        ids: partidos.filter(p=>p.id==='3p') },
+      { label:'Gran Final',       ids: partidos.filter(p=>p.id==='fin') },
+    ];
+    document.getElementById('dash-torneo').innerHTML = fases.map(f => {
+      const total = f.ids.length;
+      const jugados = f.ids.filter(p => p.resultado_local != null).length;
+      const pct = total ? Math.round(jugados/total*100) : 0;
+      const color = pct === 100 ? '#22c55e' : pct > 0 ? '#f59e0b' : '#6b7280';
+      return `
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-size:.78rem;font-weight:600;">${f.label}</span>
+            <span style="font-size:.72rem;color:${color};font-weight:700;">${jugados}/${total} ${pct===100?'✓':''}</span>
+          </div>
+          <div style="height:6px;background:rgba(255,255,255,.06);border-radius:99px;">
+            <div style="height:6px;background:${color};border-radius:99px;width:${pct}%;transition:width .5s;"></div>
+          </div>
+        </div>`;
+    }).join('');
+
+  } catch(e) {
+    kpisEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--red);">Error cargando dashboard: ${e.message}</div>`;
+  }
+}
+
+window.loadDashboard = loadDashboard;
 const GOL_KEY = 'lapolla2026_goleadores';
 
 async function goleadorCargar() {
