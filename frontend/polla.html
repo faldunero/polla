@@ -914,31 +914,57 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
       await cargarPlazos();
       const cerrado = isCerrado(); // fase grupos — para el banner global
 
-      // ── Banner de plazo vencido ────────────────────────────────────────────
-      // Construir información de estado por fase para mostrar al usuario
+      // ── Banner de estado de plazos — siempre visible ─────────────────────
       const FASES_INFO = [
-        { id:'grupos',  label:'Fase de Grupos' },
-        { id:'r32avos', label:'32avos de Final' },
-        { id:'octavos', label:'Octavos de Final' },
-        { id:'cuartos', label:'Cuartos de Final' },
-        { id:'semis',   label:'Semifinales' },
-        { id:'tercero', label:'Tercer Lugar' },
-        { id:'final',   label:'Gran Final' },
+        { id:'grupos',  label:'Fase de Grupos',   icono:'🟢' },
+        { id:'r32avos', label:'32avos de Final',  icono:'⏳' },
+        { id:'octavos', label:'Octavos de Final', icono:'⏳' },
+        { id:'cuartos', label:'Cuartos de Final', icono:'⏳' },
+        { id:'semis',   label:'Semifinales',      icono:'⏳' },
+        { id:'tercero', label:'Tercer Lugar',     icono:'⏳' },
+        { id:'final',   label:'Gran Final',       icono:'⏳' },
       ];
       const fasesCerradas = FASES_INFO.filter(f => isFaseCerrada(f.id));
       const fasesAbiertas = FASES_INFO.filter(f => !isFaseCerrada(f.id));
+      const todasCerradas = fasesAbiertas.length === 0;
 
-      let bannerPlazos = '';
-      if (fasesCerradas.length > 0) {
-        bannerPlazos = `<div style="background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:0.82rem;">
-          <div style="font-weight:700;color:var(--red);margin-bottom:4px;"><i class="fas fa-lock"></i> Plazo vencido — Ingreso de apuestas bloqueado</div>
-          <div style="color:var(--muted);font-size:0.75rem;">
-            Cerrado: ${fasesCerradas.map(f=>f.label).join(' · ')}
-            ${fasesAbiertas.length ? `<br>Abierto: ${fasesAbiertas.map(f=>f.label).join(' · ')}` : ''}
-            <br><span style="opacity:.7;">Solo el administrador puede habilitar el ingreso nuevamente.</span>
-          </div>
-        </div>`;
+      // Siempre construir el banner — muestra qué está abierto y qué cerrado
+      let bannerPlazos = `<div style="border-radius:12px;overflow:hidden;margin-bottom:18px;border:1px solid rgba(255,255,255,0.08);">`;
+
+      // Sección verde — fases abiertas (siempre primero)
+      if (fasesAbiertas.length > 0) {
+        bannerPlazos += `
+          <div style="background:rgba(34,197,94,.1);border-bottom:1px solid rgba(34,197,94,.2);padding:12px 16px;display:flex;align-items:flex-start;gap:12px;">
+            <i class="fas fa-lock-open" style="color:var(--green);margin-top:2px;flex-shrink:0;font-size:0.9rem;"></i>
+            <div>
+              <div style="font-weight:700;color:var(--green);font-size:0.84rem;margin-bottom:3px;">
+                Apuestas abiertas — puedes ingresar tus predicciones
+              </div>
+              <div style="color:rgba(34,197,94,.8);font-size:0.74rem;line-height:1.5;">
+                <strong style="color:var(--green);">Ahora disponible:</strong>
+                ${fasesAbiertas.map(f => `<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);border-radius:5px;padding:1px 8px;margin:1px 2px;font-size:0.72rem;">${f.label}</span>`).join('')}
+                <br><span style="opacity:.75;font-size:0.7rem;margin-top:4px;display:block;">
+                  Las siguientes fases se abrirán una vez que el admin cierre la anterior. Ingresa tus apuestas antes de que cierren.
+                </span>
+              </div>
+            </div>
+          </div>`;
       }
+
+      // Sección roja — fases cerradas (solo si hay alguna)
+      if (fasesCerradas.length > 0) {
+        bannerPlazos += `
+          <div style="background:rgba(239,68,68,.07);padding:10px 16px;display:flex;align-items:flex-start;gap:12px;">
+            <i class="fas fa-lock" style="color:var(--red);margin-top:2px;flex-shrink:0;font-size:0.85rem;"></i>
+            <div style="font-size:0.74rem;color:var(--muted);">
+              <strong style="color:rgba(239,68,68,.8);">Plazo vencido:</strong>
+              ${fasesCerradas.map(f => `<span style="opacity:.75;">${f.label}</span>`).join(' · ')}
+              <span style="opacity:.55;font-size:0.68rem;display:block;margin-top:2px;">Solo el administrador puede reabrir estas fases.</span>
+            </div>
+          </div>`;
+      }
+
+      bannerPlazos += `</div>`;
 
       // ── Fixture local (misma fuente de verdad que admin) ──────────────────
       // FG viene del módulo fifa2026.js
@@ -1034,7 +1060,7 @@ const FG = FIXTURE_GRUPOS;
       const faseAbierta = document.querySelector('.fase-header.open')?.id?.replace('fh-','') || 'grupos';
       const grupoActivo = document.querySelector('.grupo-tab.active')?.dataset?.grupo || null;
       let html = '';
-      html += bannerPlazos; // banner de fases cerradas (vacío si todo abierto)
+      html += bannerPlazos; // banner siempre visible: verde = abierto, rojo = cerrado
 
       // Grupos — acordeón + tabs
       const gruposKeys = Object.keys(FG).sort();
