@@ -1634,7 +1634,7 @@ window.toggleFiltro = (estado) => {
   renderSolicitudesFiltradas();
 };
 
-function renderSolicitudesFiltradas() {
+window.renderSolicitudesFiltradas = function renderSolicitudesFiltradas() {
   const list = document.getElementById('solicitudes-list');
 
   // 1. Filtro por estado (toggle cards existentes)
