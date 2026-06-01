@@ -298,6 +298,65 @@ nav {
 .solicitud-info p  { font-size: 0.78rem; color: var(--muted); }
 .solicitud-acciones { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
+.sol-filter-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.sol-search-wrap {
+  flex: 1;
+  min-width: 180px;
+  position: relative;
+}
+.sol-search-wrap i {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 0.82rem;
+  pointer-events: none;
+}
+.sol-search-input {
+  width: 100%;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 12px 9px 34px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  transition: border-color 0.2s;
+}
+.sol-search-input:focus { outline: none; border-color: var(--gold); }
+.sol-search-input::placeholder { color: var(--muted); }
+.sol-select {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 32px 9px 12px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7a99' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+.sol-select:focus { outline: none; border-color: var(--gold); }
+.sol-select option { background: var(--card2); }
+.sol-results-count {
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
+  padding: 0 4px;
+}
+
 .stats-solicitudes {
   display: flex;
   gap: 12px;
@@ -740,6 +799,27 @@ nav {
           <span>Rechazadas</span>
           <div class="check-icon" style="color:var(--red);">✓ activo</div>
         </div>
+      </div>
+
+      <!-- Barra de filtros adicionales -->
+      <div class="sol-filter-bar">
+        <div class="sol-search-wrap">
+          <i class="fas fa-search"></i>
+          <input type="text" id="sol-search" class="sol-search-input" placeholder="Buscar por nombre o email..." oninput="renderSolicitudesFiltradas()">
+        </div>
+        <select id="sol-grupo-filter" class="sol-select" onchange="renderSolicitudesFiltradas()">
+          <option value="">Todos los grupos</option>
+        </select>
+        <select id="sol-orden" class="sol-select" onchange="renderSolicitudesFiltradas()">
+          <option value="fecha-desc">Más reciente primero</option>
+          <option value="fecha-asc">Más antiguo primero</option>
+          <option value="nombre-asc">Nombre A→Z</option>
+          <option value="nombre-desc">Nombre Z→A</option>
+          <option value="grupo-asc">Grupo A→Z</option>
+          <option value="estado">Por estado</option>
+        </select>
+        <span class="sol-results-count" id="sol-count"></span>
+        <button class="btn btn-outline btn-sm" onclick="limpiarFiltrosSolicitudes()" title="Limpiar filtros"><i class="fas fa-xmark"></i></button>
       </div>
 
       <div id="solicitudes-list"></div>
@@ -1524,6 +1604,7 @@ async function renderSolicitudes() {
   filtrosActivos = new Set();
   actualizarStats();
   actualizarToggleCards();
+  populateGrupoFilterSolicitudes();
   renderSolicitudesFiltradas();
 }
 
@@ -1555,14 +1636,54 @@ window.toggleFiltro = (estado) => {
 
 function renderSolicitudesFiltradas() {
   const list = document.getElementById('solicitudes-list');
-  const items = filtrosActivos.size === 0
-    ? globalSolicitudes
+
+  // 1. Filtro por estado (toggle cards existentes)
+  let items = filtrosActivos.size === 0
+    ? [...globalSolicitudes]
     : globalSolicitudes.filter(s => filtrosActivos.has(s.estado || 'pendiente'));
+
+  // 2. Filtro por texto (nombre / email)
+  const searchVal = (document.getElementById('sol-search')?.value || '').trim().toLowerCase();
+  if (searchVal) {
+    items = items.filter(s =>
+      (s.nombre || '').toLowerCase().includes(searchVal) ||
+      (s.email  || '').toLowerCase().includes(searchVal)
+    );
+  }
+
+  // 3. Filtro por grupo
+  const grupoVal = document.getElementById('sol-grupo-filter')?.value || '';
+  if (grupoVal) {
+    items = items.filter(s => (s.grupoId || '') === grupoVal || (s.grupoNombre || '') === grupoVal);
+  }
+
+  // 4. Ordenamiento
+  const orden = document.getElementById('sol-orden')?.value || 'fecha-desc';
+  const ORDEN_ESTADO = { pendiente: 0, aprobado: 1, rechazado: 2 };
+  items.sort((a, b) => {
+    if (orden === 'fecha-desc') {
+      const ta = a.unidoEn?._seconds || 0, tb = b.unidoEn?._seconds || 0;
+      return tb - ta;
+    }
+    if (orden === 'fecha-asc') {
+      const ta = a.unidoEn?._seconds || 0, tb = b.unidoEn?._seconds || 0;
+      return ta - tb;
+    }
+    if (orden === 'nombre-asc') return (a.nombre || a.email || '').localeCompare(b.nombre || b.email || '');
+    if (orden === 'nombre-desc') return (b.nombre || b.email || '').localeCompare(a.nombre || a.email || '');
+    if (orden === 'grupo-asc') return (a.grupoNombre || '').localeCompare(b.grupoNombre || '');
+    if (orden === 'estado') return (ORDEN_ESTADO[a.estado || 'pendiente'] ?? 0) - (ORDEN_ESTADO[b.estado || 'pendiente'] ?? 0);
+    return 0;
+  });
+
+  // Contador de resultados
+  const countEl = document.getElementById('sol-count');
+  if (countEl) countEl.textContent = items.length !== globalSolicitudes.length ? `${items.length} de ${globalSolicitudes.length}` : `${items.length} solicitudes`;
 
   if (!items.length) {
     list.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--muted);">
       <i class="fas fa-inbox" style="font-size:2rem;margin-bottom:12px;display:block;"></i>
-      No hay solicitudes${filtrosActivos.size > 0 ? ' con los estados seleccionados' : ''}.
+      No hay solicitudes${filtrosActivos.size > 0 || searchVal || grupoVal ? ' con los filtros seleccionados' : ''}.
     </div>`;
     return;
   }
@@ -1594,6 +1715,37 @@ function renderSolicitudesFiltradas() {
       </div>
     </div>`;
   }).join('');
+}
+
+window.limpiarFiltrosSolicitudes = function() {
+  const s = document.getElementById('sol-search');
+  const g = document.getElementById('sol-grupo-filter');
+  const o = document.getElementById('sol-orden');
+  if (s) s.value = '';
+  if (g) g.value = '';
+  if (o) o.value = 'fecha-desc';
+  // Also reset estado toggles to "total"
+  filtrosActivos.clear();
+  actualizarToggleCards();
+  renderSolicitudesFiltradas();
+};
+
+function populateGrupoFilterSolicitudes() {
+  const sel = document.getElementById('sol-grupo-filter');
+  if (!sel || !globalSolicitudes) return;
+  const grupos = {};
+  globalSolicitudes.forEach(s => {
+    if (s.grupoId && s.grupoNombre) grupos[s.grupoId] = s.grupoNombre;
+  });
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">Todos los grupos</option>';
+  Object.entries(grupos).sort((a,b) => a[1].localeCompare(b[1])).forEach(([id, nombre]) => {
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = nombre;
+    sel.appendChild(opt);
+  });
+  sel.value = prev;
 }
 
 window.cambiarEstado = async (uid, nuevoEstado) => {
