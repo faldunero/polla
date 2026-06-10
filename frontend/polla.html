@@ -813,10 +813,33 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
         return;
       }
 
+      // Banner global si ALGÚN grupo tiene inscripciones bloqueadas y el usuario aún no está inscrito
+      const hayAlgunBloqueado = globalGrupos.some(g => g.inscripcionBloqueada);
+      const usuarioSinGrupo = !miParticipante || miParticipante?.estado === 'rechazado';
+      if (hayAlgunBloqueado && usuarioSinGrupo) {
+        const bannerExistente = document.getElementById('banner-inscripcion-bloqueada');
+        if (!bannerExistente) {
+          const b = document.createElement('div');
+          b.id = 'banner-inscripcion-bloqueada';
+          b.style.cssText = 'margin-bottom:18px;';
+          b.innerHTML = `<div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:12px;padding:14px 18px;display:flex;align-items:flex-start;gap:12px;">
+            <i class="fas fa-lock" style="color:var(--red);margin-top:2px;flex-shrink:0;"></i>
+            <div>
+              <div style="font-weight:700;color:var(--red);font-size:0.88rem;margin-bottom:2px;">Inscripciones cerradas</div>
+              <div style="font-size:0.8rem;color:rgba(255,255,255,0.6);line-height:1.5;">Algunos grupos ya no aceptan nuevos participantes. Si ya estás inscrito, puedes seguir usando la polla normalmente.</div>
+            </div>
+          </div>`;
+          grid.before(b);
+        }
+      } else {
+        document.getElementById('banner-inscripcion-bloqueada')?.remove();
+      }
+
       globalGrupos.forEach(g => {
         const esMio = miParticipante?.grupoId === g.id;
-        const bloqueado = !!miParticipante && miParticipante?.estado !== 'rechazado' && !esMio;
-        const btnDisabled = bloqueado || isCerrado();
+        const yaEnOtroGrupo = !!miParticipante && miParticipante?.estado !== 'rechazado' && !esMio;
+        const grupoBloqueado = !!g.inscripcionBloqueada && !esMio; // bloqueo NO afecta a quien ya está
+        const btnDisabled = yaEnOtroGrupo || grupoBloqueado || isCerrado();
 
         const div = document.createElement('div');
         div.className = 'grupo-card' + (esMio ? ' mi-grupo' : '');
@@ -831,9 +854,11 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
                     <i class="fas ${miParticipante?.estado === 'aprobado' ? 'fa-check' : 'fa-clock'}"></i>
                     ${miParticipante?.estado || 'inscrito'}
                   </span>`
-                : bloqueado
+                : yaEnOtroGrupo
                   ? `<span style="color:var(--muted);font-size:.82rem;">Ya estás asociado a otro grupo</span>`
-                  : `<button class="btn btn-gold btn-sm" ${btnDisabled ? 'disabled' : ''}>${isCerrado() ? 'Cerrado' : 'Unirse'}</button>`
+                  : grupoBloqueado
+                    ? `<span style="color:var(--red);font-size:.82rem;display:flex;align-items:center;gap:5px;"><i class="fas fa-lock"></i> Inscripciones cerradas</span>`
+                    : `<button class="btn btn-gold btn-sm" ${btnDisabled ? 'disabled' : ''}>${isCerrado() ? 'Cerrado' : 'Unirse'}</button>`
             }
           </div>
         `;
@@ -856,6 +881,16 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
   if (isCerrado()) {
     console.warn('Inscripciones cerradas');
     return toast('Las inscripciones están cerradas', 'warn');
+  }
+
+  // Verificar que el grupo no esté bloqueado (doble seguridad — re-lee desde Firestore)
+  try {
+    const grupoSnap = await getDoc(doc(db, 'grupos', grupoId));
+    if (grupoSnap.exists() && grupoSnap.data().inscripcionBloqueada) {
+      return toast('Este grupo ya no acepta nuevos participantes', 'warn');
+    }
+  } catch(e) {
+    // si falla la lectura, continuar igual (no bloquear al usuario por error de red)
   }
 
   console.log('CLICK unirseGrupo', {
