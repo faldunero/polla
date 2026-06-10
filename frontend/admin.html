@@ -914,20 +914,17 @@ nav {
     <div id="tab-ranking" class="page">
       <div class="section-title"><i class="fas fa-trophy"></i> Ranking</div>
 
-      <!-- Filtros de vista (por grupo) -->
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
-        <span style="font-size:0.78rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">Vista:</span>
-        <div id="rk-filtros" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
-      </div>
-
-      <!-- Búsqueda por participante -->
+      <!-- Filtros combinados: grupo + búsqueda -->
       <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center;">
-        <div class="sol-search-wrap" style="flex:1;min-width:200px;">
+        <select id="rk-grupo-select" class="sol-select" style="min-width:180px;" onchange="window.onRkGrupoChange()">
+          <option value="todos">Todos los grupos</option>
+        </select>
+        <div class="sol-search-wrap" style="flex:1;min-width:180px;">
           <i class="fas fa-search"></i>
-          <input type="text" id="rk-search" class="sol-search-input" placeholder="Buscar participante por nombre o email..." oninput="renderRankingVista()">
+          <input type="text" id="rk-search" class="sol-search-input" placeholder="Buscar participante por nombre o email..." oninput="window.renderRankingVista()">
         </div>
         <span id="rk-count" class="sol-results-count"></span>
-        <button class="btn btn-outline btn-sm" onclick="limpiarFiltrosRanking()" title="Limpiar búsqueda"><i class="fas fa-xmark"></i></button>
+        <button class="btn btn-outline btn-sm" onclick="window.limpiarFiltrosRanking()" title="Limpiar filtros"><i class="fas fa-xmark"></i></button>
       </div>
 
       <!-- Contenido ranking -->
@@ -1942,16 +1939,27 @@ async function renderGruposAdmin() {
       list.innerHTML = '<p style="color:var(--muted);">Aún no hay grupos.</p>';
       return;
     }
-    list.innerHTML = grupos.map(g => `
+    list.innerHTML = grupos.map(g => {
+      const bloqueado = !!g.inscripcionBloqueada;
+      return `
       <div class="grupo-item">
         <div class="grupo-item-info">
           <h4>${g.nombre}</h4>
-          <p>${g.descripcion || 'Sin descripción'}</p>
+          <p>${g.descripcion || 'Sin descripción'} ${bloqueado ? '<span style="background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3);border-radius:999px;padding:2px 9px;font-size:0.7rem;font-weight:700;margin-left:6px;"><i class="fas fa-lock"></i> Inscripciones bloqueadas</span>' : ''}</p>
         </div>
-        <button class="btn btn-danger btn-sm" onclick="eliminarGrupo('${g.id}','${g.nombre.replace(/'/g,"\\'")}')">
-          <i class="fas fa-trash"></i> Eliminar
-        </button>
-      </div>`).join('');
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn btn-sm ${bloqueado ? 'btn-green' : 'btn-outline'}" 
+            title="${bloqueado ? 'Abrir inscripciones' : 'Bloquear nuevas inscripciones'}"
+            onclick="toggleBloqueoGrupo('${g.id}', ${bloqueado})">
+            <i class="fas ${bloqueado ? 'fa-lock-open' : 'fa-lock'}"></i>
+            ${bloqueado ? 'Abrir' : 'Bloquear'}
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="eliminarGrupo('${g.id}','${g.nombre.replace(/'/g,"\\'")}')">
+            <i class="fas fa-trash"></i> Eliminar
+          </button>
+        </div>
+      </div>`;
+    }).join('');
   } catch(e) {
     list.innerHTML = `<p style="color:var(--red);">Error: ${e.message}</p>`;
   }
@@ -1979,6 +1987,19 @@ window.eliminarGrupo = async (id, nombre) => {
   try {
     await deleteDoc(doc(db, 'grupos', id));
     toast('Grupo eliminado', 'success');
+    await renderGruposAdmin();
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+};
+
+window.toggleBloqueoGrupo = async (id, estaActualmenteBloqueado) => {
+  const nuevoEstado = !estaActualmenteBloqueado;
+  const accion = nuevoEstado ? 'bloquear' : 'abrir';
+  if (!confirm(nuevoEstado
+    ? '¿Bloquear nuevas inscripciones en este grupo?\n\nLos participantes ya inscritos NO serán afectados.'
+    : '¿Abrir nuevamente las inscripciones de este grupo?')) return;
+  try {
+    await updateDoc(doc(db, 'grupos', id), { inscripcionBloqueada: nuevoEstado });
+    toast(nuevoEstado ? 'Inscripciones bloqueadas ✓' : 'Inscripciones abiertas ✓', nuevoEstado ? 'warn' : 'success');
     await renderGruposAdmin();
   } catch(e) { toast('Error: ' + e.message, 'error'); }
 };
@@ -2854,77 +2875,29 @@ async function renderRankingGlobal() {
       porGrupo[r.grupoId].jugadores.push(r);
     });
 
-    let html = '';
     const totalDisc = ranking.reduce((s, r) => s + r.discrepancias, 0);
 
-    // ── Tabla ranking global ──
-    html += `<div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--gold);letter-spacing:.06em;margin-bottom:12px;">
-      Ranking Global &middot; ${ranking.length} participante${ranking.length!==1?'s':''} aprobado${ranking.length!==1?'s':''}
-    </div>
-    <table class="ranking-table" style="margin-bottom:28px;"><thead><tr>
-      <th style="width:36px;">#</th><th>Jugador</th><th>Grupo</th>
-      <th style="text-align:center;">Apuestas</th><th style="text-align:center;">Aciertos</th>
-      <th style="text-align:center;">Exactos</th><th style="text-align:right;">Puntos</th>
-    </tr></thead><tbody>`;
+    // Guardar en caché global para que los filtros puedan re-renderizar sin re-fetch
+    _rkData = { todos: ranking, porGrupo, totalDisc };
+    _rkFiltro = 'todos';
 
-    ranking.forEach((r, i) => {
-      const pos = i + 1;
-      const posClass = pos===1?'pos-1':pos===2?'pos-2':pos===3?'pos-3':'pos-n';
-      const medalla = pos===1?'🥇':pos===2?'🥈':pos===3?'🥉':'';
-      html += `<tr>
-        <td><span class="pos-badge ${posClass}">${pos}</span></td>
-        <td style="font-weight:600;">${medalla?medalla+' ':''}${r.nombre}</td>
-        <td style="color:var(--muted);font-size:0.82rem;">${r.grupoNombre}</td>
-        <td style="text-align:center;color:var(--muted);font-size:0.85rem;">${r.apuestas}</td>
-        <td style="text-align:center;color:var(--muted);font-size:0.85rem;">${r.aciertos}</td>
-        <td style="text-align:center;color:var(--muted);font-size:0.85rem;">${r.exactos}</td>
-        <td style="text-align:right;">
-          <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;">
-            <span style="font-weight:700;font-size:1.05rem;color:var(--gold);">${r.total}</span>
-          </div>
-        </td>
-      </tr>`;
-    });
-    html += '</tbody></table>';
-
-    // ── Ranking por grupo ──
-    html += `<div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--gold);letter-spacing:.06em;margin-bottom:14px;">Ranking por Grupo</div>`;
-    html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;">`;
-    Object.values(porGrupo).forEach(g => {
-      html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-        <div style="background:var(--card2);padding:10px 16px;border-bottom:1px solid var(--border);font-family:'Bebas Neue',sans-serif;font-size:.95rem;">
-          ${g.nombre} <span style="font-size:.7rem;color:var(--muted);font-family:'DM Sans',sans-serif;">${g.jugadores.length} jugador${g.jugadores.length!==1?'es':''}</span>
-        </div>
-        <table style="width:100%;border-collapse:collapse;font-size:.82rem;"><thead>
-          <tr style="border-bottom:1px solid var(--border);">
-            <th style="padding:7px 12px;color:var(--muted);font-size:.68rem;text-align:left;">#</th>
-            <th style="padding:7px 12px;color:var(--muted);font-size:.68rem;text-align:left;">Jugador</th>
-            <th style="padding:7px 8px;color:var(--muted);font-size:.68rem;text-align:center;">Aciertos</th>
-            <th style="padding:7px 12px;color:var(--gold);font-size:.68rem;text-align:right;">Pts</th>
-          </tr>
-        </thead><tbody>`;
-      g.jugadores.forEach((r, i) => {
-        const pc = i===0?'pos-1':i===1?'pos-2':i===2?'pos-3':'pos-n';
-        const colorPts = r.total > 0 ? 'var(--gold)' : 'var(--muted)';
-        html += `<tr style="border-bottom:1px solid var(--border);">
-          <td style="padding:8px 12px;"><span class="pos-badge ${pc}" style="width:24px;height:24px;font-size:.72rem;">${i+1}</span></td>
-          <td style="padding:8px 12px;font-weight:500;">${r.nombre}</td>
-          <td style="padding:8px 8px;text-align:center;color:var(--muted);font-size:.78rem;">${r.aciertos}</td>
-          <td style="padding:8px 12px;text-align:right;font-family:'Bebas Neue',sans-serif;font-size:1rem;color:${colorPts};">${r.total}</td>
-        </tr>`;
-      });
-      html += '</tbody></table></div>';
-    });
-    html += '</div>';
-
-    // ── Veracidad ──
-    if (totalDisc > 0) {
-      html += '<div style="margin-top:14px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:12px 16px;font-size:.82rem;color:var(--red);"><i class="fas fa-triangle-exclamation"></i> Se detectaron ' + totalDisc + ' discrepancia(s) entre puntaje guardado y recalculado. Los puntos mostrados son recalculados en tiempo real.</div>';
-    } else if (ranking.some(r => r.verificadas > 0)) {
-      html += '<div style="margin-top:14px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:10px 16px;font-size:.8rem;color:var(--green);"><i class="fas fa-check-circle"></i> Puntajes verificados · 100% consistentes con resultados reales.</div>';
+    // Poblar select de grupos
+    const sel = document.getElementById('rk-grupo-select');
+    if (sel) {
+      sel.innerHTML = '<option value="todos">Todos los grupos</option>';
+      Object.entries(porGrupo)
+        .sort((a,b) => a[1].nombre.localeCompare(b[1].nombre))
+        .forEach(([gid, g]) => {
+          const opt = document.createElement('option');
+          opt.value = gid;
+          opt.textContent = g.nombre + ' (' + g.jugadores.length + ')';
+          sel.appendChild(opt);
+        });
+      sel.value = 'todos';
     }
 
-    container.innerHTML = html;
+    window.renderRankingVista();
+
   } catch(e) {
     container.innerHTML = '<p style="color:var(--red);">' + e.message + '</p>';
   }
@@ -2932,8 +2905,17 @@ async function renderRankingGlobal() {
 
 window.limpiarFiltrosRanking = function() {
   const s = document.getElementById('rk-search');
+  const g = document.getElementById('rk-grupo-select');
   if (s) s.value = '';
-  renderRankingVista();
+  if (g) g.value = 'todos';
+  window.renderRankingVista();
+};
+
+window.onRkGrupoChange = function() {
+  // Sync old _rkFiltro so existing setRkFiltro buttons still work
+  const g = document.getElementById('rk-grupo-select');
+  _rkFiltro = g ? g.value : 'todos';
+  window.renderRankingVista();
 };
 
 window.setRkFiltro = function(filtro) {
@@ -2941,7 +2923,7 @@ window.setRkFiltro = function(filtro) {
   document.querySelectorAll('.rk-filter-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.filtro === filtro);
   });
-  renderRankingVista();
+  window.renderRankingVista();
 };
 
 function buildTablaGrupo(jugadores, grupoNombre, grupoId, mostrarGrupo, searchActive) {
@@ -3003,11 +2985,12 @@ function buildTablaGrupo(jugadores, grupoNombre, grupoId, mostrarGrupo, searchAc
   return html;
 }
 
-function renderRankingVista() {
+window.renderRankingVista = function renderRankingVista() {
   const container = document.getElementById('ranking-global');
-  if(!_rkData){ container.innerHTML=''; return; }
+  if (!_rkData) { container.innerHTML = ''; return; }
 
   const searchVal = (document.getElementById('rk-search')?.value || '').trim().toLowerCase();
+  const grupoSel  = document.getElementById('rk-grupo-select')?.value || 'todos';
   const countEl   = document.getElementById('rk-count');
 
   function filtrarJugadores(lista) {
@@ -3018,51 +3001,56 @@ function renderRankingVista() {
     );
   }
 
-  if(_rkFiltro === 'todos'){
-    if(!_rkData.todos.length){
-      container.innerHTML='<p style="color:var(--muted);">Sin participantes aprobados.</p>';
-      return;
-    }
-
-    const filtrados = filtrarJugadores(_rkData.todos);
-    if (countEl) countEl.textContent = searchVal ? filtrados.length + ' de ' + _rkData.todos.length : _rkData.todos.length + ' participantes';
-
-    if (searchVal && !filtrados.length) {
-      container.innerHTML = '<div style="text-align:center;padding:48px 20px;color:var(--muted);"><i class="fas fa-search" style="font-size:2rem;margin-bottom:12px;display:block;opacity:.3;"></i>Sin resultados para <strong style="color:var(--text);">"' + searchVal + '"</strong></div>';
-      return;
-    }
-
-    // Tarjetas resumen de grupos (solo si no hay búsqueda activa)
-    let resumen = '';
-    if (!searchVal) {
-      const grupos = Object.entries(_rkData.porGrupo).sort((a,b)=>a[1].nombre.localeCompare(b[1].nombre));
-      resumen = `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">`;
-      grupos.forEach(([gid, g]) => {
-        const lider = g.jugadores[0];
-        resumen += `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;flex:1;min-width:160px;cursor:pointer;transition:all .18s;" onclick="setRkFiltro('${gid}')" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:0.85rem;color:var(--muted);letter-spacing:0.06em;margin-bottom:4px;">${g.nombre}</div>
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--gold);">${lider?.total ?? 0} <span style="font-size:0.7rem;color:var(--muted);">pts</span></div>
-          <div style="font-size:0.7rem;color:var(--muted);margin-top:2px;">🥇 ${lider?.nombre ?? '—'}</div>
-          <div style="font-size:0.65rem;color:var(--muted);margin-top:1px;">${g.jugadores.length} jugador${g.jugadores.length!==1?'es':''}</div>
-        </div>`;
-      });
-      resumen += '</div>';
-    }
-
-    container.innerHTML = resumen + buildTablaGrupo(filtrados, '', '', false, !!searchVal);
-  } else {
-    // Vista de un grupo específico
-    const g = _rkData.porGrupo[_rkFiltro];
-    if(!g){ container.innerHTML='<p style="color:var(--muted);">Grupo no encontrado.</p>'; return; }
+  // ── Vista de un grupo específico ─────────────────────────────────────
+  if (grupoSel !== 'todos') {
+    const g = _rkData.porGrupo[grupoSel];
+    if (!g) { container.innerHTML = '<p style="color:var(--muted);">Grupo no encontrado.</p>'; return; }
     const filtrados = filtrarJugadores(g.jugadores);
-    if (countEl) countEl.textContent = searchVal ? filtrados.length + ' de ' + g.jugadores.length : g.jugadores.length + ' participantes';
-
-    if (searchVal && !filtrados.length) {
-      container.innerHTML = buildTablaGrupo([], g.nombre, _rkFiltro, true, true);
+    if (countEl) countEl.textContent = searchVal
+      ? filtrados.length + ' de ' + g.jugadores.length + ' en ' + g.nombre
+      : g.jugadores.length + ' participante' + (g.jugadores.length !== 1 ? 's' : '') + ' · ' + g.nombre;
+    if (!filtrados.length) {
+      container.innerHTML = buildTablaGrupo([], g.nombre, grupoSel, true, true);
       return;
     }
-    container.innerHTML = buildTablaGrupo(filtrados, g.nombre, _rkFiltro, true, !!searchVal);
+    container.innerHTML = buildTablaGrupo(filtrados, g.nombre, grupoSel, true, !!searchVal);
+    return;
   }
+
+  // ── Vista global (todos los grupos) ──────────────────────────────────
+  if (!_rkData.todos.length) {
+    container.innerHTML = '<p style="color:var(--muted);">Sin participantes aprobados.</p>';
+    return;
+  }
+
+  const filtrados = filtrarJugadores(_rkData.todos);
+  if (countEl) countEl.textContent = searchVal
+    ? filtrados.length + ' de ' + _rkData.todos.length
+    : _rkData.todos.length + ' participante' + (_rkData.todos.length !== 1 ? 's' : '');
+
+  if (searchVal && !filtrados.length) {
+    container.innerHTML = '<div style="text-align:center;padding:48px 20px;color:var(--muted);"><i class="fas fa-search" style="font-size:2rem;margin-bottom:12px;display:block;opacity:.3;"></i>Sin resultados para <strong style="color:var(--text);">&quot;' + searchVal + '&quot;</strong></div>';
+    return;
+  }
+
+  // Tarjetas resumen de grupos (solo si no hay búsqueda activa)
+  let html = '';
+  if (!searchVal) {
+    const grupos = Object.entries(_rkData.porGrupo).sort((a, b) => a[1].nombre.localeCompare(b[1].nombre));
+    html += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">';
+    grupos.forEach(([gid, g]) => {
+      const lider = g.jugadores[0];
+      html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;flex:1;min-width:160px;cursor:pointer;transition:all .18s;" onclick="document.getElementById('rk-grupo-select').value='${gid}';window.onRkGrupoChange()" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:0.85rem;color:var(--muted);letter-spacing:0.06em;margin-bottom:4px;">${g.nombre}</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--gold);">${lider?.total ?? 0} <span style="font-size:0.7rem;color:var(--muted);">pts</span></div>
+        <div style="font-size:0.7rem;color:var(--muted);margin-top:2px;">🥇 ${lider?.nombre ?? '—'}</div>
+        <div style="font-size:0.65rem;color:var(--muted);margin-top:1px;">${g.jugadores.length} jugador${g.jugadores.length !== 1 ? 'es' : ''}</div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  container.innerHTML = html + buildTablaGrupo(filtrados, '', '', false, !!searchVal);
 }
 
 
