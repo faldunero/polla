@@ -1007,7 +1007,11 @@ const FG = FIXTURE_GRUPOS;
 
       // Enriquecer fixture con resultados reales de Firestore
       const firestoreById = {};
-      globalPartidos.forEach(m => { firestoreById[m.id] = m; });
+      globalPartidos.forEach(m => {
+        firestoreById[m.id] = m;
+        // Mapear también con prefijo fg
+        firestoreById['fg' + m.id] = m;
+      });
 
       // Fases eliminatorias
       const FASES_ELIM = [
@@ -1322,7 +1326,11 @@ const FG = FIXTURE_GRUPOS;
 
         // Mapa rápido de partido por id
         const partidoById = {};
-        globalPartidos.forEach(p => { partidoById[p.id] = p; });
+        globalPartidos.forEach(p => {
+          partidoById[p.id] = p;
+          // Mapear también con prefijo fg para compatibilidad con apuestas antiguas
+          partidoById['fg' + p.id] = p;
+        });
 
         // 3) Todas las apuestas del grupo
         const apuestasSnap = await getDocs(query(

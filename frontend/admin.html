@@ -2168,7 +2168,11 @@ async function renderResultados() {
   try {
     const snap = await getDocs(collection(db, 'partidos'));
     resCache = {};
-    snap.docs.forEach(d => { resCache[d.id] = { id: d.id, ...d.data() }; });
+    snap.docs.forEach(d => {
+      resCache[d.id] = { id: d.id, ...d.data() };
+      // Mapear también con prefijo fg para compatibilidad con fixture
+      resCache['fg' + d.id] = resCache[d.id];
+    });
   } catch(e) {
     toast('Error cargando datos: ' + e.message, 'error');
     return;
@@ -2703,6 +2707,9 @@ async function recalcular32avos() {
   await batch.commit();
 }
 
+// Convierte ID del fixture (fgA1) al ID real en Firestore (A1)
+function fsId(id) { return id.startsWith('fg') ? id.slice(2) : id; }
+
 window.guardarResultado = async (partidoId, esElim) => {
   const l = document.getElementById('rl-' + partidoId)?.value;
   const v = document.getElementById('rv-' + partidoId)?.value;
@@ -2736,7 +2743,7 @@ window.guardarResultado = async (partidoId, esElim) => {
     }
 
     // Escribir resultado en Firestore
-    await setDoc(doc(db, 'partidos', partidoId), updateData, { merge: true });
+    await setDoc(doc(db, 'partidos', fsId(partidoId)), updateData, { merge: true });
 
     // Recalcular puntajes de todas las apuestas de este partido
     const apSnap = await getDocs(query(collection(db, 'apuestas'), where('partidoId', '==', partidoId)));
@@ -3061,7 +3068,7 @@ window.resetearPartido = async (partidoId) => {
 
   try {
     // Borrar solo los campos de resultado — preservar local, visita, fecha, hora, estadio, grupo
-    await setDoc(doc(db, 'partidos', partidoId), {
+    await setDoc(doc(db, 'partidos', fsId(partidoId)), {
       resultado_local:  deleteField(),
       resultado_visita: deleteField(),
       actualizadoPor:   deleteField(),
