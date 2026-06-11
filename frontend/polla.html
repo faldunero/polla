@@ -1323,6 +1323,8 @@ const FG = FIXTURE_GRUPOS;
 
         // 2) Siempre recargar partidos frescos desde Firestore
         await cargarPartidos();
+        const chkA1 = globalPartidos.find(p => p.id === 'A1');
+        console.log('DEBUG A1 despues de cargar:', JSON.stringify(chkA1));
 
         // Mapa rápido de partido por id
         const partidoById = {};
