@@ -1321,8 +1321,8 @@ const FG = FIXTURE_GRUPOS;
           return;
         }
 
-        // 2) Asegurar que los partidos estén cargados
-        if (!globalPartidos.length) await cargarPartidos();
+        // 2) Siempre recargar partidos frescos desde Firestore
+        await cargarPartidos();
 
         // Mapa rápido de partido por id
         const partidoById = {};
