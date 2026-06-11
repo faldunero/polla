@@ -672,6 +672,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
       const snap = await getDocsFromServer(collection(db, 'partidos'));
       globalPartidos = snap.docs
         .map(d => ({ id: d.id, ...d.data() }))
+        .filter(p => !p.simulado)  // ignorar documentos del simulador
         .sort((a, b) => (Number(a.numero || 0) - Number(b.numero || 0)));
     }
 
