@@ -1352,12 +1352,17 @@ const FG = FIXTURE_GRUPOS;
           };
         });
 
+        console.log('DEBUG apuestas total:', apuestasSnap.size);
+        console.log('DEBUG partidoById keys sample:', Object.keys(partidoById).slice(0,5));
         apuestasSnap.forEach(d => {
           const a = d.data();
           const uid = a.uid;
           if (!acumulado[uid]) return;
 
           const partido = partidoById[a.partidoId];
+          if (!partido) console.log('DEBUG sin partido para:', a.partidoId);
+          else if (partido.resultado_local == null) console.log('DEBUG sin resultado para:', a.partidoId);
+          else console.log('DEBUG partido encontrado:', a.partidoId, partido.resultado_local);
           acumulado[uid].apostados++;
 
           if (!partido || partido.resultado_local == null) return; // partido sin resultado aún
