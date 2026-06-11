@@ -1362,6 +1362,7 @@ const FG = FIXTURE_GRUPOS;
           if (!acumulado[uid]) return;
 
           const partido = partidoById[a.partidoId];
+          if (a.partidoId === 'fgA1') console.log('DEBUG fgA1 partido:', JSON.stringify(partido));
           if (!partido) console.log('DEBUG sin partido para:', a.partidoId);
           else if (partido.resultado_local == null) console.log('DEBUG sin resultado para:', a.partidoId);
           else console.log('DEBUG partido encontrado:', a.partidoId, partido.resultado_local);
