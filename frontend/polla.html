@@ -445,7 +445,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
     import {
-      getFirestore, collection, getDocs, getDoc, setDoc, addDoc, updateDoc, doc, query,
+      getFirestore, collection, getDocs, getDocsFromServer, getDoc, setDoc, addDoc, updateDoc, doc, query,
       where, orderBy, serverTimestamp
     } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
@@ -669,7 +669,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
     }
 
     async function cargarPartidos() {
-      const snap = await getDocs(collection(db, 'partidos'));
+      const snap = await getDocsFromServer(collection(db, 'partidos'));
       globalPartidos = snap.docs
         .map(d => ({ id: d.id, ...d.data() }))
         .sort((a, b) => (Number(a.numero || 0) - Number(b.numero || 0)));
