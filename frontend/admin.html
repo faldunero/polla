@@ -34,10 +34,10 @@ nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  position: sticky;
-  top: 0;
+  flex-shrink: 0;
   z-index: 100;
 }
+#app { display: flex; flex-direction: column; height: 100vh; }
 .nav-brand { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: var(--gold); }
 .admin-badge {
   display: inline-flex;
@@ -54,12 +54,12 @@ nav {
   letter-spacing: 0.06em;
 }
 
-.admin-layout { display: flex; height: calc(100vh - 64px); overflow: hidden; }
-.sidebar { width: 200px; flex-shrink: 0; background: var(--card); border-right: 1px solid var(--border); padding: 16px 10px; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
-.sidebar .tab { width: 100%; text-align: left; border-radius: 8px; padding: 10px 14px; font-size: 0.84rem; display: flex; align-items: center; gap: 10px; border: 1px solid transparent; }
+.admin-layout { display: flex; flex: 1; overflow: hidden; }
+.sidebar { width: 200px; flex-shrink: 0; background: var(--card); border-right: 1px solid var(--border); padding: 20px 10px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 62px; height: calc(100vh - 62px); overflow-y: auto; }
+.sidebar .tab { width: 100%; text-align: left; border-radius: 8px; padding: 10px 14px; font-size: 0.84rem; display: flex; align-items: center; gap: 10px; }
 .sidebar .tab i { width: 16px; text-align: center; flex-shrink: 0; }
 .sidebar .tab.active { background: rgba(245,200,66,0.12); border-color: rgba(245,200,66,0.3); color: var(--gold); }
-.main { padding: 28px; flex: 1; min-width: 0; overflow-y: auto; }
+.main { padding: 28px; flex: 1; min-width: 0; max-width: 1000px; }
 
 .section { margin-bottom: 40px; }
 .section-title {
@@ -1580,7 +1580,7 @@ onAuthStateChanged(auth, async user => {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('site-nav').style.display = 'none';
     document.getElementById('acceso-denegado').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
+    document.getElementById('app').style.display = 'flex';
     document.getElementById('admin-email').textContent = user.email;
     await initAdmin();
   } else {
