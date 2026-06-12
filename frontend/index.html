@@ -495,7 +495,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
     </div>
     <div class="countdown-kick">
       <div class="cd-kick-label">Fecha y hora (Chile)</div>
-      <div class="cd-kick-info">Jueves 11 Jun · <span>16:00 hrs</span></div>
+      <div class="cd-kick-info">Jueves 11 Jun · <span>15:00 hrs</span></div>
     </div>
   </div>
 </div>
@@ -1984,7 +1984,7 @@ function renderGoleadores() {
 
 // ── MODAL ESTADÍSTICAS (Goleadores + Tarjetas) ───────────────────────────
 let _estadTab = 'goleadores';
-let _estadDatos = { goleadores: [], tarjetas: [] };
+let _estadDatos = { goleadores: null, tarjetas: null };
 
 window.abrirModalEstadisticas = async function(tab) {
   _estadTab = tab || 'goleadores';
@@ -1998,26 +1998,16 @@ window.abrirModalEstadisticas = async function(tab) {
     ]);
     _estadDatos.goleadores = snapG.exists() ? (snapG.data().lista || []) : [];
     _estadDatos.tarjetas   = snapT.exists() ? (snapT.data().lista || []) : [];
+    console.log('[TARJETAS]', snapT.exists(), snapT.exists() ? snapT.data() : 'no existe');
   } catch(e) {
     try { _estadDatos.goleadores = JSON.parse(localStorage.getItem('lapolla2026_goleadores') || '[]'); } catch(e2) {}
   }
   renderTabEstadisticasLocal(_estadTab);
 };
 
-window.switchTabEstad = async function(tab) {
+window.switchTabEstad = function(tab) {
   _estadTab = tab;
   document.querySelectorAll('.estad-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-  // Si aún no hay datos cargados, recargar desde Firestore
-  if (!_estadDatos.tarjetas && !_estadDatos.goleadores) {
-    try {
-      const [snapG, snapT] = await Promise.all([
-        getDoc(doc(db, 'config', 'goleadores')),
-        getDoc(doc(db, 'config', 'tarjetas'))
-      ]);
-      _estadDatos.goleadores = snapG.exists() ? (snapG.data().lista || []) : [];
-      _estadDatos.tarjetas   = snapT.exists() ? (snapT.data().lista || []) : [];
-    } catch(e) {}
-  }
   renderTabEstadisticasLocal(tab);
 };
 
