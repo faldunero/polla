@@ -443,7 +443,7 @@
   <script type="module">
     import { calcularPuntajePolla, FIXTURE_MAP, FIXTURE_GRUPOS, GRUPOS } from './fifa2026.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
     import {
       getFirestore, collection, getDocs, getDocsFromServer, getDoc, setDoc, addDoc, updateDoc, deleteDoc, doc, query,
       where, orderBy, serverTimestamp
@@ -742,6 +742,9 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
     };
 
     let appIniciada = false;
+    // Persistir sesión en localStorage para evitar logout automático
+    await setPersistence(auth, browserLocalPersistence).catch(() => {});
+
     onAuthStateChanged(auth, async user => {
       if (user) {
         currentUser = user;

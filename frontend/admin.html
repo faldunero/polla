@@ -1507,7 +1507,7 @@ nav {
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 import {
@@ -1552,6 +1552,9 @@ window.loginGoogle = async () => {
   catch (e) { toast(e.message, 'error'); }
 };
 window.logout = async () => { await signOut(auth); };
+
+// Persistir sesión en localStorage
+await setPersistence(auth, browserLocalPersistence).catch(() => {});
 
 onAuthStateChanged(auth, async user => {
   // Ocultar pantalla de carga inicial siempre
