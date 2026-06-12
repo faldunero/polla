@@ -6758,6 +6758,7 @@ window.verApuestasJugador = async function(uid, nombre, grupo) {
 
     let totalPts=0, exactos=0, parciales=0, jugados=0;
     let gruposHtml = '';
+    const gruposHtmlMap = {};
 
     Object.keys(FG).forEach(g => {
       const filas = FG[g].map(base => {
@@ -6793,7 +6794,7 @@ window.verApuestasJugador = async function(uid, nombre, grupo) {
         </tr>`;
       }).join('');
 
-      gruposHtml += `<div style="margin-bottom:14px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+      const grupoBlock = `<div style="margin-bottom:14px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
         <div style="background:var(--ink);padding:7px 14px;font-family:'Bebas Neue',sans-serif;color:var(--gold);letter-spacing:0.08em;font-size:0.9rem;">GRUPO ${g}</div>
         <table style="width:100%;border-collapse:collapse;">
           <thead><tr style="background:var(--card2);">
@@ -6807,6 +6808,8 @@ window.verApuestasJugador = async function(uid, nombre, grupo) {
           <tbody>${filas}</tbody>
         </table>
       </div>`;
+      gruposHtmlMap[g] = grupoBlock;
+      gruposHtml += grupoBlock;
     });
 
     document.getElementById('maj-resumen').innerHTML =
@@ -6827,11 +6830,44 @@ window.verApuestasJugador = async function(uid, nombre, grupo) {
         <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;">Jugados</div>
       </div>`;
 
-    document.getElementById('maj-body').innerHTML = gruposHtml;
+    // Render con tabs por grupo
+    const grupoKeys = Object.keys(FG);
+    const tabsHtml = '<div id="maj-grupo-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">'
+      + grupoKeys.map((g, i) => `<button onclick="majShowGrupo('${g}')" id="maj-gtab-${g}"
+          style="padding:5px 12px;border-radius:6px;font-family:'Bebas Neue',sans-serif;font-size:0.85rem;letter-spacing:0.08em;cursor:pointer;border:1px solid var(--border);background:${i===0?'var(--gold)':'var(--card2)'};color:${i===0?'var(--ink)':'var(--muted)'};transition:all 0.15s;">
+          ${g}</button>`).join('')
+      + '</div>';
+
+    // Guardar HTMLs por grupo en un objeto global
+    window._majGruposHtml = {};
+    grupoKeys.forEach(g => {
+      window._majGruposHtml[g] = gruposHtmlMap[g];
+    });
+
+    document.getElementById('maj-body').innerHTML = tabsHtml + '<div id="maj-grupo-content"></div>';
+    majShowGrupo(grupoKeys[0]);
 
   } catch(e) {
     document.getElementById('maj-body').innerHTML = '<div style="color:var(--red);padding:20px;">Error: ' + e.message + '</div>';
   }
+};
+
+window.majShowGrupo = function(g) {
+  // Actualizar tabs
+  Object.keys(FG).forEach(k => {
+    const btn = document.getElementById('maj-gtab-' + k);
+    if (!btn) return;
+    if (k === g) {
+      btn.style.background = 'var(--gold)';
+      btn.style.color = 'var(--ink)';
+      btn.style.borderColor = 'var(--gold)';
+    } else {
+      btn.style.background = 'var(--card2)';
+      btn.style.color = 'var(--muted)';
+      btn.style.borderColor = 'var(--border)';
+    }
+  });
+  document.getElementById('maj-grupo-content').innerHTML = window._majGruposHtml[g] || '';
 };
 
 </script>
