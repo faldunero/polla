@@ -1979,33 +1979,40 @@ function renderGoleadores() {
 }
 
 // ── MODAL ESTADÍSTICAS (Goleadores + Tarjetas) ───────────────────────────
-let _estadTab = 'goleadores'; // pestaña activa
+let _estadTab = 'goleadores';
+let _estadDatos = { goleadores: null, tarjetas: null };
 
 window.abrirModalEstadisticas = async function(tab) {
   _estadTab = tab || 'goleadores';
   const modal = document.getElementById('modal-estadisticas');
   modal.style.display = 'flex';
-  await window.renderTabEstadisticas(_estadTab);
+  // Cargar ambas listas al abrir
+  try {
+    const [snapG, snapT] = await Promise.all([
+      getDoc(doc(db, 'config', 'goleadores')),
+      getDoc(doc(db, 'config', 'tarjetas'))
+    ]);
+    _estadDatos.goleadores = snapG.exists() ? (snapG.data().lista || []) : [];
+    _estadDatos.tarjetas   = snapT.exists() ? (snapT.data().lista || []) : [];
+  } catch(e) {
+    try { _estadDatos.goleadores = JSON.parse(localStorage.getItem('lapolla2026_goleadores') || '[]'); } catch(e2) {}
+  }
+  renderTabEstadisticasLocal(_estadTab);
 };
 
-window.switchTabEstad = async function(tab) {
+window.switchTabEstad = function(tab) {
   _estadTab = tab;
   document.querySelectorAll('.estad-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-  await window.renderTabEstadisticas(tab);
+  renderTabEstadisticasLocal(tab);
 };
 
-window.renderTabEstadisticas = async function renderTabEstadisticas(tab) {
+// Función local (no window) — tiene acceso al scope del módulo
+function renderTabEstadisticasLocal(tab) {
   const body = document.getElementById('modal-estadisticas-body');
-  body.innerHTML = `<div style="text-align:center;padding:40px;color:#6b7280;"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;margin-bottom:10px;display:block;"></i>Cargando...</div>`;
+  if (!body) return;
 
   if (tab === 'goleadores') {
-    let lista = [];
-    try {
-      const snap = await getDoc(doc(db, 'config', 'goleadores'));
-      lista = snap.exists() ? (snap.data().lista || []) : [];
-    } catch(e) {
-      try { lista = JSON.parse(localStorage.getItem('lapolla2026_goleadores') || '[]'); } catch(e2) {}
-    }
+    const lista = _estadDatos.goleadores || [];
     if (!lista.length) {
       body.innerHTML = `<div style="text-align:center;padding:40px;color:#6b7280;">
         <i class="fas fa-futbol" style="font-size:2rem;opacity:.3;display:block;margin-bottom:12px;"></i>
@@ -2041,11 +2048,7 @@ window.renderTabEstadisticas = async function renderTabEstadisticas(tab) {
     body.innerHTML = html;
 
   } else if (tab === 'tarjetas') {
-    let lista = [];
-    try {
-      const snap = await getDoc(doc(db, 'config', 'tarjetas'));
-      lista = snap.exists() ? (snap.data().lista || []) : [];
-    } catch(e) {}
+    const lista = _estadDatos.tarjetas || [];
     if (!lista.length) {
       body.innerHTML = `<div style="text-align:center;padding:40px;color:#6b7280;">
         <i class="fas fa-square" style="font-size:2rem;opacity:.3;display:block;margin-bottom:12px;color:#f59e0b;"></i>
