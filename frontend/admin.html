@@ -2920,7 +2920,7 @@ async function renderRankingGlobal() {
       if (a.puntaje != null && a.puntaje !== ptsReal) j.discrepancias++;
     });
 
-    const ranking = Object.values(jugadores).sort((a,b) => b.total-a.total || b.aciertos-a.aciertos);
+    const ranking = Object.values(jugadores).sort((a,b) => b.total-a.total || b.aciertos-a.aciertos || b.parciales-a.parciales || (a.nombre||'').localeCompare(b.nombre||''));
 
     if (!ranking.length) {
       container.innerHTML = '<p style="color:var(--muted);">No hay participantes aprobados con grupo activo.</p>';
@@ -3022,7 +3022,7 @@ function buildTablaGrupo(jugadores, grupoNombre, grupoId, mostrarGrupo, searchAc
     const pos = i + 1;
     const posClass = pos===1?'pos-1':pos===2?'pos-2':pos===3?'pos-3':'pos-n';
     const pct = maxPts ? Math.round((r.total/maxPts)*100) : 0;
-    const medalla = pos===1?'🥇':pos===2?'🥈':pos===3?'🥉':'';
+    const medalla = '';
     html += `<tr style="${searchActive ? 'background:rgba(245,200,66,0.04);' : ''}">
       <td><span class="pos-badge ${posClass}">${pos}</span></td>
       <td style="font-weight:600;">${medalla?medalla+' ':''}${r.nombre}</td>
@@ -5709,7 +5709,7 @@ function simRenderGrupos(){
         <span class="badge badge-muted">7 jugadores</span>
       </div>
       ${sorted.map((u,i)=>{
-        const med=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+        const med='';
         return `<div class="sim-usr-row">
           <div class="sim-avatar" style="background:${u.color}22;color:${u.color}">${u.iniciales}</div>
           <div style="flex:1;min-width:0;">
@@ -5824,7 +5824,7 @@ function simRenderRanking(){
       const posColors=['rgba(245,200,66,.2)','rgba(148,163,184,.2)','rgba(205,127,50,.2)','rgba(255,255,255,.05)'];
       const posTextColors=[g.color,'#94a3b8','#cd7f32','var(--muted)'];
       const pct=Math.round((u.puntaje/maxPts)*100);
-      const med=pos===1?'🥇':pos===2?'🥈':pos===3?'🥉':'';
+      const med='';
       html+=`<tr>
         <td><span style="width:26px;height:26px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;background:${posColors[Math.min(pos-1,3)]};color:${posTextColors[Math.min(pos-1,3)]};">${pos}</span></td>
         <td><div style="display:flex;align-items:center;gap:8px;">
@@ -5964,7 +5964,7 @@ function simRenderClasificados(){
           ${g.nombre}
         </div>`;
       sorted.forEach((u,i)=>{
-        const med=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+        const med='';
         html+=`<div class="sim-clas-slot ${i<3?'top':''}">
           <span style="font-size:.68rem;color:var(--muted);min-width:16px;">${i+1}</span>
           <div style="display:flex;align-items:center;gap:7px;flex:1;">
@@ -6329,7 +6329,7 @@ async function goleadorRenderAdmin() {
     </tr></thead><tbody>`;
 
   sorted.forEach((g, i) => {
-    const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+    const medal = '';
     html += `<tr style="border-bottom:1px solid var(--border);">
       <td style="padding:10px 16px;font-weight:700;color:var(--muted);">${medal||i+1}</td>
       <td style="padding:10px 8px;font-weight:600;">${g.nombre}</td>

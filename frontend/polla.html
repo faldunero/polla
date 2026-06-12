@@ -1445,7 +1445,7 @@ const FG = FIXTURE_GRUPOS;
         let posBanner = '';
         if (miPosicion) {
           const posClass = miPosicion.posicion === 1 ? 'pos-1' : miPosicion.posicion === 2 ? 'pos-2' : miPosicion.posicion === 3 ? 'pos-3' : 'pos-n';
-          const emoji = miPosicion.posicion === 1 ? '🥇' : miPosicion.posicion === 2 ? '🥈' : miPosicion.posicion === 3 ? '🥉' : '📍';
+          const emoji = '📍';
           posBanner = `
             <div style="background:rgba(245,200,66,.07);border:1px solid rgba(245,200,66,.25);border-radius:12px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
               <span style="font-size:2rem;">${emoji}</span>
@@ -1483,7 +1483,7 @@ const FG = FIXTURE_GRUPOS;
           const esTu = r.uid === currentUser.uid;
           const posClass = r.posicion === 1 ? 'pos-1' : r.posicion === 2 ? 'pos-2' : r.posicion === 3 ? 'pos-3' : 'pos-n';
           const pct = Math.round((r.total / maxPts) * 100);
-          const medalla = r.posicion === 1 ? '🥇 ' : r.posicion === 2 ? '🥈 ' : r.posicion === 3 ? '🥉 ' : '';
+          const medalla = '';
 
           html += `
             <tr ${esTu ? 'style="background:rgba(245,200,66,.05)"' : ''}>
