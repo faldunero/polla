@@ -703,7 +703,13 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
       const snap = await getDocs(q);
       snap.forEach(d => {
         const data = { id: d.id, ...d.data() };
-        if (data.partidoId) misApuestas[data.partidoId] = data;
+        if (data.partidoId) {
+          misApuestas[data.partidoId] = data;
+          // Mapear también en ambas direcciones para compatibilidad
+          const pid = data.partidoId;
+          if (pid.startsWith('fg')) misApuestas[pid.slice(2)] = data;
+          else misApuestas['fg' + pid] = data;
+        }
       });
     }
 
