@@ -6624,7 +6624,7 @@ function vjCargar(uid) {
 
       let pts = null;
       if (tieneReal && tieneApuesta) {
-        pts = calcularPuntajePolla(
+        pts = calcularPuntaje(
           { local: Number(p.resultado_local), visita: Number(p.resultado_visita) },
           { local: Number(apuesta.golesLocal), visita: Number(apuesta.golesVisita) }
         );
