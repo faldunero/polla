@@ -782,11 +782,7 @@ function renderGrupos(){
   // Esto resuelve el caso donde Firestore tiene docs incompletos (sin local/visita/fecha)
   const porGrupo = {};
   const firestoreById = {};
-  globalData.partidos.forEach(m => {
-    firestoreById[m.id] = m;
-    firestoreById['fg' + m.id] = m;
-    if (m.id.startsWith('fg')) firestoreById[m.id.slice(2)] = m;
-  });
+  globalData.partidos.forEach(m => { firestoreById[m.id] = m; });
 
   Object.keys(FG).forEach(g => {
     FG[g].forEach(base => {
@@ -1372,7 +1368,7 @@ window._showTabla = async function(g){
       if(idx!==-1) globalData.partidos[idx]={...globalData.partidos[idx],...fresh};
       else globalData.partidos.push(fresh);
     });
-  } catch(e){}
+  } catch(e){ console.error('_showTabla error:', e); }
 
   const firestoreById={};
   globalData.partidos.forEach(m=>{
@@ -1381,6 +1377,9 @@ window._showTabla = async function(g){
     if(m.id.startsWith('fg')) firestoreById[m.id.slice(2)]=m;
   });
 
+  console.log('[DEBUG _showTabla] g:', g);
+  console.log('[DEBUG _showTabla] fgA1:', firestoreById['fgA1']);
+  console.log('[DEBUG _showTabla] A1:', firestoreById['A1']);
   document.getElementById('tabla-modal-body').innerHTML=_renderTabla(g, firestoreById);
 };
 
