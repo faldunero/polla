@@ -54,14 +54,12 @@ nav {
   letter-spacing: 0.06em;
 }
 
-.admin-layout { display: flex; min-height: calc(100vh - 62px); align-items: flex-start; }
+.admin-layout { display: flex; min-height: calc(100vh - 62px); }
 .sidebar { width: 200px; flex-shrink: 0; background: var(--card); border-right: 1px solid var(--border); padding: 20px 10px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 62px; height: calc(100vh - 62px); overflow-y: auto; }
-.sidebar .tab { width: 100%; text-align: left; border-radius: 8px; padding: 10px 14px; font-size: 0.84rem; display: flex; align-items: center; gap: 10px; border: 1px solid transparent; }
+.sidebar .tab { width: 100%; text-align: left; border-radius: 8px; padding: 10px 14px; font-size: 0.84rem; display: flex; align-items: center; gap: 10px; }
 .sidebar .tab i { width: 16px; text-align: center; flex-shrink: 0; }
 .sidebar .tab.active { background: rgba(245,200,66,0.12); border-color: rgba(245,200,66,0.3); color: var(--gold); }
-.main { padding: 28px; flex: 1; min-width: 0; overflow-y: auto; }
-.page { display: none; }
-.page.active { display: block; }
+.main { padding: 28px; flex: 1; min-width: 0; max-width: 1000px; }
 
 .section { margin-bottom: 40px; }
 .section-title {
@@ -6577,8 +6575,17 @@ window.vjFiltrar = function() {
   const q = document.getElementById('vj-search').value.toLowerCase().trim();
   const sel = document.getElementById('vj-select');
   if (!q) { sel.value = ''; return; }
-  const match = _vjParticipantes.find(p => (p.nombre||'').toLowerCase().includes(q));
-  if (match) { sel.value = match.uid; vjCargar(match.uid); }
+  const matches = _vjParticipantes.filter(p => (p.nombre||'').toLowerCase().includes(q));
+  if (matches.length === 1) {
+    sel.value = matches[0].uid;
+    vjCargar(matches[0].uid);
+  } else if (matches.length > 1) {
+    // Filtrar opciones del select
+    Array.from(sel.options).forEach(opt => {
+      opt.style.display = opt.value === '' || matches.find(m => m.uid === opt.value) ? '' : 'none';
+    });
+    sel.value = '';
+  }
 };
 
 window.vjDesdeSelect = function() {
