@@ -2000,6 +2000,7 @@ window.abrirModalEstadisticas = async function(tab) {
     _estadDatos.tarjetas   = snapT.exists() ? (snapT.data().lista || []) : [];
     console.log('[TARJETAS]', snapT.exists(), snapT.exists() ? snapT.data() : 'no existe');
   } catch(e) {
+    console.error('[TARJETAS ERROR]', e);
     try { _estadDatos.goleadores = JSON.parse(localStorage.getItem('lapolla2026_goleadores') || '[]'); } catch(e2) {}
   }
   renderTabEstadisticasLocal(_estadTab);
