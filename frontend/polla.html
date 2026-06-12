@@ -663,9 +663,9 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
 
     function calcularPuntaje(real, apuesta) {
       return calcularPuntajePolla(
-        { local: real.local,  visita: real.visita },
+        { local: real.local,            visita: real.visita },
         { local: apuesta.golesLocal,    visita: apuesta.golesVisita }
-      );
+      ) ?? null;
     }
 
     async function cargarPartidos() {
@@ -1050,16 +1050,11 @@ const FG = FIXTURE_GRUPOS;
         const tieneApuesta = !!apuesta;
 
         const tieneReal = p.resultado_local != null && p.resultado_visita != null;
-        if (tieneReal) console.log('[POLLA DEBUG]', p.id, {
-          resultado_local: p.resultado_local, resultado_visita: p.resultado_visita,
-          tieneApuesta, golesLocal: apuesta?.golesLocal, golesVisita: apuesta?.golesVisita,
-          apuestaKeys: apuesta ? Object.keys(apuesta) : null
-        });
-        // Siempre recalcular desde resultado real
+        // Siempre recalcular desde resultado real — no confiar en puntaje guardado en Firestore
         const puntaje = tieneReal && tieneApuesta
-          ? calcularPuntaje(
-              { local: p.resultado_local, visita: p.resultado_visita },
-              { local: apuesta.golesLocal, visita: apuesta.golesVisita }
+          ? calcularPuntajePolla(
+              { local: Number(p.resultado_local), visita: Number(p.resultado_visita) },
+              { local: Number(apuesta.golesLocal), visita: Number(apuesta.golesVisita) }
             )
           : null;
 
