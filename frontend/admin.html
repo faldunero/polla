@@ -695,6 +695,7 @@ nav {
       <button class="tab" onclick="showTab('simulador')"><i class="fas fa-flask"></i> Simulador</button>
       <button class="tab" onclick="showTab('plazos')"><i class="fas fa-clock"></i> Plazos</button>
       <button class="tab" onclick="showTab('goleadores')"><i class="fas fa-futbol"></i> Goleadores</button>
+      <button class="tab" onclick="showTab('vistaweb')"><i class="fas fa-eye"></i> Vista Jugador</button>
     </div>
 
     <!-- TAB DASHBOARD -->
@@ -2920,12 +2921,7 @@ async function renderRankingGlobal() {
       if (a.puntaje != null && a.puntaje !== ptsReal) j.discrepancias++;
     });
 
-    const ranking = Object.values(jugadores)
-      .sort((a,b) => b.total-a.total || (a.nombre||'').localeCompare(b.nombre||''))
-      .map((r, i, arr) => {
-        const pos = new Set(arr.filter(x => x.total > r.total).map(x => x.total)).size + 1;
-        return { ...r, pos };
-      });
+    const ranking = Object.values(jugadores).sort((a,b) => b.total-a.total || b.aciertos-a.aciertos || b.parciales-a.parciales || (a.nombre||'').localeCompare(b.nombre||''));
 
     if (!ranking.length) {
       container.innerHTML = '<p style="color:var(--muted);">No hay participantes aprobados con grupo activo.</p>';
@@ -6525,6 +6521,182 @@ window.tarjetaLimpiarTodo = async function() {
   toast('Lista limpiada', 'success');
 };
 
+
+// ── VISTA JUGADOR ────────────────────────────────────────────────────────
+let _vjParticipantes = [];
+let _vjPartidos = {};
+let _vjApuestas = [];
+
+async function initVistaJugador() {
+  if (_vjParticipantes.length) return; // ya cargado
+  try {
+    const [partSnap, apSnap, partidosSnap] = await Promise.all([
+      getDocs(query(collection(db, 'participantes'), where('estado','==','aprobado'))),
+      getDocs(collection(db, 'apuestas')),
+      getDocs(collection(db, 'partidos')),
+    ]);
+
+    partSnap.docs.forEach(d => {
+      const p = d.data();
+      _vjParticipantes.push({ uid: p.uid, nombre: p.nombre || p.email, email: p.email, grupoNombre: p.grupoNombre || '' });
+    });
+    _vjParticipantes.sort((a,b) => (a.nombre||'').localeCompare(b.nombre||''));
+
+    partidosSnap.docs.forEach(d => {
+      if (d.data().simulado) return;
+      _vjPartidos[d.id] = { id: d.id, ...d.data() };
+      _vjPartidos['fg' + d.id] = { id: d.id, ...d.data() };
+      if (d.id.startsWith('fg')) _vjPartidos[d.id.slice(2)] = { id: d.id, ...d.data() };
+    });
+
+    apSnap.docs.forEach(d => _vjApuestas.push(d.data()));
+
+    // Poblar select
+    const sel = document.getElementById('vj-select');
+    _vjParticipantes.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.uid;
+      opt.textContent = `${p.nombre} (${p.grupoNombre || p.email})`;
+      sel.appendChild(opt);
+    });
+  } catch(e) {
+    console.error('initVistaJugador:', e);
+  }
+}
+
+window.vjFiltrar = function() {
+  const q = document.getElementById('vj-search').value.toLowerCase().trim();
+  const sel = document.getElementById('vj-select');
+  if (!q) { sel.value = ''; return; }
+  const match = _vjParticipantes.find(p => (p.nombre||'').toLowerCase().includes(q));
+  if (match) { sel.value = match.uid; vjCargar(match.uid); }
+};
+
+window.vjDesdeSelect = function() {
+  const uid = document.getElementById('vj-select').value;
+  if (uid) vjCargar(uid);
+};
+
+function vjCargar(uid) {
+  const participante = _vjParticipantes.find(p => p.uid === uid);
+  if (!participante) return;
+
+  const container = document.getElementById('vj-container');
+
+  // Apuestas del usuario deduplicadas
+  const normId = id => id?.startsWith('fg') ? id.slice(2) : id;
+  const apuestasMap = new Map();
+  _vjApuestas.filter(a => a.uid === uid).forEach(a => {
+    const key = normId(a.partidoId);
+    const existing = apuestasMap.get(key);
+    if (!existing) { apuestasMap.set(key, a); }
+    else {
+      const tNew = a.actualizadoEn?.seconds || a.creadoEn?.seconds || 0;
+      const tOld = existing.actualizadoEn?.seconds || existing.creadoEn?.seconds || 0;
+      if (tNew > tOld) apuestasMap.set(key, a);
+    }
+  });
+
+  // Construir vista por grupo
+  let html = `
+    <div style="background:var(--card);border-radius:10px;padding:16px 20px;margin-bottom:20px;border:1px solid var(--border);">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--gold);">${participante.nombre}</div>
+      <div style="font-size:0.8rem;color:var(--muted);">${participante.email} · ${participante.grupoNombre}</div>
+    </div>`;
+
+  let totalPts = 0, totalExactos = 0, totalParciales = 0, jugados = 0;
+
+  Object.keys(FG).forEach(grupoKey => {
+    const partidos = FG[grupoKey];
+    const filas = partidos.map(base => {
+      const fs = _vjPartidos[base.id] || _vjPartidos['fg'+base.id] || {};
+      const p = { ...base, ...fs };
+      const apuesta = apuestasMap.get(normId(base.id));
+      const tieneReal = p.resultado_local != null && p.resultado_visita != null;
+      const tieneApuesta = !!apuesta;
+
+      let pts = null;
+      if (tieneReal && tieneApuesta) {
+        pts = calcularPuntajePolla(
+          { local: Number(p.resultado_local), visita: Number(p.resultado_visita) },
+          { local: Number(apuesta.golesLocal), visita: Number(apuesta.golesVisita) }
+        );
+        if (pts != null) {
+          totalPts += pts;
+          jugados++;
+          if (pts === 4 || pts === 2) totalExactos++;
+          if (pts === 3 || pts === 1) totalParciales++;
+        }
+      }
+
+      const ptsColor = pts === null ? 'var(--muted)' : pts >= 3 ? '#16a34a' : pts >= 1 ? '#ca8a04' : '#dc2626';
+      const ptsLabel = pts === null ? (tieneReal ? '–' : '') : `${pts}pts`;
+
+      const apLocal  = tieneApuesta ? apuesta.golesLocal  : '–';
+      const apVisita = tieneApuesta ? apuesta.golesVisita : '–';
+      const resLocal  = tieneReal ? p.resultado_local  : '–';
+      const resVisita = tieneReal ? p.resultado_visita : '–';
+
+      const flagL = p.localFlag  || '';
+      const flagV = p.visitaFlag || '';
+
+      return `<tr style="border-bottom:1px solid var(--border);">
+        <td style="padding:10px 8px;font-size:0.82rem;color:var(--muted);">${p.fecha ? p.fecha.slice(5).replace('-','/') : ''}</td>
+        <td style="padding:10px 8px;text-align:right;font-weight:600;">${flagL} ${p.local || '?'}</td>
+        <td style="padding:10px 8px;text-align:center;">
+          <span style="background:var(--ink);color:#fff;padding:2px 8px;border-radius:4px;font-family:'Bebas Neue',sans-serif;font-size:0.9rem;">${resLocal} – ${resVisita}</span>
+        </td>
+        <td style="padding:10px 8px;font-weight:600;">${p.visita || '?'} ${flagV}</td>
+        <td style="padding:10px 8px;text-align:center;font-family:'Bebas Neue',sans-serif;color:var(--gold);">${apLocal} – ${apVisita}</td>
+        <td style="padding:10px 8px;text-align:center;font-weight:700;color:${ptsColor};">${ptsLabel}</td>
+      </tr>`;
+    }).join('');
+
+    html += `
+    <div style="background:var(--card);border-radius:10px;margin-bottom:16px;overflow:hidden;border:1px solid var(--border);">
+      <div style="background:var(--ink);padding:10px 16px;font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--gold);letter-spacing:0.08em;">
+        GRUPO ${grupoKey}
+      </div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="background:var(--card2);">
+            <th style="padding:8px;font-size:0.72rem;color:var(--muted);text-align:left;">Fecha</th>
+            <th style="padding:8px;font-size:0.72rem;color:var(--muted);text-align:right;">Local</th>
+            <th style="padding:8px;font-size:0.72rem;color:var(--muted);text-align:center;">Resultado</th>
+            <th style="padding:8px;font-size:0.72rem;color:var(--muted);text-align:left;">Visita</th>
+            <th style="padding:8px;font-size:0.72rem;color:var(--gold);text-align:center;">Apuesta</th>
+            <th style="padding:8px;font-size:0.72rem;color:var(--muted);text-align:center;">Pts</th>
+          </tr>
+        </thead>
+        <tbody>${filas}</tbody>
+      </table>
+    </div>`;
+  });
+
+  // Resumen
+  html = `
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+      <div style="background:var(--card);border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border);">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--gold);">${totalPts}</div>
+        <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;">Puntos</div>
+      </div>
+      <div style="background:var(--card);border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border);">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#16a34a;">${totalExactos}</div>
+        <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;">Exactos</div>
+      </div>
+      <div style="background:var(--card);border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border);">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#ca8a04;">${totalParciales}</div>
+        <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;">Parciales</div>
+      </div>
+      <div style="background:var(--card);border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border);">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--text);">${jugados}</div>
+        <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;">Jugados</div>
+      </div>
+    </div>` + html;
+
+  container.innerHTML = html;
+}
+
 </script>
 
 <!-- MODAL GESTIÓN APUESTAS USUARIO -->
@@ -6569,6 +6741,34 @@ window.tarjetaLimpiarTodo = async function() {
       <button class="mrg-confirm" id="mrg-confirm-btn" onclick="ejecutarResetGrupo()">
         <i class="fas fa-rotate-left"></i> Sí, resetear
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- TAB VISTA JUGADOR -->
+<div class="page" id="page-vistaweb" style="display:none;">
+  <div style="max-width:900px;margin:0 auto;padding:24px 16px;">
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--gold);letter-spacing:0.06em;margin-bottom:20px;">
+      <i class="fas fa-eye"></i> Vista Jugador
+    </h2>
+
+    <!-- Buscador -->
+    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+      <input id="vj-search" type="text" placeholder="Buscar por nombre..." 
+        oninput="vjFiltrar()"
+        style="flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.9rem;background:var(--card);color:var(--text);">
+      <select id="vj-select" onchange="vjDesdeSelect()"
+        style="flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.9rem;background:var(--card);color:var(--text);">
+        <option value="">— Seleccionar jugador —</option>
+      </select>
+    </div>
+
+    <!-- Resultado -->
+    <div id="vj-container">
+      <div style="text-align:center;padding:60px 20px;color:var(--muted);">
+        <i class="fas fa-user-magnifying-glass" style="font-size:2.5rem;margin-bottom:12px;display:block;opacity:0.4;"></i>
+        Busca un jugador para ver sus apuestas
+      </div>
     </div>
   </div>
 </div>
