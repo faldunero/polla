@@ -1437,7 +1437,7 @@ const FG = FIXTURE_GRUPOS;
         const ranking = Object.values(acumulado)
           .sort((a,b) => b.total - a.total || a.nombre.localeCompare(b.nombre))
           .map((r, i, arr) => {
-            const pos = arr.findIndex(x => x.total === r.total) + 1;
+            const pos = new Set(arr.filter(x => x.total > r.total).map(x => x.total)).size + 1;
             return { ...r, posicion: pos };
           });
 
