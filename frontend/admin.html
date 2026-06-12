@@ -2881,11 +2881,12 @@ async function renderRankingGlobal() {
       };
     });
 
-    // Deduplicar: por uid+partidoId tomar solo la más reciente
+    // Deduplicar: por uid+partidoId (normalizando fgA1 == A1)
+    const normId = id => id?.startsWith('fg') ? id.slice(2) : id;
     const apuestasUnicas = new Map();
     apSnap.docs.forEach(d => {
       const a = d.data();
-      const key = `${a.uid}__${a.partidoId}`;
+      const key = `${a.uid}__${normId(a.partidoId)}`;
       const existing = apuestasUnicas.get(key);
       if (!existing) {
         apuestasUnicas.set(key, a);
