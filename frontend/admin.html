@@ -54,10 +54,7 @@ nav {
   letter-spacing: 0.06em;
 }
 
-.tabs { display: flex; gap: 4px; margin-bottom: 24px; flex-wrap: wrap; }
-.tab { padding: 9px 18px; border-radius: 999px; font-weight: 600; font-size: 0.85rem; cursor: pointer; color: var(--muted); border: 1px solid transparent; background: transparent; transition: all 0.2s; }
-.tab.active { background: var(--card); border-color: var(--border); color: var(--gold); }
-.main { padding: 28px; max-width: 1100px; margin: 0 auto; }
+.main { padding: 28px; max-width: 1000px; margin: 0 auto; }
 
 .section { margin-bottom: 40px; }
 .section-title {
@@ -1178,16 +1175,8 @@ nav {
       </div>
     </div>
 
-    <!-- TAB GOLEADORES + TARJETAS -->
+    <!-- TAB GOLEADORES -->
     <div id="tab-goleadores" class="page">
-      <!-- Sub-tabs -->
-      <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;">
-        <button id="subtab-btn-goleadores" onclick="switchSubtabGol('goleadores')" style="padding:10px 20px;background:none;border:none;border-bottom:2px solid var(--gold);color:var(--gold);font-weight:700;font-size:.85rem;cursor:pointer;letter-spacing:.03em;"><i class="fas fa-futbol"></i> Goleadores</button>
-        <button id="subtab-btn-tarjetas" onclick="switchSubtabGol('tarjetas')" style="padding:10px 20px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-weight:600;font-size:.85rem;cursor:pointer;letter-spacing:.03em;"><i class="fas fa-square" style="color:#f59e0b;"></i> Tarjetas</button>
-      </div>
-
-      <!-- SUB-TAB GOLEADORES -->
-      <div id="subtab-goleadores">
       <div class="section-title"><i class="fas fa-futbol"></i> Tabla de Goleadores
         <span style="font-size:0.78rem;font-weight:400;color:var(--muted);font-family:'Barlow',sans-serif;margin-left:10px;">Se publica automáticamente en el sitio público vía localStorage.</span>
       </div>
@@ -1209,27 +1198,8 @@ nav {
         </div>
         <div id="goleadores-tabla"></div>
       </div>
-      </div><!-- /subtab-goleadores -->
-
-      <!-- SUB-TAB TARJETAS -->
-      <div id="subtab-tarjetas" style="display:none;">
-        <div class="section-title"><i class="fas fa-square" style="color:#f59e0b;"></i> Tabla de Tarjetas
-          <button class="btn btn-outline btn-sm" onclick="tarjetaLimpiarTodo()" style="color:var(--red);border-color:rgba(239,68,68,0.3);margin-left:auto;"><i class="fas fa-trash"></i> Limpiar todo</button>
-        </div>
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:18px;">
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;margin-bottom:14px;color:var(--gold);"><i class="fas fa-plus-circle"></i> Agregar / Editar</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 90px 90px auto;gap:10px;align-items:end;">
-            <div><label class="form-label">Jugador</label><input type="text" id="tar-nombre" class="form-input" placeholder="Nombre completo"></div>
-            <div><label class="form-label">País</label><input type="text" id="tar-pais" class="form-input" placeholder="País"></div>
-            <div><label class="form-label">🟨 Amarillas</label><input type="number" id="tar-amarillas" class="form-input" min="0" value="0"></div>
-            <div><label class="form-label">🟥 Rojas</label><input type="number" id="tar-rojas" class="form-input" min="0" value="0"></div>
-            <div><button class="btn btn-gold" onclick="tarjetaAgregar()"><i class="fas fa-plus"></i> Agregar</button></div>
-          </div>
-        </div>
-        <div id="tarjetas-tabla"></div>
-      </div><!-- /subtab-tarjetas -->
-
     </div>
+
   </div>
 </div>
 
@@ -1511,7 +1481,7 @@ nav {
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence }
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 import {
@@ -1556,9 +1526,6 @@ window.loginGoogle = async () => {
   catch (e) { toast(e.message, 'error'); }
 };
 window.logout = async () => { await signOut(auth); };
-
-// Persistir sesión en localStorage
-await setPersistence(auth, browserLocalPersistence).catch(() => {});
 
 onAuthStateChanged(auth, async user => {
   // Ocultar pantalla de carga inicial siempre
@@ -1606,7 +1573,7 @@ window.showTab = async (tab) => {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const tabBtn = document.querySelector(`.tab[onclick*="'${tab}'"]`) || document.querySelector(`.tab[onclick*='"${tab}"']`);
   if(tabBtn) tabBtn.classList.add('active');
-  const tabPage = document.getElementById('tab-' + tab) || document.getElementById('page-' + tab);
+  const tabPage = document.getElementById('tab-' + tab);
   if(tabPage) tabPage.classList.add('active');
   if (tab === 'dashboard')    await loadDashboard();
   if (tab === 'grupos')       await renderGruposAdmin();
@@ -2204,11 +2171,9 @@ async function renderResultados() {
     const snap = await getDocs(collection(db, 'partidos'));
     resCache = {};
     snap.docs.forEach(d => {
-      if (d.data().simulado) return; // ignorar partidos del simulador
-      const data = { id: d.id, ...d.data() };
-      resCache[d.id] = data;           // A1
-      resCache['fg' + d.id] = data;    // fgA1
-      if (d.id.startsWith('fg')) resCache[d.id.slice(2)] = data; // sin prefijo
+      resCache[d.id] = { id: d.id, ...d.data() };
+      // Mapear también con prefijo fg para compatibilidad con fixture
+      resCache['fg' + d.id] = resCache[d.id];
     });
   } catch(e) {
     toast('Error cargando datos: ' + e.message, 'error');
@@ -2875,8 +2840,7 @@ async function renderRankingGlobal() {
     partidosSnap.docs.forEach(d => {
       if (d.data().simulado) return; // ignorar partidos del simulador
       partidos[d.id] = d.data();
-      partidos['fg' + d.id] = d.data(); // apuestas con prefijo fg
-      if (d.id.startsWith('fg')) partidos[d.id.slice(2)] = d.data(); // apuestas sin prefijo
+      partidos['fg' + d.id] = d.data(); // mapear también con prefijo fg
     });
 
     // Participantes aprobados con grupo activo
@@ -2891,24 +2855,9 @@ async function renderRankingGlobal() {
       };
     });
 
-    // Deduplicar: por uid+partidoId (normalizando fgA1 == A1)
-    const normId = id => id?.startsWith('fg') ? id.slice(2) : id;
-    const apuestasUnicas = new Map();
+    // Calcular puntajes recalculados en tiempo real
     apSnap.docs.forEach(d => {
       const a = d.data();
-      const key = `${a.uid}__${normId(a.partidoId)}`;
-      const existing = apuestasUnicas.get(key);
-      if (!existing) {
-        apuestasUnicas.set(key, a);
-      } else {
-        const tNew = a.actualizadoEn?.seconds || a.creadoEn?.seconds || 0;
-        const tOld = existing.actualizadoEn?.seconds || existing.creadoEn?.seconds || 0;
-        if (tNew > tOld) apuestasUnicas.set(key, a);
-      }
-    });
-
-    // Calcular puntajes recalculados en tiempo real
-    apuestasUnicas.forEach(a => {
       const j = jugadores[a.uid];
       if (!j) return;
       j.apuestas++;
@@ -2925,7 +2874,7 @@ async function renderRankingGlobal() {
       if (a.puntaje != null && a.puntaje !== ptsReal) j.discrepancias++;
     });
 
-    const ranking = Object.values(jugadores).sort((a,b) => b.total-a.total || b.aciertos-a.aciertos || b.parciales-a.parciales || (a.nombre||'').localeCompare(b.nombre||''));
+    const ranking = Object.values(jugadores).sort((a,b) => b.total-a.total || b.aciertos-a.aciertos);
 
     if (!ranking.length) {
       container.innerHTML = '<p style="color:var(--muted);">No hay participantes aprobados con grupo activo.</p>';
@@ -3027,7 +2976,7 @@ function buildTablaGrupo(jugadores, grupoNombre, grupoId, mostrarGrupo, searchAc
     const pos = i + 1;
     const posClass = pos===1?'pos-1':pos===2?'pos-2':pos===3?'pos-3':'pos-n';
     const pct = maxPts ? Math.round((r.total/maxPts)*100) : 0;
-    const medalla = '';
+    const medalla = pos===1?'🥇':pos===2?'🥈':pos===3?'🥉':'';
     html += `<tr style="${searchActive ? 'background:rgba(245,200,66,0.04);' : ''}">
       <td><span class="pos-badge ${posClass}">${pos}</span></td>
       <td style="font-weight:600;">${medalla?medalla+' ':''}${r.nombre}</td>
@@ -5714,7 +5663,7 @@ function simRenderGrupos(){
         <span class="badge badge-muted">7 jugadores</span>
       </div>
       ${sorted.map((u,i)=>{
-        const med='';
+        const med=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
         return `<div class="sim-usr-row">
           <div class="sim-avatar" style="background:${u.color}22;color:${u.color}">${u.iniciales}</div>
           <div style="flex:1;min-width:0;">
@@ -5829,7 +5778,7 @@ function simRenderRanking(){
       const posColors=['rgba(245,200,66,.2)','rgba(148,163,184,.2)','rgba(205,127,50,.2)','rgba(255,255,255,.05)'];
       const posTextColors=[g.color,'#94a3b8','#cd7f32','var(--muted)'];
       const pct=Math.round((u.puntaje/maxPts)*100);
-      const med='';
+      const med=pos===1?'🥇':pos===2?'🥈':pos===3?'🥉':'';
       html+=`<tr>
         <td><span style="width:26px;height:26px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;background:${posColors[Math.min(pos-1,3)]};color:${posTextColors[Math.min(pos-1,3)]};">${pos}</span></td>
         <td><div style="display:flex;align-items:center;gap:8px;">
@@ -5969,7 +5918,7 @@ function simRenderClasificados(){
           ${g.nombre}
         </div>`;
       sorted.forEach((u,i)=>{
-        const med='';
+        const med=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
         html+=`<div class="sim-clas-slot ${i<3?'top':''}">
           <span style="font-size:.68rem;color:var(--muted);min-width:16px;">${i+1}</span>
           <div style="display:flex;align-items:center;gap:7px;flex:1;">
@@ -6334,7 +6283,7 @@ async function goleadorRenderAdmin() {
     </tr></thead><tbody>`;
 
   sorted.forEach((g, i) => {
-    const medal = '';
+    const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
     html += `<tr style="border-bottom:1px solid var(--border);">
       <td style="padding:10px 16px;font-weight:700;color:var(--muted);">${medal||i+1}</td>
       <td style="padding:10px 8px;font-weight:600;">${g.nombre}</td>
@@ -6404,199 +6353,68 @@ window.goleadorLimpiarTodo = async function() {
   toast('Lista limpiada', 'success');
 };
 
-// ── SUB-TABS GOLEADORES/TARJETAS ──────────────────────────────────────────
-window.switchSubtabGol = function(tab) {
-  document.getElementById('subtab-goleadores').style.display = tab === 'goleadores' ? '' : 'none';
-  document.getElementById('subtab-tarjetas').style.display   = tab === 'tarjetas'   ? '' : 'none';
-  const btnG = document.getElementById('subtab-btn-goleadores');
-  const btnT = document.getElementById('subtab-btn-tarjetas');
-  btnG.style.borderBottomColor = tab === 'goleadores' ? 'var(--gold)' : 'transparent';
-  btnG.style.color = tab === 'goleadores' ? 'var(--gold)' : 'var(--muted)';
-  btnT.style.borderBottomColor = tab === 'tarjetas' ? 'var(--gold)' : 'transparent';
-  btnT.style.color = tab === 'tarjetas' ? 'var(--gold)' : 'var(--muted)';
-  if (tab === 'tarjetas') tarjetaRenderAdmin();
-};
-
-// ── TARJETAS ──────────────────────────────────────────────────────────────
-async function tarjetaCargar() {
-  try {
-    const snap = await getDoc(doc(db, 'config', 'tarjetas'));
-    return snap.exists() ? (snap.data().lista || []) : [];
-  } catch(e) { return []; }
-}
-
-async function tarjetaGuardar(lista) {
-  await setDoc(doc(db, 'config', 'tarjetas'), { lista }, { merge: false });
-}
-
-async function tarjetaRenderAdmin() {
-  const lista = await tarjetaCargar();
-  const container = document.getElementById('tarjetas-tabla');
-  if (!container) return;
-
-  if (!lista.length) {
-    container.innerHTML = `<div style="text-align:center;padding:32px;color:var(--muted);font-size:0.85rem;"><i class="fas fa-square" style="font-size:1.5rem;opacity:.3;display:block;margin-bottom:8px;color:#f59e0b;"></i>Sin tarjetas registradas aún</div>`;
-    return;
-  }
-
-  const sorted = [...lista].sort((a,b) => (b.rojas*3+b.amarillas) - (a.rojas*3+a.amarillas) || a.nombre.localeCompare(b.nombre));
-  let html = `<table style="width:100%;border-collapse:collapse;">
-    <thead><tr style="background:var(--card2);border-bottom:1px solid var(--border);">
-      <th style="padding:10px 16px;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);width:36px;">#</th>
-      <th style="padding:10px 8px;text-align:left;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);">Jugador</th>
-      <th style="padding:10px 8px;text-align:left;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);">País</th>
-      <th style="padding:10px 8px;text-align:center;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:#f59e0b;">🟨</th>
-      <th style="padding:10px 8px;text-align:center;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--red);">🟥</th>
-      <th style="padding:10px 16px;width:90px;"></th>
-    </tr></thead><tbody>`;
-
-  sorted.forEach((g, i) => {
-    html += `<tr style="border-bottom:1px solid var(--border);">
-      <td style="padding:10px 16px;font-weight:700;color:var(--muted);">${i+1}</td>
-      <td style="padding:10px 8px;font-weight:600;">${g.nombre}</td>
-      <td style="padding:10px 8px;color:var(--muted);">${getFlag(g.pais)} ${g.pais}</td>
-      <td style="padding:10px 8px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#f59e0b;">${g.amarillas||0}</td>
-      <td style="padding:10px 8px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--red);">${g.rojas||0}</td>
-      <td style="padding:10px 16px;">
-        <div style="display:flex;gap:6px;justify-content:flex-end;">
-          <button class="btn btn-outline btn-sm" onclick="tarjetaEditar('${g.id}')" title="Editar"><i class="fas fa-pen"></i></button>
-          <button class="btn btn-sm" onclick="tarjetaEliminar('${g.id}')" style="background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.25);" title="Eliminar"><i class="fas fa-trash"></i></button>
-        </div>
-      </td>
-    </tr>`;
-  });
-
-  html += `</tbody></table>
-    <div style="padding:10px 16px;font-size:0.68rem;color:var(--muted);border-top:1px solid var(--border);">
-      ${sorted.length} jugador${sorted.length!==1?'es':''} · Actualizado automáticamente en el sitio público
-    </div>`;
-  container.innerHTML = html;
-}
-
-window.tarjetaAgregar = async function() {
-  const nombre    = document.getElementById('tar-nombre').value.trim();
-  const pais      = document.getElementById('tar-pais').value.trim();
-  const amarillas = parseInt(document.getElementById('tar-amarillas').value) || 0;
-  const rojas     = parseInt(document.getElementById('tar-rojas').value) || 0;
-  if (!nombre || !pais) { toast('Completa nombre y país', 'warn'); return; }
-
-  const lista = await tarjetaCargar();
-  const idx = lista.findIndex(g => g.nombre.toLowerCase() === nombre.toLowerCase());
-  if (idx !== -1) {
-    lista[idx].amarillas = amarillas;
-    lista[idx].rojas     = rojas;
-    lista[idx].pais      = pais;
-    toast(`${nombre} actualizado ✓`, 'success');
-  } else {
-    lista.push({ id: Date.now().toString(), nombre, pais, amarillas, rojas });
-    toast(`${nombre} agregado ✓`, 'success');
-  }
-  await tarjetaGuardar(lista);
-  await tarjetaRenderAdmin();
-  document.getElementById('tar-nombre').value    = '';
-  document.getElementById('tar-pais').value      = '';
-  document.getElementById('tar-amarillas').value = '0';
-  document.getElementById('tar-rojas').value     = '0';
-};
-
-window.tarjetaEditar = async function(id) {
-  const lista = await tarjetaCargar();
-  const g = lista.find(x => x.id === id);
-  if (!g) return;
-  document.getElementById('tar-nombre').value    = g.nombre;
-  document.getElementById('tar-pais').value      = g.pais;
-  document.getElementById('tar-amarillas').value = g.amarillas || 0;
-  document.getElementById('tar-rojas').value     = g.rojas || 0;
-  document.getElementById('tar-nombre').focus();
-  toast('Edita y haz clic en Agregar para guardar', 'info');
-};
-
-window.tarjetaEliminar = async function(id) {
-  const lista = (await tarjetaCargar()).filter(g => g.id !== id);
-  await tarjetaGuardar(lista);
-  await tarjetaRenderAdmin();
-  toast('Eliminado ✓', 'success');
-};
-
-window.tarjetaLimpiarTodo = async function() {
-  if (!confirm('¿Eliminar todos los registros de tarjetas?')) return;
-  await tarjetaGuardar([]);
-  await tarjetaRenderAdmin();
-  toast('Lista limpiada', 'success');
-};
-
 
 // ── VISTA JUGADOR ────────────────────────────────────────────────────────
 let _vjParticipantes = [];
 let _vjPartidos = {};
 let _vjApuestas = [];
+let _vjLoaded = false;
 
 async function initVistaJugador() {
-  if (_vjParticipantes.length) return; // ya cargado
+  if (_vjLoaded) return;
   try {
     const [partSnap, apSnap, partidosSnap] = await Promise.all([
       getDocs(query(collection(db, 'participantes'), where('estado','==','aprobado'))),
       getDocs(collection(db, 'apuestas')),
       getDocs(collection(db, 'partidos')),
     ]);
-
     partSnap.docs.forEach(d => {
       const p = d.data();
-      _vjParticipantes.push({ uid: p.uid, nombre: p.nombre || p.email, email: p.email, grupoNombre: p.grupoNombre || '' });
+      _vjParticipantes.push({ uid: p.uid, nombre: p.nombre||p.email, email: p.email, grupoNombre: p.grupoNombre||'' });
     });
     _vjParticipantes.sort((a,b) => (a.nombre||'').localeCompare(b.nombre||''));
-
     partidosSnap.docs.forEach(d => {
       if (d.data().simulado) return;
-      _vjPartidos[d.id] = { id: d.id, ...d.data() };
-      _vjPartidos['fg' + d.id] = { id: d.id, ...d.data() };
-      if (d.id.startsWith('fg')) _vjPartidos[d.id.slice(2)] = { id: d.id, ...d.data() };
+      const data = { id: d.id, ...d.data() };
+      _vjPartidos[d.id] = data;
+      _vjPartidos['fg'+d.id] = data;
+      if (d.id.startsWith('fg')) _vjPartidos[d.id.slice(2)] = data;
     });
-
     apSnap.docs.forEach(d => _vjApuestas.push(d.data()));
-
-    // Poblar select
     const sel = document.getElementById('vj-select');
-    _vjParticipantes.forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p.uid;
-      opt.textContent = `${p.nombre} (${p.grupoNombre || p.email})`;
-      sel.appendChild(opt);
-    });
-  } catch(e) {
-    console.error('initVistaJugador:', e);
-  }
+    if (sel) {
+      _vjParticipantes.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.uid;
+        opt.textContent = p.nombre + ' (' + (p.grupoNombre||p.email) + ')';
+        sel.appendChild(opt);
+      });
+    }
+    _vjLoaded = true;
+  } catch(e) { console.error('initVistaJugador:', e); }
 }
 
-window.vjFiltrar = function() {
-  const q = document.getElementById('vj-search').value.toLowerCase().trim();
-  const sel = document.getElementById('vj-select');
-  if (!q) { sel.value = ''; return; }
-  const matches = _vjParticipantes.filter(p => (p.nombre||'').toLowerCase().includes(q));
-  if (matches.length === 1) {
-    sel.value = matches[0].uid;
-    vjCargar(matches[0].uid);
-  } else if (matches.length > 1) {
-    // Filtrar opciones del select
-    Array.from(sel.options).forEach(opt => {
-      opt.style.display = opt.value === '' || matches.find(m => m.uid === opt.value) ? '' : 'none';
-    });
-    sel.value = '';
-  }
+window.vjBuscar = async function() {
+  const q = (document.getElementById('vj-search').value||'').toLowerCase().trim();
+  if (!q) return;
+  document.getElementById('vj-container').innerHTML = '<div style="padding:20px;color:var(--muted);">Cargando...</div>';
+  await initVistaJugador();
+  const match = _vjParticipantes.find(p => (p.nombre||'').toLowerCase().includes(q));
+  if (match) { document.getElementById('vj-select').value = match.uid; vjCargar(match.uid); }
+  else { document.getElementById('vj-container').innerHTML = '<div style="padding:20px;color:var(--red);">No se encontró jugador.</div>'; }
 };
 
-window.vjDesdeSelect = function() {
+window.vjDesdeSelect = async function() {
   const uid = document.getElementById('vj-select').value;
-  if (uid) vjCargar(uid);
+  if (!uid) return;
+  await initVistaJugador();
+  vjCargar(uid);
 };
 
 function vjCargar(uid) {
   const participante = _vjParticipantes.find(p => p.uid === uid);
   if (!participante) return;
-
   const container = document.getElementById('vj-container');
-
-  // Apuestas del usuario deduplicadas
   const normId = id => id?.startsWith('fg') ? id.slice(2) : id;
   const apuestasMap = new Map();
   _vjApuestas.filter(a => a.uid === uid).forEach(a => {
@@ -6604,110 +6422,66 @@ function vjCargar(uid) {
     const existing = apuestasMap.get(key);
     if (!existing) { apuestasMap.set(key, a); }
     else {
-      const tNew = a.actualizadoEn?.seconds || a.creadoEn?.seconds || 0;
-      const tOld = existing.actualizadoEn?.seconds || existing.creadoEn?.seconds || 0;
+      const tNew = a.actualizadoEn?.seconds||a.creadoEn?.seconds||0;
+      const tOld = existing.actualizadoEn?.seconds||existing.creadoEn?.seconds||0;
       if (tNew > tOld) apuestasMap.set(key, a);
     }
   });
-
-  // Construir vista por grupo
-  let html = `
-    <div style="background:var(--card);border-radius:10px;padding:16px 20px;margin-bottom:20px;border:1px solid var(--border);">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--gold);">${participante.nombre}</div>
-      <div style="font-size:0.8rem;color:var(--muted);">${participante.email} · ${participante.grupoNombre}</div>
-    </div>`;
-
-  let totalPts = 0, totalExactos = 0, totalParciales = 0, jugados = 0;
-
-  Object.keys(FG).forEach(grupoKey => {
-    const partidos = FG[grupoKey];
-    const filas = partidos.map(base => {
-      const fs = _vjPartidos[base.id] || _vjPartidos['fg'+base.id] || {};
-      const p = { ...base, ...fs };
+  let totalPts=0, exactos=0, parciales=0, jugados=0;
+  let gruposHtml = '';
+  Object.keys(FG).forEach(g => {
+    const filas = FG[g].map(base => {
+      const fs = _vjPartidos[base.id]||_vjPartidos['fg'+base.id]||{};
+      const p = {...base, ...fs};
       const apuesta = apuestasMap.get(normId(base.id));
-      const tieneReal = p.resultado_local != null && p.resultado_visita != null;
-      const tieneApuesta = !!apuesta;
-
+      const tieneReal = p.resultado_local!=null && p.resultado_visita!=null;
       let pts = null;
-      if (tieneReal && tieneApuesta) {
-        pts = calcularPuntajePolla(
-          { local: Number(p.resultado_local), visita: Number(p.resultado_visita) },
-          { local: Number(apuesta.golesLocal), visita: Number(apuesta.golesVisita) }
+      if (tieneReal && apuesta) {
+        pts = calcularPuntaje(
+          {local: p.resultado_local, visita: p.resultado_visita},
+          {local: apuesta.golesLocal, visita: apuesta.golesVisita}
         );
-        if (pts != null) {
-          totalPts += pts;
-          jugados++;
-          if (pts === 4 || pts === 2) totalExactos++;
-          if (pts === 3 || pts === 1) totalParciales++;
-        }
+        if (pts!=null) { totalPts+=pts; jugados++; if(pts===4||pts===2) exactos++; if(pts===3||pts===1) parciales++; }
       }
-
-      const ptsColor = pts === null ? 'var(--muted)' : pts >= 3 ? '#16a34a' : pts >= 1 ? '#ca8a04' : '#dc2626';
-      const ptsLabel = pts === null ? (tieneReal ? '–' : '') : `${pts}pts`;
-
-      const apLocal  = tieneApuesta ? apuesta.golesLocal  : '–';
-      const apVisita = tieneApuesta ? apuesta.golesVisita : '–';
-      const resLocal  = tieneReal ? p.resultado_local  : '–';
-      const resVisita = tieneReal ? p.resultado_visita : '–';
-
-      const flagL = p.localFlag  || '';
-      const flagV = p.visitaFlag || '';
-
-      return `<tr style="border-bottom:1px solid var(--border);">
-        <td style="padding:10px 8px;font-size:0.82rem;color:var(--muted);">${p.fecha ? p.fecha.slice(5).replace('-','/') : ''}</td>
-        <td style="padding:10px 8px;text-align:right;font-weight:600;">${flagL} ${p.local || '?'}</td>
-        <td style="padding:10px 8px;text-align:center;">
-          <span style="background:var(--ink);color:#fff;padding:2px 8px;border-radius:4px;font-family:'Bebas Neue',sans-serif;font-size:0.9rem;">${resLocal} – ${resVisita}</span>
-        </td>
-        <td style="padding:10px 8px;font-weight:600;">${p.visita || '?'} ${flagV}</td>
-        <td style="padding:10px 8px;text-align:center;font-family:'Bebas Neue',sans-serif;color:var(--gold);">${apLocal} – ${apVisita}</td>
-        <td style="padding:10px 8px;text-align:center;font-weight:700;color:${ptsColor};">${ptsLabel}</td>
-      </tr>`;
+      const ptsColor = pts===null?'var(--muted)':pts>=3?'#16a34a':pts>=1?'#ca8a04':'#dc2626';
+      const ptsLabel = pts===null?(tieneReal?'–':''):pts+'pts';
+      const apL = apuesta?apuesta.golesLocal:'–';
+      const apV = apuesta?apuesta.golesVisita:'–';
+      const resL = tieneReal?p.resultado_local:'–';
+      const resV = tieneReal?p.resultado_visita:'–';
+      return '<tr style="border-bottom:1px solid var(--border);">'
+        +'<td style="padding:8px;font-size:0.8rem;color:var(--muted);">'+(p.fecha?p.fecha.slice(5).replace('-','/'):'')+'</td>'
+        +'<td style="padding:8px;text-align:right;font-weight:600;">'+(p.local||'?')+'</td>'
+        +'<td style="padding:8px;text-align:center;"><span style="background:var(--ink);color:#fff;padding:2px 8px;border-radius:4px;font-family:'Bebas Neue',sans-serif;">'+resL+' – '+resV+'</span></td>'
+        +'<td style="padding:8px;font-weight:600;">'+(p.visita||'?')+'</td>'
+        +'<td style="padding:8px;text-align:center;color:var(--gold);font-family:'Bebas Neue',sans-serif;">'+apL+' – '+apV+'</td>'
+        +'<td style="padding:8px;text-align:center;font-weight:700;color:'+ptsColor+';">'+ptsLabel+'</td>'
+        +'</tr>';
     }).join('');
-
-    html += `
-    <div style="background:var(--card);border-radius:10px;margin-bottom:16px;overflow:hidden;border:1px solid var(--border);">
-      <div style="background:var(--ink);padding:10px 16px;font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--gold);letter-spacing:0.08em;">
-        GRUPO ${grupoKey}
-      </div>
-      <table style="width:100%;border-collapse:collapse;">
-        <thead>
-          <tr style="background:var(--card2);">
-            <th style="padding:8px;font-size:0.72rem;color:var(--muted);text-align:left;">Fecha</th>
-            <th style="padding:8px;font-size:0.72rem;color:var(--muted);text-align:right;">Local</th>
-            <th style="padding:8px;font-size:0.72rem;color:var(--muted);text-align:center;">Resultado</th>
-            <th style="padding:8px;font-size:0.72rem;color:var(--muted);text-align:left;">Visita</th>
-            <th style="padding:8px;font-size:0.72rem;color:var(--gold);text-align:center;">Apuesta</th>
-            <th style="padding:8px;font-size:0.72rem;color:var(--muted);text-align:center;">Pts</th>
-          </tr>
-        </thead>
-        <tbody>${filas}</tbody>
-      </table>
-    </div>`;
+    gruposHtml += '<div style="background:var(--card);border-radius:10px;margin-bottom:14px;overflow:hidden;border:1px solid var(--border);">'
+      +'<div style="background:var(--ink);padding:8px 16px;font-family:'Bebas Neue',sans-serif;color:var(--gold);letter-spacing:0.08em;">GRUPO '+g+'</div>'
+      +'<table style="width:100%;border-collapse:collapse;">'
+      +'<thead><tr style="background:var(--card2);">'
+      +'<th style="padding:8px;font-size:0.72rem;color:var(--muted);text-align:left;">Fecha</th>'
+      +'<th style="padding:8px;font-size:0.72rem;color:var(--muted);text-align:right;">Local</th>'
+      +'<th style="padding:8px;font-size:0.72rem;color:var(--muted);text-align:center;">Resultado</th>'
+      +'<th style="padding:8px;font-size:0.72rem;color:var(--muted);">Visita</th>'
+      +'<th style="padding:8px;font-size:0.72rem;color:var(--gold);text-align:center;">Apuesta</th>'
+      +'<th style="padding:8px;font-size:0.72rem;color:var(--muted);text-align:center;">Pts</th>'
+      +'</tr></thead><tbody>'+filas+'</tbody></table></div>';
   });
-
-  // Resumen
-  html = `
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
-      <div style="background:var(--card);border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border);">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--gold);">${totalPts}</div>
-        <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;">Puntos</div>
-      </div>
-      <div style="background:var(--card);border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border);">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#16a34a;">${totalExactos}</div>
-        <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;">Exactos</div>
-      </div>
-      <div style="background:var(--card);border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border);">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#ca8a04;">${totalParciales}</div>
-        <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;">Parciales</div>
-      </div>
-      <div style="background:var(--card);border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border);">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--text);">${jugados}</div>
-        <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;">Jugados</div>
-      </div>
-    </div>` + html;
-
-  container.innerHTML = html;
+  container.innerHTML =
+    '<div style="background:var(--card);border-radius:10px;padding:14px 18px;margin-bottom:16px;border:1px solid var(--border);">'
+    +'<div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--gold);">'+participante.nombre+'</div>'
+    +'<div style="font-size:0.8rem;color:var(--muted);">'+participante.email+' · '+participante.grupoNombre+'</div>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;">'
+    +'<div style="background:var(--card);border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border);"><div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--gold);">'+totalPts+'</div><div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;">Puntos</div></div>'
+    +'<div style="background:var(--card);border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border);"><div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#16a34a;">'+exactos+'</div><div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;">Exactos</div></div>'
+    +'<div style="background:var(--card);border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border);"><div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#ca8a04;">'+parciales+'</div><div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;">Parciales</div></div>'
+    +'<div style="background:var(--card);border-radius:8px;padding:14px;text-align:center;border:1px solid var(--border);"><div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;">'+jugados+'</div><div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;">Jugados</div></div>'
+    +'</div>'
+    + gruposHtml;
 }
 
 </script>
@@ -6742,28 +6516,6 @@ function vjCargar(uid) {
   </div>
 </div>
 
-    <!-- TAB VISTA JUGADOR -->
-    <div class="page" id="page-vistaweb">
-      <div class="section-title"><i class="fas fa-eye"></i> Vista Jugador</div>
-      <div style="display:flex;gap:10px;margin-bottom:20px;align-items:center;flex-wrap:wrap;">
-        <input id="vj-search" type="text" placeholder="Buscar jugador por nombre..."
-          onkeydown="if(event.key==='Enter') vjBuscar()"
-          style="flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.9rem;background:var(--card);color:var(--text);">
-        <button class="btn btn-gold" onclick="vjBuscar()"><i class="fas fa-search"></i> Buscar</button>
-        <select id="vj-select" onchange="vjDesdeSelect()"
-          style="flex:1;min-width:220px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.9rem;background:var(--card);color:var(--text);">
-          <option value="">— O seleccionar de la lista —</option>
-        </select>
-      </div>
-      <div id="vj-container">
-        <div style="text-align:center;padding:40px;color:var(--muted);">
-          <i class="fas fa-magnifying-glass" style="font-size:2rem;opacity:0.4;display:block;margin-bottom:10px;"></i>
-          Busca un jugador para ver sus apuestas
-        </div>
-      </div>
-    </div>
-    </div>
-
 <!-- MODAL RESET GRUPO -->
 <div id="modal-reset-grupo">
   <div class="mrg-box">
@@ -6780,6 +6532,25 @@ function vjCargar(uid) {
   </div>
 </div>
 
-  </div><!-- /main -->
+    <!-- TAB VISTA JUGADOR -->
+    <div class="page" id="tab-vistaweb">
+      <div class="section-title"><i class="fas fa-eye"></i> Vista Jugador</div>
+      <div style="display:flex;gap:10px;margin-bottom:20px;align-items:center;flex-wrap:wrap;">
+        <input id="vj-search" type="text" placeholder="Buscar jugador por nombre..."
+          onkeydown="if(event.key==='Enter') window.vjBuscar()"
+          style="flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.9rem;background:var(--card);color:var(--text);">
+        <button class="btn btn-gold" onclick="window.vjBuscar()"><i class="fas fa-search"></i> Buscar</button>
+        <select id="vj-select" onchange="window.vjDesdeSelect()"
+          style="flex:1;min-width:220px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.9rem;background:var(--card);color:var(--text);">
+          <option value="">— O seleccionar de la lista —</option>
+        </select>
+      </div>
+      <div id="vj-container">
+        <div style="text-align:center;padding:40px;color:var(--muted);">
+          <i class="fas fa-magnifying-glass" style="font-size:2rem;opacity:0.4;display:block;margin-bottom:10px;"></i>
+          Busca un jugador para ver sus apuestas
+        </div>
+      </div>
+    </div>
 </body>
 </html>
