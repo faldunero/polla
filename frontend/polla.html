@@ -1050,7 +1050,12 @@ const FG = FIXTURE_GRUPOS;
         const tieneApuesta = !!apuesta;
 
         const tieneReal = p.resultado_local != null && p.resultado_visita != null;
-        // Siempre recalcular desde resultado real — no confiar en puntaje guardado en Firestore
+        if (tieneReal) console.log('[POLLA DEBUG]', p.id, {
+          resultado_local: p.resultado_local, resultado_visita: p.resultado_visita,
+          tieneApuesta, golesLocal: apuesta?.golesLocal, golesVisita: apuesta?.golesVisita,
+          apuestaKeys: apuesta ? Object.keys(apuesta) : null
+        });
+        // Siempre recalcular desde resultado real
         const puntaje = tieneReal && tieneApuesta
           ? calcularPuntaje(
               { local: p.resultado_local, visita: p.resultado_visita },
