@@ -406,6 +406,7 @@
           <img id="user-avatar" class="user-avatar" src="" alt="Usuario" />
           <span id="user-name"></span>
         </div>
+        <button class="btn btn-outline btn-sm" onclick="location.reload()" title="Actualizar" style="margin-right:6px;padding:6px 10px;"><i class="fas fa-rotate-right"></i></button>
         <button class="btn btn-outline btn-sm" onclick="logout()">Salir</button>
       </div>
     </nav>
@@ -1435,11 +1436,8 @@ const FG = FIXTURE_GRUPOS;
 
         // 5) Ordenar y asignar posición
         const ranking = Object.values(acumulado)
-          .sort((a,b) => b.total - a.total || a.nombre.localeCompare(b.nombre))
-          .map((r, i, arr) => {
-            const pos = new Set(arr.filter(x => x.total > r.total).map(x => x.total)).size + 1;
-            return { ...r, posicion: pos };
-          });
+          .sort((a,b) => b.total - a.total || b.aciertos - a.aciertos || b.parciales - a.parciales || a.nombre.localeCompare(b.nombre))
+          .map((r, i) => ({ ...r, posicion: i + 1 }));
 
         const miPosicion = ranking.find(r => r.uid === currentUser.uid);
         const maxPts = Math.max(ranking[0]?.total || 1, 1);
