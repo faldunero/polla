@@ -420,6 +420,98 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
 .fase-elim-wrap{padding:12px 16px;}
 .res-elim-group{margin-bottom:20px;}
 .res-elim-group-title{font-family:var(--font-display);font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+
+/* ── MODAL PARTIDOS HOY ─────────────────────────────────────────────── */
+#modal-hoy-overlay {
+  display:none;position:fixed;inset:0;z-index:999;
+  background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);
+  align-items:center;justify-content:center;padding:16px;
+}
+#modal-hoy-overlay.open { display:flex; }
+#modal-hoy {
+  background:#fff;border-radius:12px;width:100%;max-width:680px;
+  max-height:90vh;overflow:hidden;display:flex;flex-direction:column;
+  box-shadow:0 24px 80px rgba(0,0,0,0.35);
+}
+.modal-hoy-header {
+  background:var(--red);color:#fff;padding:20px 24px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:3px solid var(--gold);flex-shrink:0;
+}
+.modal-hoy-header h2 {
+  font-family:var(--font-display);font-size:1.3rem;font-weight:800;
+  text-transform:uppercase;letter-spacing:0.06em;
+  display:flex;align-items:center;gap:10px;
+}
+.modal-hoy-header h2 span.badge-fecha {
+  font-size:0.72rem;font-weight:700;letter-spacing:0.12em;
+  background:var(--gold);color:var(--ink);padding:3px 10px;
+  border-radius:20px;text-transform:uppercase;
+}
+.modal-hoy-close {
+  background:rgba(255,255,255,0.15);border:none;color:#fff;
+  width:34px;height:34px;border-radius:50%;cursor:pointer;
+  font-size:1.1rem;display:flex;align-items:center;justify-content:center;
+  transition:background 0.2s;flex-shrink:0;
+}
+.modal-hoy-close:hover { background:rgba(255,255,255,0.3); }
+.modal-hoy-body { overflow-y:auto;padding:20px 24px 24px;display:flex;flex-direction:column;gap:14px; }
+.modal-hoy-empty {
+  text-align:center;padding:40px 20px;color:var(--muted);
+  font-family:var(--font-display);font-size:1.1rem;letter-spacing:0.04em;
+}
+.mhoy-card {
+  border:1.5px solid var(--border);border-radius:10px;overflow:hidden;
+  transition:box-shadow 0.2s;
+}
+.mhoy-card:hover { box-shadow:0 4px 16px rgba(0,0,0,0.1); }
+.mhoy-card-top {
+  background:var(--ink);padding:8px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.mhoy-grupo {
+  font-family:var(--font-display);font-size:0.7rem;font-weight:700;
+  letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);
+}
+.mhoy-hora {
+  font-family:var(--font-display);font-size:0.78rem;font-weight:700;
+  color:#fff;letter-spacing:0.08em;
+}
+.mhoy-card-main {
+  padding:16px;display:flex;align-items:center;gap:12px;
+  background:#fff;
+}
+.mhoy-team {
+  flex:1;display:flex;align-items:center;gap:8px;
+  font-family:var(--font-display);font-size:1.05rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.04em;color:var(--ink);
+}
+.mhoy-team.right { flex-direction:row-reverse;text-align:right; }
+.mhoy-team .flag { font-size:1.3rem;line-height:1; }
+.mhoy-vs {
+  font-family:var(--font-display);font-size:1.1rem;font-weight:900;
+  color:var(--muted);letter-spacing:0.1em;flex-shrink:0;
+  background:var(--off);padding:6px 14px;border-radius:6px;
+}
+.mhoy-score {
+  font-family:var(--font-display);font-size:1.4rem;font-weight:900;
+  color:var(--ink);letter-spacing:0.06em;flex-shrink:0;
+  background:var(--ink);color:#fff;padding:6px 14px;border-radius:6px;
+}
+.mhoy-card-footer {
+  background:var(--off);border-top:1px solid var(--border);
+  padding:8px 16px;display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;
+}
+.mhoy-estadio {
+  font-size:0.76rem;color:var(--muted);
+  display:flex;align-items:center;gap:5px;
+}
+.mhoy-estadio i { color:var(--red);font-size:0.7rem; }
+.mhoy-clima {
+  font-size:0.76rem;color:var(--ink2);font-weight:600;
+  display:flex;align-items:center;gap:5px;
+}
 </style>
 </head>
 <body>
@@ -1929,6 +2021,7 @@ async function init(){
     };
     const sp=document.getElementById('stat-paises'); if(sp) sp.textContent=globalData.paises.length;
     renderGrupos(); renderEstadios(); await renderResultadosAccordion();
+    mostrarModalHoy();
   } catch(e){
     console.error(e);
     const g=document.getElementById('grupos-wrapper');
@@ -2093,6 +2186,128 @@ window.abrirModalGoleadores = () => window.abrirModalEstadisticas('goleadores');
 window.cerrarModalGoleadores = window.cerrarModalEstadisticas;
 
 init();
+
+// ── MODAL PARTIDOS HOY ────────────────────────────────────────────────────
+window.cerrarModalHoy = function() {
+  document.getElementById('modal-hoy-overlay').classList.remove('open');
+  sessionStorage.setItem('modalHoyCerrada', '1');
+};
+
+// Cerrar al hacer click fuera
+document.getElementById('modal-hoy-overlay').addEventListener('click', function(e) {
+  if (e.target === this) cerrarModalHoy();
+});
+
+// Cerrar con Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') cerrarModalHoy();
+});
+
+async function mostrarModalHoy() {
+  // No mostrar si ya fue cerrada en esta sesión
+  if (sessionStorage.getItem('modalHoyCerrada')) return;
+
+  // Fecha de hoy en Chile (UTC-4)
+  const ahora = new Date();
+  const hoyChile = new Date(ahora.toLocaleString('en-US', { timeZone: 'America/Santiago' }));
+  const yyyy = hoyChile.getFullYear();
+  const mm   = String(hoyChile.getMonth() + 1).padStart(2, '0');
+  const dd   = String(hoyChile.getDate()).padStart(2, '0');
+  const fechaHoy = `${yyyy}-${mm}-${dd}`;
+
+  // Buscar partidos del día en el fixture
+  const partidosHoy = [];
+  Object.keys(FG).forEach(g => {
+    FG[g].forEach(p => {
+      if (p.fecha === fechaHoy) partidosHoy.push({ ...p, grupo: g });
+    });
+  });
+  // También fases eliminatorias si existen
+  if (typeof FIXTURE_MAP !== 'undefined') {
+    Object.values(FIXTURE_MAP).forEach(p => {
+      if (p.fecha === fechaHoy && !partidosHoy.find(x => x.id === p.id))
+        partidosHoy.push(p);
+    });
+  }
+
+  if (partidosHoy.length === 0) return; // no hay partidos hoy, no mostrar
+
+  // Enriquecer con resultados de Firestore
+  let resCache = {};
+  try {
+    const snap = await getDocs(collection(db, 'partidos'));
+    snap.docs.forEach(d => {
+      if (d.data().simulado) return;
+      const data = { id: d.id, ...d.data() };
+      resCache[d.id] = data;
+      resCache['fg' + d.id] = data;
+      if (d.id.startsWith('fg')) resCache[d.id.slice(2)] = data;
+    });
+  } catch(e) {}
+
+  // Fecha legible
+  const diasSem = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const meses   = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const fechaLabel = `${diasSem[hoyChile.getDay()]} ${dd} ${meses[hoyChile.getMonth()]}`;
+  document.getElementById('mhoy-fecha-badge').textContent = fechaLabel;
+
+  // Ordenar por hora
+  partidosHoy.sort((a, b) => (a.hora || '').localeCompare(b.hora || ''));
+
+  // Render cards
+  const body = document.getElementById('mhoy-body');
+  const cards = await Promise.all(partidosHoy.map(async p => {
+    const res = resCache[p.id] || resCache['fg' + p.id] || {};
+    const tieneRes = res.resultado_local != null && res.resultado_visita != null;
+    const horaChile = fmtHoraChile(p.hora, p.estadio) || p.hora || '';
+    const flagL = getFlag(p.local  || '') || '⬜';
+    const flagV = getFlag(p.visita || '') || '⬜';
+    const grupoLabel = p.grupo ? `Grupo ${p.grupo}` : (p.fase || '');
+
+    // Score o VS
+    const centro = tieneRes
+      ? `<div class="mhoy-score">${res.resultado_local} – ${res.resultado_visita}</div>`
+      : `<div class="mhoy-vs">VS</div>`;
+
+    // Clima
+    let climaHtml = '';
+    if (p.estadio) {
+      const coords = getCoordsFromSede(p.estadio);
+      if (coords) {
+        try {
+          const w = await fetchWeather(coords.lat, coords.lon, coords.key);
+          climaHtml = `<span class="mhoy-clima">${w.icon} ${w.temp}°C · ${w.desc}</span>`;
+        } catch(e) {}
+      }
+    }
+
+    return `<div class="mhoy-card">
+      <div class="mhoy-card-top">
+        <span class="mhoy-grupo">${grupoLabel}</span>
+        <span class="mhoy-hora">🕐 ${horaChile} hrs CL</span>
+      </div>
+      <div class="mhoy-card-main">
+        <div class="mhoy-team">
+          <span class="flag">${flagL}</span>
+          <span>${p.local || 'Por definir'}</span>
+        </div>
+        ${centro}
+        <div class="mhoy-team right">
+          <span>${p.visita || 'Por definir'}</span>
+          <span class="flag">${flagV}</span>
+        </div>
+      </div>
+      <div class="mhoy-card-footer">
+        <span class="mhoy-estadio"><i class="fas fa-location-dot"></i>${p.estadio || 'TBD'}</span>
+        ${climaHtml}
+      </div>
+    </div>`;
+  }));
+
+  body.innerHTML = cards.join('');
+  document.getElementById('modal-hoy-overlay').classList.add('open');
+}
+
 </script>
 <!-- MODAL ESTADÍSTICAS -->
 <style>
@@ -2118,5 +2333,18 @@ init();
   </div>
 </div>
 
+
+<!-- Modal partidos de hoy -->
+<div id="modal-hoy-overlay">
+  <div id="modal-hoy">
+    <div class="modal-hoy-header">
+      <h2>⚽ Partidos de Hoy <span class="badge-fecha" id="mhoy-fecha-badge"></span></h2>
+      <button class="modal-hoy-close" onclick="cerrarModalHoy()" title="Cerrar">✕</button>
+    </div>
+    <div class="modal-hoy-body" id="mhoy-body">
+      <div class="modal-hoy-empty">Cargando partidos...</div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
