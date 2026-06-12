@@ -1379,8 +1379,23 @@ const FG = FIXTURE_GRUPOS;
 
         console.log('DEBUG apuestas total:', apuestasSnap.size);
         console.log('DEBUG partidoById keys sample:', Object.keys(partidoById).slice(0,5));
+        // Deduplicar: por uid+partidoId quedarse solo con la apuesta más reciente
+        const apuestasUnicas = new Map();
         apuestasSnap.forEach(d => {
           const a = d.data();
+          const key = `${a.uid}__${a.partidoId}`;
+          const existing = apuestasUnicas.get(key);
+          if (!existing) {
+            apuestasUnicas.set(key, { ...a, _docId: d.id });
+          } else {
+            // Quedarse con la más reciente (mayor actualizadoEn o creadoEn)
+            const tNew = a.actualizadoEn?.seconds || a.creadoEn?.seconds || 0;
+            const tOld = existing.actualizadoEn?.seconds || existing.creadoEn?.seconds || 0;
+            if (tNew > tOld) apuestasUnicas.set(key, { ...a, _docId: d.id });
+          }
+        });
+
+        apuestasUnicas.forEach(a => {
           const uid = a.uid;
           if (!acumulado[uid]) return;
 

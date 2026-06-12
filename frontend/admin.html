@@ -2881,9 +2881,23 @@ async function renderRankingGlobal() {
       };
     });
 
-    // Calcular puntajes recalculados en tiempo real
+    // Deduplicar: por uid+partidoId tomar solo la más reciente
+    const apuestasUnicas = new Map();
     apSnap.docs.forEach(d => {
       const a = d.data();
+      const key = `${a.uid}__${a.partidoId}`;
+      const existing = apuestasUnicas.get(key);
+      if (!existing) {
+        apuestasUnicas.set(key, a);
+      } else {
+        const tNew = a.actualizadoEn?.seconds || a.creadoEn?.seconds || 0;
+        const tOld = existing.actualizadoEn?.seconds || existing.creadoEn?.seconds || 0;
+        if (tNew > tOld) apuestasUnicas.set(key, a);
+      }
+    });
+
+    // Calcular puntajes recalculados en tiempo real
+    apuestasUnicas.forEach(a => {
       const j = jugadores[a.uid];
       if (!j) return;
       j.apuestas++;
