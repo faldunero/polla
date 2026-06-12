@@ -2835,7 +2835,11 @@ async function renderRankingGlobal() {
 
     // Resultados reales
     const partidos = {};
-    partidosSnap.docs.forEach(d => { partidos[d.id] = d.data(); });
+    partidosSnap.docs.forEach(d => {
+      if (d.data().simulado) return; // ignorar partidos del simulador
+      partidos[d.id] = d.data();
+      partidos['fg' + d.id] = d.data(); // mapear también con prefijo fg
+    });
 
     // Participantes aprobados con grupo activo
     const jugadores = {};
