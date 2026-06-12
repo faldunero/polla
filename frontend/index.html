@@ -459,7 +459,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
       <h1>La <span>Polla</span><br>Mundial</h1>
       <p class="hero-sub">Predice, compite y vive el Mundial 2026. Revisa el calendario completo, los grupos, las selecciones y los estadios sede.</p>
       <div class="hero-cta">
-        <button onclick="abrirModalGoleadores()" class="btn-hero"><i class="fas fa-futbol"></i> Goleadores</button>
+        <button onclick="abrirModalEstadisticas()" class="btn-hero"><i class="fas fa-chart-bar"></i> Estadísticas</button>
         <a href="Guia_LaPolla2026.pdf" download class="btn-hero-outline"><i class="fas fa-file-pdf"></i> Guía del Participante</a>
         <a href="#grupos" class="btn-hero-outline">Programación</a>
         <a href="#resultados" class="btn-hero-outline">Resultados</a>
@@ -1371,7 +1371,11 @@ window._showTabla = async function(g){
   } catch(e){}
 
   const firestoreById={};
-  globalData.partidos.forEach(m=>{ firestoreById[m.id]=m; });
+  globalData.partidos.forEach(m=>{
+    firestoreById[m.id]=m;
+    firestoreById['fg'+m.id]=m;
+    if(m.id.startsWith('fg')) firestoreById[m.id.slice(2)]=m;
+  });
 
   document.getElementById('tabla-modal-body').innerHTML=_renderTabla(g, firestoreById);
 };
@@ -1684,7 +1688,13 @@ async function renderResultadosAccordion() {
   let resCache = {};
   try {
     const snap = await getDocs(collection(db, 'partidos'));
-    snap.docs.forEach(d => { resCache[d.id] = {id: d.id, ...d.data()}; });
+    snap.docs.forEach(d => {
+      if (d.data().simulado) return; // ignorar partidos del simulador
+      const data = {id: d.id, ...d.data()};
+      resCache[d.id] = data;                        // A1
+      resCache['fg' + d.id] = data;                 // fgA1
+      if (d.id.startsWith('fg')) resCache[d.id.slice(2)] = data; // sin prefijo
+    });
   } catch(e) { console.warn('No se pudo cargar resultados de Firestore:', e.message); }
 
   const faseActual = detectarFaseActual(resCache);
@@ -1968,28 +1978,41 @@ function renderGoleadores() {
   container.innerHTML = html;
 }
 
-// ── MODAL GOLEADORES ─────────────────────────────────────────────────────
-window.abrirModalGoleadores = async function() {
-  const modal = document.getElementById('modal-goleadores');
-  const body  = document.getElementById('modal-goleadores-body');
-  body.innerHTML = `<div style="text-align:center;padding:40px;color:#6b7280;"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;margin-bottom:10px;display:block;"></i>Cargando...</div>`;
+// ── MODAL ESTADÍSTICAS (Goleadores + Tarjetas) ───────────────────────────
+let _estadTab = 'goleadores'; // pestaña activa
+
+window.abrirModalEstadisticas = async function(tab) {
+  _estadTab = tab || 'goleadores';
+  const modal = document.getElementById('modal-estadisticas');
   modal.style.display = 'flex';
+  await renderTabEstadisticas(_estadTab);
+};
 
-  let lista = [];
-  try {
-    const snap = await getDoc(doc(db, 'config', 'goleadores'));
-    lista = snap.exists() ? (snap.data().lista || []) : [];
-  } catch(e) {
-    // fallback localStorage
-    try { lista = JSON.parse(localStorage.getItem('lapolla2026_goleadores') || '[]'); } catch(e2) {}
-  }
+window.switchTabEstad = async function(tab) {
+  _estadTab = tab;
+  document.querySelectorAll('.estad-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  await renderTabEstadisticas(tab);
+};
 
-  if (!lista.length) {
-    body.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">
-      <i class="fas fa-futbol" style="font-size:2rem;opacity:.3;display:block;margin-bottom:12px;"></i>
-      La tabla se publicará cuando comiencen los partidos.
-    </div>`;
-  } else {
+async function renderTabEstadisticas(tab) {
+  const body = document.getElementById('modal-estadisticas-body');
+  body.innerHTML = `<div style="text-align:center;padding:40px;color:#6b7280;"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem;margin-bottom:10px;display:block;"></i>Cargando...</div>`;
+
+  if (tab === 'goleadores') {
+    let lista = [];
+    try {
+      const snap = await getDoc(doc(db, 'config', 'goleadores'));
+      lista = snap.exists() ? (snap.data().lista || []) : [];
+    } catch(e) {
+      try { lista = JSON.parse(localStorage.getItem('lapolla2026_goleadores') || '[]'); } catch(e2) {}
+    }
+    if (!lista.length) {
+      body.innerHTML = `<div style="text-align:center;padding:40px;color:#6b7280;">
+        <i class="fas fa-futbol" style="font-size:2rem;opacity:.3;display:block;margin-bottom:12px;"></i>
+        La tabla se publicará cuando comiencen los partidos.
+      </div>`;
+      return;
+    }
     const sorted = [...lista].sort((a,b) => b.goles - a.goles || a.nombre.localeCompare(b.nombre));
     const maxGoles = sorted[0]?.goles || 1;
     let html = `<table style="width:100%;border-collapse:collapse;">
@@ -1997,7 +2020,7 @@ window.abrirModalGoleadores = async function() {
         <th style="padding:8px 14px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;width:36px;">#</th>
         <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">Jugador</th>
         <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">País</th>
-        <th style="padding:8px 14px;text-align:right;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#dc2626;">⚽</th>
+        <th style="padding:8px 14px;text-align:right;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#dc2626;">⚽ Goles</th>
       </tr></thead><tbody>`;
     sorted.forEach((g, i) => {
       const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
@@ -2016,27 +2039,74 @@ window.abrirModalGoleadores = async function() {
     });
     html += `</tbody></table>`;
     body.innerHTML = html;
+
+  } else if (tab === 'tarjetas') {
+    let lista = [];
+    try {
+      const snap = await getDoc(doc(db, 'config', 'tarjetas'));
+      lista = snap.exists() ? (snap.data().lista || []) : [];
+    } catch(e) {}
+    if (!lista.length) {
+      body.innerHTML = `<div style="text-align:center;padding:40px;color:#6b7280;">
+        <i class="fas fa-square" style="font-size:2rem;opacity:.3;display:block;margin-bottom:12px;color:#f59e0b;"></i>
+        La tabla se publicará cuando comiencen los partidos.
+      </div>`;
+      return;
+    }
+    const sorted = [...lista].sort((a,b) => (b.rojas*3+b.amarillas) - (a.rojas*3+a.amarillas) || a.nombre.localeCompare(b.nombre));
+    let html = `<table style="width:100%;border-collapse:collapse;">
+      <thead><tr style="border-bottom:2px solid #e5e7eb;">
+        <th style="padding:8px 14px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;width:36px;">#</th>
+        <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">Jugador</th>
+        <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">País</th>
+        <th style="padding:8px 10px;text-align:center;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#f59e0b;">🟨</th>
+        <th style="padding:8px 14px;text-align:center;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#dc2626;">🟥</th>
+      </tr></thead><tbody>`;
+    sorted.forEach((g, i) => {
+      html += `<tr style="border-bottom:1px solid #f3f4f6;">
+        <td style="padding:11px 14px;font-weight:700;color:#6b7280;">${i+1}</td>
+        <td style="padding:11px 10px;font-weight:500;font-size:.88rem;color:#111;">${g.nombre}</td>
+        <td style="padding:11px 10px;color:#6b7280;font-size:.85rem;">${getFlag(g.pais)} ${g.pais}</td>
+        <td style="padding:11px 10px;text-align:center;font-family:var(--font-display);font-size:1.2rem;color:#d97706;">${g.amarillas||0}</td>
+        <td style="padding:11px 14px;text-align:center;font-family:var(--font-display);font-size:1.2rem;color:#dc2626;">${g.rojas||0}</td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+    body.innerHTML = html;
   }
-  modal.style.display = 'flex';
+}
+
+window.cerrarModalEstadisticas = function() {
+  document.getElementById('modal-estadisticas').style.display = 'none';
 };
 
-window.cerrarModalGoleadores = function() {
-  document.getElementById('modal-goleadores').style.display = 'none';
-};
+// Mantener compatibilidad con llamadas antiguas
+window.abrirModalGoleadores = () => window.abrirModalEstadisticas('goleadores');
+window.cerrarModalGoleadores = window.cerrarModalEstadisticas;
 
 init();
 </script>
-<!-- MODAL GOLEADORES -->
-<div id="modal-goleadores" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);" onclick="if(event.target===this)cerrarModalGoleadores()">
+<!-- MODAL ESTADÍSTICAS -->
+<style>
+.estad-tab-btn{padding:8px 18px;border:none;background:none;cursor:pointer;font-size:.82rem;font-weight:600;color:#6b7280;border-bottom:2px solid transparent;transition:all .15s;}
+.estad-tab-btn.active{color:#111;border-bottom-color:#dc2626;}
+.estad-tab-btn:hover:not(.active){color:#374151;}
+</style>
+<div id="modal-estadisticas" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);" onclick="if(event.target===this)cerrarModalEstadisticas()">
   <div style="background:#fff;border-radius:16px;width:100%;max-width:580px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.4);">
     <div style="padding:18px 22px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:16px 16px 0 0;">
       <div>
-        <div style="font-family:var(--font-display);font-size:1.3rem;letter-spacing:.04em;color:#111;">⚽ Tabla de Goleadores</div>
-        <div style="font-size:0.72rem;color:#6b7280;margin-top:2px;">Los mejores artilleros del Mundial 2026</div>
+        <div style="font-family:var(--font-display);font-size:1.3rem;letter-spacing:.04em;color:#111;">📊 Estadísticas del Mundial</div>
+        <div style="font-size:0.72rem;color:#6b7280;margin-top:2px;">Goleadores y tarjetas del Mundial 2026</div>
       </div>
-      <button onclick="cerrarModalGoleadores()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#6b7280;padding:4px 8px;">✕</button>
+      <button onclick="cerrarModalEstadisticas()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#6b7280;padding:4px 8px;">✕</button>
     </div>
-    <div id="modal-goleadores-body" style="padding:16px 20px;background:#fff;border-radius:0 0 16px 16px;"></div>
+    <!-- Pestañas -->
+    <div style="display:flex;border-bottom:1px solid #e5e7eb;padding:0 22px;background:#fff;">
+      <button class="estad-tab-btn active" data-tab="goleadores" onclick="switchTabEstad('goleadores')">⚽ Goleadores</button>
+      <button class="estad-tab-btn" data-tab="tarjetas" onclick="switchTabEstad('tarjetas')">🟨 Tarjetas</button>
+    </div>
+    <div id="modal-estadisticas-body" style="padding:16px 20px;background:#fff;border-radius:0 0 16px 16px;"></div>
   </div>
 </div>
 
