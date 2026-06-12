@@ -2204,10 +2204,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 async function mostrarModalHoy() {
-  // No mostrar si ya fue cerrada en esta sesión
-  if (sessionStorage.getItem('modalHoyCerrada')) return;
-
-  // Fecha de hoy en Chile (UTC-4)
+  // Fecha de hoy en Chile
   const ahora = new Date();
   const hoyChile = new Date(ahora.toLocaleString('en-US', { timeZone: 'America/Santiago' }));
   const yyyy = hoyChile.getFullYear();
@@ -2222,20 +2219,17 @@ async function mostrarModalHoy() {
       if (p.fecha === fechaHoy) partidosHoy.push({ ...p, grupo: g });
     });
   });
-  // También fases eliminatorias si existen
   if (typeof FIXTURE_MAP !== 'undefined') {
     Object.values(FIXTURE_MAP).forEach(p => {
       if (p.fecha === fechaHoy && !partidosHoy.find(x => x.id === p.id))
         partidosHoy.push(p);
     });
   }
+  if (partidosHoy.length === 0) return;
 
-  if (partidosHoy.length === 0) return; // no hay partidos hoy, no mostrar
-
-  // Enriquecer con resultados de Firestore
+  // Lanzar fetch de Firestore en paralelo — no esperamos
   let resCache = {};
-  try {
-    const snap = await getDocs(collection(db, 'partidos'));
+  const resPromise = getDocs(collection(db, 'partidos')).then(snap => {
     snap.docs.forEach(d => {
       if (d.data().simulado) return;
       const data = { id: d.id, ...d.data() };
@@ -2243,45 +2237,24 @@ async function mostrarModalHoy() {
       resCache['fg' + d.id] = data;
       if (d.id.startsWith('fg')) resCache[d.id.slice(2)] = data;
     });
-  } catch(e) {}
+  }).catch(() => {});
 
   // Fecha legible
   const diasSem = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   const meses   = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  const fechaLabel = `${diasSem[hoyChile.getDay()]} ${dd} ${meses[hoyChile.getMonth()]}`;
-  document.getElementById('mhoy-fecha-badge').textContent = fechaLabel;
+  document.getElementById('mhoy-fecha-badge').textContent =
+    `${diasSem[hoyChile.getDay()]} ${dd} ${meses[hoyChile.getMonth()]}`;
 
-  // Ordenar por hora
   partidosHoy.sort((a, b) => (a.hora || '').localeCompare(b.hora || ''));
 
-  // Render cards
+  // Render INMEDIATO sin esperar clima ni Firestore
   const body = document.getElementById('mhoy-body');
-  const cards = await Promise.all(partidosHoy.map(async p => {
-    const res = resCache[p.id] || resCache['fg' + p.id] || {};
-    const tieneRes = res.resultado_local != null && res.resultado_visita != null;
+  body.innerHTML = partidosHoy.map(p => {
     const horaChile = fmtHoraChile(p.hora, p.estadio) || p.hora || '';
     const flagL = getFlag(p.local  || '') || '⬜';
     const flagV = getFlag(p.visita || '') || '⬜';
     const grupoLabel = p.grupo ? `Grupo ${p.grupo}` : (p.fase || '');
-
-    // Score o VS
-    const centro = tieneRes
-      ? `<div class="mhoy-score">${res.resultado_local} – ${res.resultado_visita}</div>`
-      : `<div class="mhoy-vs">VS</div>`;
-
-    // Clima
-    let climaHtml = '';
-    if (p.estadio) {
-      const coords = getCoordsFromSede(p.estadio);
-      if (coords) {
-        try {
-          const w = await fetchWeather(coords.lat, coords.lon, coords.key);
-          climaHtml = `<span class="mhoy-clima">${w.icon} ${w.temp}°C · ${w.desc}</span>`;
-        } catch(e) {}
-      }
-    }
-
-    return `<div class="mhoy-card">
+    return `<div class="mhoy-card" id="mhoy-card-${p.id}">
       <div class="mhoy-card-top">
         <span class="mhoy-grupo">${grupoLabel}</span>
         <span class="mhoy-hora">🕐 ${horaChile} hrs CL</span>
@@ -2291,7 +2264,7 @@ async function mostrarModalHoy() {
           <span class="flag">${flagL}</span>
           <span>${p.local || 'Por definir'}</span>
         </div>
-        ${centro}
+        <div class="mhoy-vs" id="mhoy-centro-${p.id}">VS</div>
         <div class="mhoy-team right">
           <span>${p.visita || 'Por definir'}</span>
           <span class="flag">${flagV}</span>
@@ -2299,13 +2272,38 @@ async function mostrarModalHoy() {
       </div>
       <div class="mhoy-card-footer">
         <span class="mhoy-estadio"><i class="fas fa-location-dot"></i>${p.estadio || 'TBD'}</span>
-        ${climaHtml}
+        <span class="mhoy-clima" id="mhoy-clima-${p.id}">🌡️ …</span>
       </div>
     </div>`;
-  }));
+  }).join('');
 
-  body.innerHTML = cards.join('');
+  // Mostrar modal de inmediato
   document.getElementById('modal-hoy-overlay').classList.add('open');
+
+  // Actualizar resultados cuando lleguen
+  await resPromise;
+  partidosHoy.forEach(p => {
+    const res = resCache[p.id] || resCache['fg' + p.id] || {};
+    if (res.resultado_local != null && res.resultado_visita != null) {
+      const el = document.getElementById(`mhoy-centro-${p.id}`);
+      if (el) { el.className = 'mhoy-score'; el.textContent = `${res.resultado_local} – ${res.resultado_visita}`; }
+    }
+  });
+
+  // Cargar clima en paralelo para cada partido
+  partidosHoy.forEach(async p => {
+    if (!p.estadio) return;
+    const coords = getCoordsFromSede(p.estadio);
+    if (!coords) return;
+    try {
+      const w = await fetchWeather(coords.lat, coords.lon, coords.key);
+      const el = document.getElementById(`mhoy-clima-${p.id}`);
+      if (el) el.textContent = `${w.icon} ${w.temp}°C · ${w.desc}`;
+    } catch(e) {
+      const el = document.getElementById(`mhoy-clima-${p.id}`);
+      if (el) el.style.display = 'none';
+    }
+  });
 }
 
 </script>
