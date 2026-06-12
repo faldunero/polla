@@ -2196,9 +2196,11 @@ async function renderResultados() {
     const snap = await getDocs(collection(db, 'partidos'));
     resCache = {};
     snap.docs.forEach(d => {
-      resCache[d.id] = { id: d.id, ...d.data() };
-      // Mapear también con prefijo fg para compatibilidad con fixture
-      resCache['fg' + d.id] = resCache[d.id];
+      if (d.data().simulado) return; // ignorar partidos del simulador
+      const data = { id: d.id, ...d.data() };
+      resCache[d.id] = data;           // A1
+      resCache['fg' + d.id] = data;    // fgA1
+      if (d.id.startsWith('fg')) resCache[d.id.slice(2)] = data; // sin prefijo
     });
   } catch(e) {
     toast('Error cargando datos: ' + e.message, 'error');
