@@ -54,12 +54,12 @@ nav {
   letter-spacing: 0.06em;
 }
 
-.admin-layout { display: flex; min-height: calc(100vh - 62px); }
-.sidebar { width: 200px; flex-shrink: 0; background: var(--card); border-right: 1px solid var(--border); padding: 20px 10px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 62px; height: calc(100vh - 62px); overflow-y: auto; }
-.sidebar .tab { width: 100%; text-align: left; border-radius: 8px; padding: 10px 14px; font-size: 0.84rem; display: flex; align-items: center; gap: 10px; }
+.admin-layout { display: grid; grid-template-columns: 200px 1fr; min-height: calc(100vh - 64px); }
+.sidebar { background: var(--card); border-right: 1px solid var(--border); padding: 16px 10px; display: flex; flex-direction: column; gap: 4px; }
+.sidebar .tab { width: 100%; text-align: left; border-radius: 8px; padding: 10px 14px; font-size: 0.84rem; display: flex; align-items: center; gap: 10px; border: 1px solid transparent; }
 .sidebar .tab i { width: 16px; text-align: center; flex-shrink: 0; }
 .sidebar .tab.active { background: rgba(245,200,66,0.12); border-color: rgba(245,200,66,0.3); color: var(--gold); }
-.main { padding: 28px; flex: 1; min-width: 0; max-width: 1000px; }
+.main { padding: 28px; }
 
 .section { margin-bottom: 40px; }
 .section-title {
@@ -6534,8 +6534,14 @@ let _vjParticipantes = [];
 let _vjPartidos = {};
 let _vjApuestas = [];
 
+let _vjInitPromise = null;
 async function initVistaJugador() {
-  if (_vjParticipantes.length) return; // ya cargado
+  if (_vjInitPromise) return _vjInitPromise;
+  if (_vjParticipantes.length) return;
+  _vjInitPromise = _doInitVistaJugador();
+  return _vjInitPromise;
+}
+async function _doInitVistaJugador() {
   try {
     const [partSnap, apSnap, partidosSnap] = await Promise.all([
       getDocs(query(collection(db, 'participantes'), where('estado','==','aprobado'))),
@@ -6571,9 +6577,11 @@ async function initVistaJugador() {
   }
 }
 
-window.vjBuscar = function() {
+window.vjBuscar = async function() {
   const q = document.getElementById('vj-search').value.toLowerCase().trim();
   if (!q) return;
+  document.getElementById('vj-container').innerHTML = '<div style="padding:20px;color:var(--muted);"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
+  await initVistaJugador();
   const match = _vjParticipantes.find(p => (p.nombre||'').toLowerCase().includes(q));
   if (match) {
     document.getElementById('vj-select').value = match.uid;
@@ -6759,20 +6767,21 @@ function vjCargar(uid) {
 
     <!-- TAB VISTA JUGADOR -->
     <div class="page" id="page-vistaweb">
-      <div class="section-title"><i class="fas fa-eye"></i> Vista Jugador</div>
-      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center;">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--gold);letter-spacing:0.06em;margin-bottom:20px;">
+        <i class="fas fa-eye"></i> Vista Jugador
+      </h2>
+      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
         <input id="vj-search" type="text" placeholder="Buscar por nombre..."
-          onkeydown="if(event.key==='Enter') vjBuscar()"
+          oninput="vjFiltrar()"
           style="flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.9rem;background:var(--card);color:var(--text);">
-        <button class="btn btn-gold" onclick="vjBuscar()"><i class="fas fa-search"></i> Buscar</button>
         <select id="vj-select" onchange="vjDesdeSelect()"
           style="flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.9rem;background:var(--card);color:var(--text);">
-          <option value="">— O seleccionar de la lista —</option>
+          <option value="">— Seleccionar jugador —</option>
         </select>
       </div>
       <div id="vj-container">
-        <div style="text-align:center;padding:40px 20px;color:var(--muted);">
-          <i class="fas fa-magnifying-glass" style="font-size:2rem;margin-bottom:10px;display:block;opacity:0.4;"></i>
+        <div style="text-align:center;padding:60px 20px;color:var(--muted);">
+          <i class="fas fa-user-magnifying-glass" style="font-size:2.5rem;margin-bottom:12px;display:block;opacity:0.4;"></i>
           Busca un jugador para ver sus apuestas
         </div>
       </div>
