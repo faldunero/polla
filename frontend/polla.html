@@ -1010,8 +1010,10 @@ const FG = FIXTURE_GRUPOS;
       const firestoreById = {};
       globalPartidos.forEach(m => {
         firestoreById[m.id] = m;
-        // Mapear también con prefijo fg
+        // Mapear con prefijo fg (apuestas nuevas)
         firestoreById['fg' + m.id] = m;
+        // Mapear sin prefijo fg (apuestas antiguas)
+        if (m.id.startsWith('fg')) firestoreById[m.id.slice(2)] = m;
       });
 
       // Fases eliminatorias
@@ -1249,7 +1251,7 @@ const FG = FIXTURE_GRUPOS;
         grupoId: miParticipante.grupoId,
         grupoNombre: miParticipante.grupoNombre,
         partidoId: partido.id,
-        fase: partido.fase || (partido.grupo ? `Grupo ${partido.grupo}` : faseId),
+        fase: faseId,
         numeroPartido: Number(partido.numero || 0),
         golesLocal: Number(l),
         golesVisita: Number(v),
@@ -1331,8 +1333,10 @@ const FG = FIXTURE_GRUPOS;
         const partidoById = {};
         globalPartidos.forEach(p => {
           partidoById[p.id] = p;
-          // Mapear también con prefijo fg para compatibilidad con apuestas antiguas
+          // Mapear con prefijo fg (apuestas nuevas: fgA1)
           partidoById['fg' + p.id] = p;
+          // Mapear sin prefijo fg (apuestas antiguas: A1)
+          if (p.id.startsWith('fg')) partidoById[p.id.slice(2)] = p;
         });
 
         // 3) Todas las apuestas del grupo

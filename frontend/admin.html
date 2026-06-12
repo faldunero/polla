@@ -2838,7 +2838,8 @@ async function renderRankingGlobal() {
     partidosSnap.docs.forEach(d => {
       if (d.data().simulado) return; // ignorar partidos del simulador
       partidos[d.id] = d.data();
-      partidos['fg' + d.id] = d.data(); // mapear también con prefijo fg
+      partidos['fg' + d.id] = d.data(); // apuestas con prefijo fg
+      if (d.id.startsWith('fg')) partidos[d.id.slice(2)] = d.data(); // apuestas sin prefijo
     });
 
     // Participantes aprobados con grupo activo
