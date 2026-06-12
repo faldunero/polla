@@ -3152,7 +3152,7 @@ window.renderRankingVista = function renderRankingVista() {
       html += `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;flex:1;min-width:160px;cursor:pointer;transition:all .18s;" onclick="document.getElementById('rk-grupo-select').value='${gid}';window.onRkGrupoChange()" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
         <div style="font-family:'Bebas Neue',sans-serif;font-size:0.85rem;color:var(--muted);letter-spacing:0.06em;margin-bottom:4px;">${g.nombre}</div>
         <div style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--gold);">${lider?.total ?? 0} <span style="font-size:0.7rem;color:var(--muted);">pts</span></div>
-        <div style="font-size:0.7rem;color:var(--muted);margin-top:2px;">🥇 ${lider?.nombre ?? '—'}</div>
+        <div style="font-size:0.7rem;color:var(--muted);margin-top:2px;">${lider?.nombre ?? '—'}</div>
         <div style="font-size:0.65rem;color:var(--muted);margin-top:1px;">${g.jugadores.length} jugador${g.jugadores.length !== 1 ? 'es' : ''}</div>
       </div>`;
     });
@@ -5995,7 +5995,7 @@ function simRenderClasificados(){
       <div style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:16px;">${campeon}</div>
       <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);">
         <span>🥈 Subcampeón: <strong style="color:var(--text);">${subcampeon}</strong></span>
-        ${tercero?`<span>🥉 Tercer lugar: <strong style="color:var(--text);">${tercero}</strong></span>`:''}
+        ${tercero?`<span>Tercer lugar: <strong style="color:var(--text);">${tercero}</strong></span>`:''}
       </div>
     </div>`;
   }
@@ -6204,11 +6204,9 @@ async function loadDashboard() {
     const totalApuestas = apuestas.length;
     const totalGrupos   = grupos.length;
 
-    const partidosConRes = partidos.filter(p => p.resultado_local != null && !p.simulado);
-    // IDs pueden ser 'A1' o 'fgA1' — filtrar solo fase de grupos
-    const isGrupo = p => /^(fg)?[A-L]\d/i.test(p.id) && !p.simulado;
-    const totalPartidos  = partidos.filter(isGrupo).length;
-    const pctAvance      = totalPartidos ? Math.round((partidosConRes.filter(isGrupo).length / totalPartidos) * 100) : 0;
+    const partidosConRes = partidos.filter(p => p.resultado_local != null);
+    const totalPartidos  = partidos.filter(p => /^fg[A-L]/i.test(p.id)).length; // solo grupos
+    const pctAvance      = totalPartidos ? Math.round((partidosConRes.filter(p => /^fg[A-L]/i.test(p.id)).length / totalPartidos) * 100) : 0;
 
     const apuestasConPuntaje = apuestas.filter(a => a.puntaje != null && a.puntaje > 0).length;
     const totalPuntos = apuestas.reduce((s, a) => s + (Number(a.puntaje) || 0), 0);
@@ -6224,7 +6222,7 @@ async function loadDashboard() {
       { label:'Grupos activos',        value: totalGrupos,        sub:`${Math.round(aprobados/Math.max(totalGrupos,1))} jugadores/grupo promedio`, color:'#3b82f6' },
       { label:'Total apuestas',        value: totalApuestas,      sub:`${apuestasConPuntaje} con puntaje · ${totalApuestas - apuestasConPuntaje} sin resultado aún`, color:'#f59e0b' },
       { label:'Puntos repartidos',     value: totalPuntos,        sub:`Promedio ${promPuntos} pts por jugador`, color:'#ef4444' },
-      { label:'Avance Fase Grupos',    value: pctAvance+'%',      sub:`${partidosConRes.filter(isGrupo).length}/${totalPartidos} partidos con resultado`, color:'#8b5cf6' },
+      { label:'Avance Fase Grupos',    value: pctAvance+'%',      sub:`${partidosConRes.filter(p=>/^fg[A-L]/i.test(p.id)).length}/${totalPartidos} partidos con resultado`, color:'#8b5cf6' },
       { label:'Actividad reciente',    value: activosRecientes,   sub:'Apuestas en las últimas 24 horas', color:'#06b6d4' },
     ].map(k => `
       <div class="dash-kpi">
@@ -6298,11 +6296,11 @@ async function loadDashboard() {
         return { nombre: p?.nombre || p?.email || uid.slice(0,8), pts };
       });
     const maxPts = top5[0]?.pts || 1;
-    const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+    const medals = ['','','','',''];
     document.getElementById('dash-top-jugadores').innerHTML = top5.length
       ? top5.map((j,i) => `
           <div class="dash-bar-wrap">
-            <div class="dash-bar-label">${medals[i]} ${j.nombre}</div>
+            <div class="dash-bar-label">${j.nombre}</div>
             <div class="dash-bar-track">
               <div class="dash-bar-fill" style="width:${Math.round(j.pts/maxPts*100)}%;background:${i===0?'var(--gold)':i===1?'#94a3b8':i===2?'#b45309':'#6b7280'};"></div>
             </div>
