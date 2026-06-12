@@ -6204,9 +6204,11 @@ async function loadDashboard() {
     const totalApuestas = apuestas.length;
     const totalGrupos   = grupos.length;
 
-    const partidosConRes = partidos.filter(p => p.resultado_local != null);
-    const totalPartidos  = partidos.filter(p => /^fg[A-L]/i.test(p.id)).length; // solo grupos
-    const pctAvance      = totalPartidos ? Math.round((partidosConRes.filter(p => /^fg[A-L]/i.test(p.id)).length / totalPartidos) * 100) : 0;
+    const partidosConRes = partidos.filter(p => p.resultado_local != null && !p.simulado);
+    // IDs pueden ser 'A1' o 'fgA1' — filtrar solo fase de grupos
+    const isGrupo = p => /^(fg)?[A-L]\d/i.test(p.id) && !p.simulado;
+    const totalPartidos  = partidos.filter(isGrupo).length;
+    const pctAvance      = totalPartidos ? Math.round((partidosConRes.filter(isGrupo).length / totalPartidos) * 100) : 0;
 
     const apuestasConPuntaje = apuestas.filter(a => a.puntaje != null && a.puntaje > 0).length;
     const totalPuntos = apuestas.reduce((s, a) => s + (Number(a.puntaje) || 0), 0);
@@ -6222,7 +6224,7 @@ async function loadDashboard() {
       { label:'Grupos activos',        value: totalGrupos,        sub:`${Math.round(aprobados/Math.max(totalGrupos,1))} jugadores/grupo promedio`, color:'#3b82f6' },
       { label:'Total apuestas',        value: totalApuestas,      sub:`${apuestasConPuntaje} con puntaje · ${totalApuestas - apuestasConPuntaje} sin resultado aún`, color:'#f59e0b' },
       { label:'Puntos repartidos',     value: totalPuntos,        sub:`Promedio ${promPuntos} pts por jugador`, color:'#ef4444' },
-      { label:'Avance Fase Grupos',    value: pctAvance+'%',      sub:`${partidosConRes.filter(p=>/^fg[A-L]/i.test(p.id)).length}/${totalPartidos} partidos con resultado`, color:'#8b5cf6' },
+      { label:'Avance Fase Grupos',    value: pctAvance+'%',      sub:`${partidosConRes.filter(isGrupo).length}/${totalPartidos} partidos con resultado`, color:'#8b5cf6' },
       { label:'Actividad reciente',    value: activosRecientes,   sub:'Apuestas en las últimas 24 horas', color:'#06b6d4' },
     ].map(k => `
       <div class="dash-kpi">
