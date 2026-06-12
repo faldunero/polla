@@ -782,7 +782,11 @@ function renderGrupos(){
   // Esto resuelve el caso donde Firestore tiene docs incompletos (sin local/visita/fecha)
   const porGrupo = {};
   const firestoreById = {};
-  globalData.partidos.forEach(m => { firestoreById[m.id] = m; });
+  globalData.partidos.filter(m => !m.simulado).forEach(m => {
+    firestoreById[m.id] = m;
+    firestoreById['fg' + m.id] = m;
+    if (m.id.startsWith('fg')) firestoreById[m.id.slice(2)] = m;
+  });
 
   Object.keys(FG).forEach(g => {
     FG[g].forEach(base => {
@@ -1371,7 +1375,7 @@ window._showTabla = async function(g){
   } catch(e){}
 
   const firestoreById={};
-  globalData.partidos.forEach(m=>{
+  globalData.partidos.filter(m=>!m.simulado).forEach(m=>{
     firestoreById[m.id]=m;
     firestoreById['fg'+m.id]=m;
     if(m.id.startsWith('fg')) firestoreById[m.id.slice(2)]=m;
@@ -1994,10 +1998,8 @@ window.abrirModalEstadisticas = async function(tab) {
     ]);
     _estadDatos.goleadores = snapG.exists() ? (snapG.data().lista || []) : [];
     _estadDatos.tarjetas   = snapT.exists() ? (snapT.data().lista || []) : [];
-    console.log('[DEBUG estadisticas] snapT exists:', snapT.exists(), 'data:', snapT.exists() ? snapT.data() : null);
-    console.log('[DEBUG estadisticas] tarjetas lista:', _estadDatos.tarjetas);
+    console.log('[TARJETAS]', snapT.exists(), snapT.exists() ? snapT.data() : 'no existe');
   } catch(e) {
-    console.error('[DEBUG estadisticas] catch error:', e);
     try { _estadDatos.goleadores = JSON.parse(localStorage.getItem('lapolla2026_goleadores') || '[]'); } catch(e2) {}
   }
   renderTabEstadisticasLocal(_estadTab);
