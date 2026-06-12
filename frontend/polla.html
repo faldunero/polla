@@ -445,7 +445,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
     import {
-      getFirestore, collection, getDocs, getDocsFromServer, getDoc, setDoc, addDoc, updateDoc, doc, query,
+      getFirestore, collection, getDocs, getDocsFromServer, getDoc, setDoc, addDoc, updateDoc, deleteDoc, doc, query,
       where, orderBy, serverTimestamp
     } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
@@ -1266,8 +1266,26 @@ const FG = FIXTURE_GRUPOS;
       }
 
       try {
-        if (existente?.id) {
-          await updateDoc(doc(db, 'apuestas', existente.id), payload);
+        // Anti-duplicado: buscar por uid + partidoId en Firestore (cubre ambos formatos de ID)
+        let docIdExistente = existente?.id || null;
+        if (!docIdExistente) {
+          // Buscar si hay una apuesta con el mismo partidoId o su equivalente sin/con fg
+          const idAlt = partido.id.startsWith('fg') ? partido.id.slice(2) : 'fg' + partido.id;
+          const snapDup = await getDocs(query(
+            collection(db, 'apuestas'),
+            where('uid', '==', currentUser.uid),
+            where('partidoId', 'in', [partido.id, idAlt])
+          ));
+          if (snapDup.size > 0) {
+            docIdExistente = snapDup.docs[0].id;
+            // Borrar duplicados si hay más de uno
+            for (let i = 1; i < snapDup.size; i++) {
+              await deleteDoc(doc(db, 'apuestas', snapDup.docs[i].id));
+            }
+          }
+        }
+        if (docIdExistente) {
+          await updateDoc(doc(db, 'apuestas', docIdExistente), payload);
         } else {
           payload.creadoEn = serverTimestamp();
           await addDoc(collection(db, 'apuestas'), payload);
