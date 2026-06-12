@@ -2920,7 +2920,13 @@ async function renderRankingGlobal() {
       if (a.puntaje != null && a.puntaje !== ptsReal) j.discrepancias++;
     });
 
-    const ranking = Object.values(jugadores).sort((a,b) => b.total-a.total || b.aciertos-a.aciertos || b.parciales-a.parciales || (a.nombre||'').localeCompare(b.nombre||''));
+    const ranking = Object.values(jugadores)
+      .sort((a,b) => b.total-a.total || (a.nombre||'').localeCompare(b.nombre||''))
+      .map((r, i, arr) => {
+        const pos = i === 0 ? 1 : (r.total === arr[i-1].total ? arr[i-1]._pos : i + 1);
+        r._pos = pos;
+        return { ...r, pos };
+      });
 
     if (!ranking.length) {
       container.innerHTML = '<p style="color:var(--muted);">No hay participantes aprobados con grupo activo.</p>';
