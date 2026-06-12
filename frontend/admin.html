@@ -6205,8 +6205,8 @@ async function loadDashboard() {
     const totalGrupos   = grupos.length;
 
     const partidosConRes = partidos.filter(p => p.resultado_local != null);
-    const totalPartidos  = partidos.filter(p => /^fg[A-L]/i.test(p.id)).length; // solo grupos
-    const pctAvance      = totalPartidos ? Math.round((partidosConRes.filter(p => /^fg[A-L]/i.test(p.id)).length / totalPartidos) * 100) : 0;
+    const totalPartidos  = partidos.filter(p => /^(fg)?[A-L]\d/i.test(p.id) && !p.simulado).length; // solo grupos
+    const pctAvance      = totalPartidos ? Math.round((partidosConRes.filter(p => /^(fg)?[A-L]\d/i.test(p.id) && !p.simulado).length / totalPartidos) * 100) : 0;
 
     const apuestasConPuntaje = apuestas.filter(a => a.puntaje != null && a.puntaje > 0).length;
     const totalPuntos = apuestas.reduce((s, a) => s + (Number(a.puntaje) || 0), 0);
@@ -6222,7 +6222,7 @@ async function loadDashboard() {
       { label:'Grupos activos',        value: totalGrupos,        sub:`${Math.round(aprobados/Math.max(totalGrupos,1))} jugadores/grupo promedio`, color:'#3b82f6' },
       { label:'Total apuestas',        value: totalApuestas,      sub:`${apuestasConPuntaje} con puntaje · ${totalApuestas - apuestasConPuntaje} sin resultado aún`, color:'#f59e0b' },
       { label:'Puntos repartidos',     value: totalPuntos,        sub:`Promedio ${promPuntos} pts por jugador`, color:'#ef4444' },
-      { label:'Avance Fase Grupos',    value: pctAvance+'%',      sub:`${partidosConRes.filter(p=>/^fg[A-L]/i.test(p.id)).length}/${totalPartidos} partidos con resultado`, color:'#8b5cf6' },
+      { label:'Avance Fase Grupos',    value: pctAvance+'%',      sub:`${partidosConRes.filter(p=>/^(fg)?[A-L]\d/i.test(p.id) && !p.simulado).length}/${totalPartidos} partidos con resultado`, color:'#8b5cf6' },
       { label:'Actividad reciente',    value: activosRecientes,   sub:'Apuestas en las últimas 24 horas', color:'#06b6d4' },
     ].map(k => `
       <div class="dash-kpi">
@@ -6257,7 +6257,7 @@ async function loadDashboard() {
       cuartos:'Cuartos', semi:'Semis', tercer:'3er Lugar', final:'Final'
     };
     function detectFaseApuesta(id) {
-      if (/^fg[A-L]/i.test(id)) return 'grupos';
+      if (/^(fg)?[A-L]\d/i.test(id)) return 'grupos';
       if (/^r32_/.test(id))     return 'r32';
       if (/^r16_/.test(id))     return 'octavos';
       if (/^qf/.test(id))       return 'cuartos';
@@ -6310,7 +6310,7 @@ async function loadDashboard() {
 
     // ── Estado del torneo ─────────────────────────────────────────────────
     const fases = [
-      { label:'Fase de Grupos',   ids: partidos.filter(p=>/^fg[A-L]/i.test(p.id)) },
+      { label:'Fase de Grupos',   ids: partidos.filter(p=>/^(fg)?[A-L]\d/i.test(p.id) && !p.simulado) },
       { label:'32avos de Final',  ids: partidos.filter(p=>/^r32_/.test(p.id)) },
       { label:'Octavos de Final', ids: partidos.filter(p=>/^r16_/.test(p.id)) },
       { label:'Cuartos de Final', ids: partidos.filter(p=>/^qf/.test(p.id)) },
