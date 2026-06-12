@@ -3035,6 +3035,13 @@ function buildTablaGrupo(jugadores, grupoNombre, grupoId, mostrarGrupo, searchAc
           <div class="rk-bar"><div class="rk-bar-fill" style="width:${pct}%"></div></div>
         </div>
       </td>
+      <td style="text-align:center;">
+        <button onclick="verApuestasJugador('${r.uid}','${r.nombre.replace(/'/g,"\\'")}','${r.grupoNombre}')"
+          style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 8px;cursor:pointer;color:var(--muted);font-size:0.8rem;transition:all 0.2s;"
+          title="Ver apuestas" onmouseover="this.style.color='var(--gold)';this.style.borderColor='var(--gold)'" onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border)'">
+          <i class="fas fa-magnifying-glass"></i>
+        </button>
+      </td>
     </tr>`;
   });
 
@@ -6704,6 +6711,129 @@ function vjCargar(uid) {
   container.innerHTML = html;
 }
 
+
+// ── MODAL APUESTAS JUGADOR ────────────────────────────────────────────────
+window.cerrarModalApuestasJugador = function() {
+  document.getElementById('modal-apuestas-jugador').style.display = 'none';
+};
+
+window.verApuestasJugador = async function(uid, nombre, grupo) {
+  const modal = document.getElementById('modal-apuestas-jugador');
+  modal.style.display = 'flex';
+  document.getElementById('maj-nombre').textContent = nombre;
+  document.getElementById('maj-grupo').textContent = grupo;
+  document.getElementById('maj-resumen').innerHTML = '<div style="grid-column:1/-1;color:var(--muted);padding:8px;">Cargando...</div>';
+  document.getElementById('maj-body').innerHTML = '';
+
+  try {
+    const [apSnap, partidosSnap] = await Promise.all([
+      getDocs(query(collection(db,'apuestas'), where('uid','==',uid))),
+      getDocs(collection(db,'partidos')),
+    ]);
+
+    // Partidos reales
+    const partidos = {};
+    partidosSnap.docs.forEach(d => {
+      if (d.data().simulado) return;
+      const data = { id: d.id, ...d.data() };
+      partidos[d.id] = data;
+      partidos['fg'+d.id] = data;
+      if (d.id.startsWith('fg')) partidos[d.id.slice(2)] = data;
+    });
+
+    // Apuestas deduplicadas
+    const normId = id => id?.startsWith('fg') ? id.slice(2) : id;
+    const apMap = new Map();
+    apSnap.docs.forEach(d => {
+      const a = d.data();
+      const key = normId(a.partidoId);
+      const ex = apMap.get(key);
+      if (!ex) { apMap.set(key, a); }
+      else {
+        const tN = a.actualizadoEn?.seconds||a.creadoEn?.seconds||0;
+        const tO = ex.actualizadoEn?.seconds||ex.creadoEn?.seconds||0;
+        if (tN > tO) apMap.set(key, a);
+      }
+    });
+
+    let totalPts=0, exactos=0, parciales=0, jugados=0;
+    let gruposHtml = '';
+
+    Object.keys(FG).forEach(g => {
+      const filas = FG[g].map(base => {
+        const fs = partidos[base.id]||partidos['fg'+base.id]||{};
+        const p = {...base, ...fs};
+        const apuesta = apMap.get(normId(base.id));
+        const tieneReal = p.resultado_local!=null && p.resultado_visita!=null;
+        let pts = null;
+        if (tieneReal && apuesta) {
+          pts = calcularPuntaje(
+            {local: p.resultado_local, visita: p.resultado_visita},
+            {local: apuesta.golesLocal, visita: apuesta.golesVisita}
+          );
+          if (pts!=null) {
+            totalPts+=pts; jugados++;
+            if(pts===4||pts===2) exactos++;
+            if(pts===3||pts===1) parciales++;
+          }
+        }
+        const col = pts===null?'var(--muted)':pts>=3?'#16a34a':pts>=1?'#ca8a04':'#dc2626';
+        const lbl = pts===null?(tieneReal?'–':''):pts+'pts';
+        const apL = apuesta!=null?apuesta.golesLocal:'–';
+        const apV = apuesta!=null?apuesta.golesVisita:'–';
+        const resL = tieneReal?p.resultado_local:'–';
+        const resV = tieneReal?p.resultado_visita:'–';
+        return `<tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:7px 8px;font-size:0.78rem;color:var(--muted);">${p.fecha?p.fecha.slice(5).replace('-','/'):''}  </td>
+          <td style="padding:7px 8px;text-align:right;font-weight:600;font-size:0.85rem;">${p.local||'?'}</td>
+          <td style="padding:7px 8px;text-align:center;"><span style="background:var(--ink);color:#fff;padding:2px 8px;border-radius:4px;font-family:'Bebas Neue',sans-serif;font-size:0.85rem;">${resL} – ${resV}</span></td>
+          <td style="padding:7px 8px;font-weight:600;font-size:0.85rem;">${p.visita||'?'}</td>
+          <td style="padding:7px 8px;text-align:center;color:var(--gold);font-family:'Bebas Neue',sans-serif;">${apL} – ${apV}</td>
+          <td style="padding:7px 8px;text-align:center;font-weight:700;color:${col};">${lbl}</td>
+        </tr>`;
+      }).join('');
+
+      gruposHtml += `<div style="margin-bottom:14px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+        <div style="background:var(--ink);padding:7px 14px;font-family:'Bebas Neue',sans-serif;color:var(--gold);letter-spacing:0.08em;font-size:0.9rem;">GRUPO ${g}</div>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr style="background:var(--card2);">
+            <th style="padding:6px 8px;font-size:0.7rem;color:var(--muted);text-align:left;">Fecha</th>
+            <th style="padding:6px 8px;font-size:0.7rem;color:var(--muted);text-align:right;">Local</th>
+            <th style="padding:6px 8px;font-size:0.7rem;color:var(--muted);text-align:center;">Resultado</th>
+            <th style="padding:6px 8px;font-size:0.7rem;color:var(--muted);">Visita</th>
+            <th style="padding:6px 8px;font-size:0.7rem;color:var(--gold);text-align:center;">Apuesta</th>
+            <th style="padding:6px 8px;font-size:0.7rem;color:var(--muted);text-align:center;">Pts</th>
+          </tr></thead>
+          <tbody>${filas}</tbody>
+        </table>
+      </div>`;
+    });
+
+    document.getElementById('maj-resumen').innerHTML =
+      `<div style="text-align:center;padding:10px;background:var(--card2);border-radius:8px;border:1px solid var(--border);">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--gold);">${totalPts}</div>
+        <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;">Puntos</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:var(--card2);border-radius:8px;border:1px solid var(--border);">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:#16a34a;">${exactos}</div>
+        <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;">Exactos</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:var(--card2);border-radius:8px;border:1px solid var(--border);">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:#ca8a04;">${parciales}</div>
+        <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;">Parciales</div>
+      </div>
+      <div style="text-align:center;padding:10px;background:var(--card2);border-radius:8px;border:1px solid var(--border);">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;">${jugados}</div>
+        <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;">Jugados</div>
+      </div>`;
+
+    document.getElementById('maj-body').innerHTML = gruposHtml;
+
+  } catch(e) {
+    document.getElementById('maj-body').innerHTML = '<div style="color:var(--red);padding:20px;">Error: ' + e.message + '</div>';
+  }
+};
+
 </script>
 
 <!-- MODAL GESTIÓN APUESTAS USUARIO -->
@@ -6775,5 +6905,20 @@ function vjCargar(uid) {
 </div>
 
   </div><!-- /main -->
+
+<!-- MODAL APUESTAS JUGADOR -->
+<div id="modal-apuestas-jugador" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);" onclick="if(event.target===this)cerrarModalApuestasJugador()">
+  <div style="background:var(--card);border-radius:16px;width:100%;max-width:820px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+    <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--card);border-radius:16px 16px 0 0;position:sticky;top:0;z-index:1;">
+      <div>
+        <div id="maj-nombre" style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--gold);"></div>
+        <div id="maj-grupo" style="font-size:0.78rem;color:var(--muted);"></div>
+      </div>
+      <button onclick="cerrarModalApuestasJugador()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;padding:4px 8px;">✕</button>
+    </div>
+    <div id="maj-resumen" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:16px 22px;border-bottom:1px solid var(--border);"></div>
+    <div id="maj-body" style="padding:16px 22px;"></div>
+  </div>
+</div>
 </body>
 </html>
