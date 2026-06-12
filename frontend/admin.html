@@ -168,19 +168,57 @@ nav {
 .result-sep { color: var(--muted); font-weight: 700; }
 
 /* Tabs */
-.tabs { display: flex; gap: 4px; margin-bottom: 24px; }
+/* ── SIDEBAR LAYOUT ── */
+#app-layout { display: flex; min-height: calc(100vh - 64px); }
+.sidebar {
+  width: 220px; flex-shrink: 0;
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  padding: 16px 10px;
+  display: flex; flex-direction: column; gap: 2px;
+  position: sticky; top: 64px;
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+  transition: transform 0.25s ease;
+  z-index: 50;
+}
+.sidebar-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); z-index: 49;
+}
+.sidebar-toggle {
+  display: none; background: none; border: none;
+  color: var(--text); font-size: 1.3rem; cursor: pointer; padding: 4px 8px;
+}
 .tab {
-  padding: 9px 18px;
-  border-radius: 999px;
-  font-weight: 600;
-  font-size: 0.85rem;
-  cursor: pointer;
-  color: var(--muted);
+  width: 100%; text-align: left;
+  padding: 10px 14px; border-radius: 8px;
+  font-weight: 600; font-size: 0.84rem;
+  cursor: pointer; color: var(--muted);
   border: 1px solid transparent;
   background: transparent;
   transition: all 0.2s;
+  display: flex; align-items: center; gap: 10px;
 }
-.tab.active { background: var(--card); border-color: var(--border); color: var(--gold); }
+.tab i { width: 16px; text-align: center; flex-shrink: 0; }
+.tab:hover { color: var(--text); background: var(--card2); }
+.tab.active { background: rgba(245,200,66,0.12); border-color: rgba(245,200,66,0.25); color: var(--gold); }
+.tab-label { flex: 1; }
+.main-content { flex: 1; min-width: 0; padding: 28px; overflow-x: hidden; }
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed; top: 0; left: 0; height: 100vh;
+    transform: translateX(-100%); z-index: 200;
+    padding-top: 24px;
+  }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.open { display: block; }
+  .sidebar-toggle { display: flex; align-items: center; }
+  #app-layout { display: block; }
+  .main-content { padding: 16px; }
+  nav { padding: 0 16px; }
+}
 
 .page { display: none; }
 .page.active { display: block; }
@@ -671,7 +709,8 @@ nav {
 
 <div id="app" style="display:none;">
   <nav>
-    <div style="display:flex;align-items:center;gap:14px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="sidebar-toggle" onclick="toggleSidebar()" title="Menú"><i class="fas fa-bars"></i></button>
       <div class="nav-brand">⚽ La Polla 2026</div>
       <span class="admin-badge"><i class="fas fa-shield-halved"></i> Admin</span>
     </div>
@@ -681,20 +720,25 @@ nav {
     </div>
   </nav>
 
-  <div class="main">
-    <div class="tabs">
-      <button class="tab active" onclick="showTab('dashboard')"><i class="fas fa-chart-line"></i> Dashboard</button>
-      <button class="tab" onclick="showTab('grupos')"><i class="fas fa-users"></i> Grupos</button>
-      <button class="tab" onclick="showTab('solicitudes')"><i class="fas fa-bell"></i> Solicitudes</button>
-      <button class="tab" onclick="showTab('resultados')"><i class="fas fa-futbol"></i> Resultados</button>
-      <button class="tab" onclick="showTab('ranking')"><i class="fas fa-trophy"></i> Ranking global</button>
-      <button class="tab" onclick="showTab('setup')"><i class="fas fa-database"></i> Setup / Importar</button>
-      <button class="tab" onclick="showTab('selecciones')"><i class="fas fa-flag"></i> Selecciones</button>
-      <button class="tab" onclick="showTab('estadios')"><i class="fas fa-landmark"></i> Estadios</button>
-      <button class="tab" onclick="showTab('simulador')"><i class="fas fa-flask"></i> Simulador</button>
-      <button class="tab" onclick="showTab('plazos')"><i class="fas fa-clock"></i> Plazos</button>
-      <button class="tab" onclick="showTab('goleadores')"><i class="fas fa-futbol"></i> Goleadores</button>
-    </div>
+  <div id="app-layout">
+    <!-- Overlay móvil -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+    <!-- Sidebar -->
+    <nav class="sidebar" id="admin-sidebar">
+      <button class="tab active" onclick="showTab('dashboard')"><i class="fas fa-chart-line"></i><span class="tab-label">Dashboard</span></button>
+      <button class="tab" onclick="showTab('grupos')"><i class="fas fa-users"></i><span class="tab-label">Grupos</span></button>
+      <button class="tab" onclick="showTab('solicitudes')"><i class="fas fa-bell"></i><span class="tab-label">Solicitudes</span></button>
+      <button class="tab" onclick="showTab('resultados')"><i class="fas fa-futbol"></i><span class="tab-label">Resultados</span></button>
+      <button class="tab" onclick="showTab('ranking')"><i class="fas fa-trophy"></i><span class="tab-label">Ranking global</span></button>
+      <button class="tab" onclick="showTab('setup')"><i class="fas fa-database"></i><span class="tab-label">Setup</span></button>
+      <button class="tab" onclick="showTab('selecciones')"><i class="fas fa-flag"></i><span class="tab-label">Selecciones</span></button>
+      <button class="tab" onclick="showTab('estadios')"><i class="fas fa-landmark"></i><span class="tab-label">Estadios</span></button>
+      <button class="tab" onclick="showTab('simulador')"><i class="fas fa-flask"></i><span class="tab-label">Simulador</span></button>
+      <button class="tab" onclick="showTab('plazos')"><i class="fas fa-clock"></i><span class="tab-label">Plazos</span></button>
+      <button class="tab" onclick="showTab('goleadores')"><i class="fas fa-futbol"></i><span class="tab-label">Goleadores</span></button>
+    </nav>
+    <!-- Contenido principal -->
+    <div class="main-content">
 
     <!-- TAB DASHBOARD -->
     <div id="tab-dashboard" class="page active">
@@ -1601,7 +1645,7 @@ window.showTab = async (tab) => {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const tabBtn = document.querySelector(`.tab[onclick*="'${tab}'"]`) || document.querySelector(`.tab[onclick*='"${tab}"']`);
   if(tabBtn) tabBtn.classList.add('active');
-  const tabPage = document.getElementById('tab-' + tab) || document.getElementById('page-' + tab);
+  const tabPage = document.getElementById('tab-' + tab) || document.getElementById('page-' + tab) || document.getElementById('page-' + tab);
   if(tabPage) tabPage.classList.add('active');
   if (tab === 'dashboard')    await loadDashboard();
   if (tab === 'grupos')       await renderGruposAdmin();
@@ -6870,6 +6914,23 @@ window.majShowGrupo = function(g) {
   document.getElementById('maj-grupo-content').innerHTML = window._majGruposHtml[g] || '';
 };
 
+
+// ── SIDEBAR MÓVIL ────────────────────────────────────────────────────────
+function toggleSidebar() {
+  document.getElementById('admin-sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('admin-sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+}
+// Cerrar sidebar al seleccionar tab en móvil
+const _origShowTab = window.showTab;
+window.showTab = async function(tab) {
+  if (window.innerWidth <= 768) closeSidebar();
+  return _origShowTab(tab);
+};
+
 </script>
 
 <!-- MODAL GESTIÓN APUESTAS USUARIO -->
@@ -6940,7 +7001,8 @@ window.majShowGrupo = function(g) {
   </div>
 </div>
 
-  </div><!-- /main -->
+    </div><!-- /main-content -->
+  </div><!-- /app-layout -->
 
 <!-- MODAL APUESTAS JUGADOR -->
 <div id="modal-apuestas-jugador" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);" onclick="if(event.target===this)cerrarModalApuestasJugador()">

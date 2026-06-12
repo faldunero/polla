@@ -512,6 +512,43 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
   font-size:0.76rem;color:var(--ink2);font-weight:600;
   display:flex;align-items:center;gap:5px;
 }
+
+/* ── RESPONSIVE INDEX ────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  #site-nav { padding: 0 14px; }
+  .site-nav-links { gap: 2px; }
+  .site-nav-link { padding: 5px 10px; font-size: 0.78rem; }
+  .site-nav-polla { padding: 6px 12px; font-size: 0.78rem; }
+  .hero { padding: 20px 14px; }
+  .cd-kick-info { font-size: 0.8rem; }
+  .main, .container { padding: 14px; }
+  .grupos-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grupo-card { padding: 12px; }
+  .res-partido { grid-template-columns: 1fr auto 1fr; gap: 6px; }
+  .res-team { font-size: 0.78rem; }
+  .res-score { font-size: 1rem; padding: 4px 10px; }
+  .modal-hoy-header h2 { font-size: 1rem; }
+  #modal-hoy { max-height: 95vh; }
+  .mhoy-card-main { padding: 10px; gap: 6px; }
+  .mhoy-team { font-size: 0.82rem; }
+  .mhoy-team .flag { font-size: 1rem; }
+  .stat-grupos, .stat-row { flex-direction: column; }
+  .tabla-grupo th, .tabla-grupo td { padding: 6px 4px; font-size: 0.72rem; }
+  .tabla-grupo .forma { display: none; }
+  .section-title { font-size: 1.2rem; }
+  .countdown-units { gap: 10px; }
+  .cd-unit { min-width: 48px; }
+  .cd-num { font-size: 2rem; }
+  .page-tabs { overflow-x: auto; flex-wrap: nowrap; }
+  .page-tab { white-space: nowrap; padding: 8px 12px; font-size: 0.78rem; }
+}
+@media (max-width: 480px) {
+  .grupos-grid { grid-template-columns: 1fr; }
+  .site-nav-link { display: none; }
+  .mhoy-card-top { flex-direction: column; gap: 2px; align-items: flex-start; }
+  .cd-num { font-size: 1.6rem; }
+  .mhoy-vs, .mhoy-score { padding: 4px 8px; font-size: 0.9rem; }
+}
 </style>
 </head>
 <body>
