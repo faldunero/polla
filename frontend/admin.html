@@ -54,12 +54,14 @@ nav {
   letter-spacing: 0.06em;
 }
 
-.admin-layout { display: flex; min-height: calc(100vh - 62px); }
+.admin-layout { display: flex; min-height: calc(100vh - 62px); align-items: flex-start; }
 .sidebar { width: 200px; flex-shrink: 0; background: var(--card); border-right: 1px solid var(--border); padding: 20px 10px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 62px; height: calc(100vh - 62px); overflow-y: auto; }
-.sidebar .tab { width: 100%; text-align: left; border-radius: 8px; padding: 10px 14px; font-size: 0.84rem; display: flex; align-items: center; gap: 10px; }
+.sidebar .tab { width: 100%; text-align: left; border-radius: 8px; padding: 10px 14px; font-size: 0.84rem; display: flex; align-items: center; gap: 10px; border: 1px solid transparent; }
 .sidebar .tab i { width: 16px; text-align: center; flex-shrink: 0; }
 .sidebar .tab.active { background: rgba(245,200,66,0.12); border-color: rgba(245,200,66,0.3); color: var(--gold); }
-.main { padding: 28px; flex: 1; min-width: 0; max-width: 1000px; }
+.main { padding: 28px; flex: 1; min-width: 0; overflow-y: auto; }
+.page { display: none; }
+.page.active { display: block; }
 
 .section { margin-bottom: 40px; }
 .section-title {
@@ -6624,7 +6626,7 @@ function vjCargar(uid) {
 
       let pts = null;
       if (tieneReal && tieneApuesta) {
-        pts = calcularPuntaje(
+        pts = calcularPuntajePolla(
           { local: Number(p.resultado_local), visita: Number(p.resultado_visita) },
           { local: Number(apuesta.golesLocal), visita: Number(apuesta.golesVisita) }
         );
