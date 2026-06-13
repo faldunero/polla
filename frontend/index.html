@@ -2137,14 +2137,33 @@ window.abrirModalEstadisticas = async function(tab) {
 
 window.switchTabEstad = function(tab) {
   _estadTab = tab;
+  _estadPag[tab] = 0;
   document.querySelectorAll('.estad-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   renderTabEstadisticasLocal(tab);
 };
 
 // Función local (no window) — tiene acceso al scope del módulo
-function renderTabEstadisticasLocal(tab) {
+const _estadPag = { goleadores: 0, tarjetas: 0 };
+const _PAGE = 10;
+
+function renderTabEstadisticasLocal(tab, pag) {
   const body = document.getElementById('modal-estadisticas-body');
   if (!body) return;
+  if (pag === undefined) pag = _estadPag[tab] || 0;
+  _estadPag[tab] = pag;
+
+  function paginador(tab, pag, total) {
+    const pages = Math.ceil(total / _PAGE);
+    if (pages <= 1) return '';
+    const desde = pag * _PAGE + 1;
+    const hasta = Math.min((pag + 1) * _PAGE, total);
+    const btnStyle = (dis) => `border:1px solid #e5e7eb;border-radius:6px;padding:5px 14px;font-size:.8rem;font-weight:600;cursor:${dis?'default':'pointer'};background:${dis?'#f3f4f6':'#fff'};color:${dis?'#9ca3af':'#111'};`;
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #e5e7eb;background:#f9fafb;">
+      <button onclick="window._estadPagNav('${tab}',${pag-1})" ${pag===0?'disabled':''} style="${btnStyle(pag===0)}">← Anterior</button>
+      <span style="font-size:.75rem;color:#6b7280;">${desde}–${hasta} de ${total}</span>
+      <button onclick="window._estadPagNav('${tab}',${pag+1})" ${pag>=pages-1?'disabled':''} style="${btnStyle(pag>=pages-1)}">Siguiente →</button>
+    </div>`;
+  }
 
   if (tab === 'goleadores') {
     const lista = _estadDatos.goleadores || [];
@@ -2157,6 +2176,8 @@ function renderTabEstadisticasLocal(tab) {
     }
     const sorted = [...lista].sort((a,b) => b.goles - a.goles || a.nombre.localeCompare(b.nombre));
     const maxGoles = sorted[0]?.goles || 1;
+    const slice = sorted.slice(pag * _PAGE, (pag + 1) * _PAGE);
+    const offset = pag * _PAGE;
     let html = `<table style="width:100%;border-collapse:collapse;">
       <thead><tr style="border-bottom:2px solid #e5e7eb;">
         <th style="padding:8px 14px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;width:36px;">#</th>
@@ -2164,22 +2185,24 @@ function renderTabEstadisticasLocal(tab) {
         <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">País</th>
         <th style="padding:8px 14px;text-align:right;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#dc2626;">⚽ Goles</th>
       </tr></thead><tbody>`;
-    sorted.forEach((g, i) => {
-      const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+    slice.forEach((g, i) => {
+      const ri = offset + i;
+      const medal = ri===0?'🥇':ri===1?'🥈':ri===2?'🥉':'';
       const pct = Math.round((g.goles / maxGoles) * 100);
-      html += `<tr style="border-bottom:1px solid #f3f4f6;${i===0?'background:#fffbeb;':''}">
-        <td style="padding:11px 14px;font-weight:700;color:${i<3?'#dc2626':'#6b7280'};">${medal||i+1}</td>
+      html += `<tr style="border-bottom:1px solid #f3f4f6;${ri===0?'background:#fffbeb;':''}">
+        <td style="padding:11px 14px;font-weight:700;color:${ri<3?'#dc2626':'#6b7280'};">${medal||ri+1}</td>
         <td style="padding:11px 10px;">
-          <div style="font-weight:${i<3?'700':'500'};font-size:.88rem;color:#111;">${g.nombre}</div>
+          <div style="font-weight:${ri<3?'700':'500'};font-size:.88rem;color:#111;">${g.nombre}</div>
           <div style="height:3px;background:#f3f4f6;border-radius:99px;margin-top:4px;max-width:120px;">
             <div style="height:3px;background:#dc2626;border-radius:99px;width:${pct}%;"></div>
           </div>
         </td>
         <td style="padding:11px 10px;color:#6b7280;font-size:.85rem;">${getFlag(g.pais)} ${g.pais}</td>
-        <td style="padding:11px 14px;text-align:right;font-family:var(--font-display);font-weight:900;font-size:1.4rem;color:${i===0?'#d97706':'#111'};">${g.goles}</td>
+        <td style="padding:11px 14px;text-align:right;font-family:var(--font-display);font-weight:900;font-size:1.4rem;color:${ri===0?'#d97706':'#111'};">${g.goles}</td>
       </tr>`;
     });
     html += `</tbody></table>`;
+    html += paginador('goleadores', pag, sorted.length);
     body.innerHTML = html;
 
   } else if (tab === 'tarjetas') {
@@ -2192,6 +2215,8 @@ function renderTabEstadisticasLocal(tab) {
       return;
     }
     const sorted = [...lista].sort((a,b) => (b.rojas*3+b.amarillas) - (a.rojas*3+a.amarillas) || a.nombre.localeCompare(b.nombre));
+    const slice = sorted.slice(pag * _PAGE, (pag + 1) * _PAGE);
+    const offset = pag * _PAGE;
     let html = `<table style="width:100%;border-collapse:collapse;">
       <thead><tr style="border-bottom:2px solid #e5e7eb;">
         <th style="padding:8px 14px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;width:36px;">#</th>
@@ -2200,9 +2225,10 @@ function renderTabEstadisticasLocal(tab) {
         <th style="padding:8px 10px;text-align:center;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#f59e0b;">🟨</th>
         <th style="padding:8px 14px;text-align:center;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#dc2626;">🟥</th>
       </tr></thead><tbody>`;
-    sorted.forEach((g, i) => {
+    slice.forEach((g, i) => {
+      const ri = offset + i;
       html += `<tr style="border-bottom:1px solid #f3f4f6;">
-        <td style="padding:11px 14px;font-weight:700;color:#6b7280;">${i+1}</td>
+        <td style="padding:11px 14px;font-weight:700;color:#6b7280;">${ri+1}</td>
         <td style="padding:11px 10px;font-weight:500;font-size:.88rem;color:#111;">${g.nombre}</td>
         <td style="padding:11px 10px;color:#6b7280;font-size:.85rem;">${getFlag(g.pais)} ${g.pais}</td>
         <td style="padding:11px 10px;text-align:center;font-family:var(--font-display);font-size:1.2rem;color:#d97706;">${g.amarillas||0}</td>
@@ -2210,9 +2236,12 @@ function renderTabEstadisticasLocal(tab) {
       </tr>`;
     });
     html += `</tbody></table>`;
+    html += paginador('tarjetas', pag, sorted.length);
     body.innerHTML = html;
   }
 }
+
+window._estadPagNav = function(tab, pag) { renderTabEstadisticasLocal(tab, pag); };
 
 window.cerrarModalEstadisticas = function() {
   document.getElementById('modal-estadisticas').style.display = 'none';
