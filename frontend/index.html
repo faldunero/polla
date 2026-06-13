@@ -2173,6 +2173,7 @@ function renderTabEstadisticasLocal(tab, pag) {
       </div>`;
       return;
     }
+    // Ranking solo por goles propios — autogoles NO cuentan
     const sorted = [...lista].sort((a,b) => b.goles - a.goles || a.nombre.localeCompare(b.nombre));
     const maxGoles = sorted[0]?.goles || 1;
     const slice = sorted.slice(pag * _PAGE, (pag + 1) * _PAGE);
@@ -2182,22 +2183,25 @@ function renderTabEstadisticasLocal(tab, pag) {
         <th style="padding:8px 14px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;width:36px;">#</th>
         <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">Jugador</th>
         <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">País</th>
-        <th style="padding:8px 14px;text-align:right;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#dc2626;">⚽ Goles</th>
+        <th style="padding:8px 10px;text-align:right;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#dc2626;">⚽</th>
+        <th style="padding:8px 14px;text-align:center;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#9ca3af;">AG</th>
       </tr></thead><tbody>`;
     slice.forEach((g, i) => {
       const ri = offset + i;
       const medal = ri===0?'🥇':ri===1?'🥈':ri===2?'🥉':'';
       const pct = Math.round((g.goles / maxGoles) * 100);
+      const agBadge = g.autogoles ? `<span style="display:inline-block;background:#fee2e2;color:#dc2626;font-size:.6rem;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:4px;">AG ${g.autogoles}</span>` : '';
       html += `<tr style="border-bottom:1px solid #f3f4f6;${ri===0?'background:#fffbeb;':''}">
         <td style="padding:11px 14px;font-weight:700;color:${ri<3?'#dc2626':'#6b7280'};">${medal||ri+1}</td>
         <td style="padding:11px 10px;">
-          <div style="font-weight:${ri<3?'700':'500'};font-size:.88rem;color:#111;">${g.nombre}</div>
+          <div style="font-weight:${ri<3?'700':'500'};font-size:.88rem;color:#111;">${g.nombre}${agBadge}</div>
           <div style="height:3px;background:#f3f4f6;border-radius:99px;margin-top:4px;max-width:120px;">
             <div style="height:3px;background:#dc2626;border-radius:99px;width:${pct}%;"></div>
           </div>
         </td>
         <td style="padding:11px 10px;color:#6b7280;font-size:.85rem;">${getFlag(g.pais)} ${g.pais}</td>
         <td style="padding:11px 14px;text-align:right;font-family:var(--font-display);font-weight:900;font-size:1.4rem;color:${ri===0?'#d97706':'#111'};">${g.goles}</td>
+        <td style="padding:11px 14px;text-align:center;font-size:.82rem;color:#9ca3af;">${g.autogoles||'—'}</td>
       </tr>`;
     });
     html += `</tbody></table>`;
