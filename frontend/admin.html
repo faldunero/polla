@@ -2143,10 +2143,14 @@ async function renderResultados() {
 
   // Cargar resultados directo desde Firestore SDK (sin servidor)
   try {
+    console.log('DEBUG: iniciando getDocs partidos...');
     const snap = await getDocs(collection(db, 'partidos'));
+    console.log('DEBUG: getDocs completó, docs:', snap.size);
     resCache = {};
     snap.docs.forEach(d => { resCache[d.id] = { id: d.id, ...d.data() }; });
+    console.log('DEBUG: resCache keys:', Object.keys(resCache).slice(0,5));
   } catch(e) {
+    console.error('DEBUG: error en getDocs:', e);
     toast('Error cargando datos: ' + e.message, 'error');
     return;
   }
