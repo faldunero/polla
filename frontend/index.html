@@ -920,8 +920,18 @@ function renderGrupos(){
   Object.keys(FG).forEach(g => {
     FG[g].forEach(base => {
       const fs = firestoreById[base.id] || {};
-      // Merge: fixture garantiza local/visita/fecha/hora/estadio; Firestore aporta resultado
-      const m = { ...base, ...fs };
+      // Merge: Firestore aporta solo resultado y datos extras; fixture es fuente de verdad
+      // para local/visita/fecha/hora/estadio/grupo (evita que Firestore pise horarios correctos)
+      const m = {
+        ...fs,
+        local:   base.local,
+        visita:  base.visita,
+        fecha:   base.fecha,
+        hora:    base.hora,
+        estadio: base.estadio,
+        grupo:   base.grupo,
+        id:      base.id,
+      };
       if (!porGrupo[g]) porGrupo[g] = [];
       porGrupo[g].push(m);
     });
@@ -2116,58 +2126,63 @@ function renderGoleadores() {
 let _estadTab = 'goleadores';
 let _estadDatos = { goleadores: null, tarjetas: null };
 
-// Mapa país → confederación (Mundial 2026, 48 países)
+// Mapa país → confederación (Mundial 2026)
 const CONFEDERACIONES = {
-  // UEFA (16)
+  // UEFA
   'Alemania':'UEFA','España':'UEFA','Francia':'UEFA','Portugal':'UEFA',
-  'Inglaterra':'UEFA','Países Bajos':'UEFA','Holanda':'UEFA','Bélgica':'UEFA',
+  'Inglaterra':'UEFA','Paises Bajos':'UEFA','Países Bajos':'UEFA','Belgica':'UEFA','Bélgica':'UEFA',
   'Croacia':'UEFA','Serbia':'UEFA','Escocia':'UEFA','Austria':'UEFA',
-  'Turquía':'UEFA','Ucrania':'UEFA','Eslovaquia':'UEFA','Albania':'UEFA',
-  'Eslovenia':'UEFA','Hungría':'UEFA','República Checa':'UEFA','Suiza':'UEFA',
-  'Dinamarca':'UEFA','Noruega':'UEFA','Rumania':'UEFA','Georgia':'UEFA',
-  // CONMEBOL (6)
+  'Turquia':'UEFA','Turquía':'UEFA','Ucrania':'UEFA','Suiza':'UEFA',
+  'Hungria':'UEFA','Hungría':'UEFA','Chequia':'UEFA','Suecia':'UEFA',
+  'Albania':'UEFA','Eslovenia':'UEFA','Georgia':'UEFA','Dinamarca':'UEFA',
+  'Bosnia y Herzegovina':'UEFA',
+  // CONMEBOL
   'Argentina':'CONMEBOL','Brasil':'CONMEBOL','Colombia':'CONMEBOL',
-  'Uruguay':'CONMEBOL','Ecuador':'CONMEBOL','Venezuela':'CONMEBOL','Chile':'CONMEBOL','Bolivia':'CONMEBOL','Paraguay':'CONMEBOL','Perú':'CONMEBOL',
-  // CONCACAF (6)
-  'Estados Unidos':'CONCACAF','México':'CONCACAF','Canadá':'CONCACAF',
+  'Uruguay':'CONMEBOL','Ecuador':'CONMEBOL','Venezuela':'CONMEBOL',
+  'Chile':'CONMEBOL','Bolivia':'CONMEBOL','Paraguay':'CONMEBOL','Peru':'CONMEBOL','Perú':'CONMEBOL',
+  // CONCACAF
+  'Estados Unidos':'CONCACAF','Mexico':'CONCACAF','México':'CONCACAF','Canada':'CONCACAF','Canadá':'CONCACAF',
   'Costa Rica':'CONCACAF','Jamaica':'CONCACAF','Honduras':'CONCACAF',
-  'Trinidad y Tobago':'CONCACAF','Panamá':'CONCACAF','Guatemala':'CONCACAF',
-  // CAF (9)
-  'Marruecos':'CAF','Senegal':'CAF','Camerún':'CAF','Egipto':'CAF',
-  'Sudáfrica':'CAF','Nigeria':'CAF','Ghana':'CAF','Malí':'CAF','Costa de Marfil':'CAF',
-  'Túnez':'CAF','Algeria':'CAF','Angola':'CAF','República Democrática del Congo':'CAF',
-  // AFC (8)
-  'Japón':'AFC','Corea del Sur':'AFC','Arabia Saudita':'AFC','Australia':'AFC',
-  'Irán':'AFC','Uzbekistán':'AFC','Indonesia':'AFC','Qatar':'AFC',
-  'China':'AFC','Irak':'AFC','Jordania':'AFC',
-  // OFC (1)
+  'Panama':'CONCACAF','Panamá':'CONCACAF','Haiti':'CONCACAF','Haití':'CONCACAF',
+  'Curazao':'CONCACAF','Trinidad y Tobago':'CONCACAF','Guatemala':'CONCACAF',
+  // CAF
+  'Marruecos':'CAF','Senegal':'CAF','Camerun':'CAF','Camerún':'CAF','Egipto':'CAF',
+  'Sudafrica':'CAF','Sudáfrica':'CAF','Nigeria':'CAF','Ghana':'CAF',
+  'Mali':'CAF','Malí':'CAF','Costa de Marfil':'CAF','Tunez':'CAF','Túnez':'CAF',
+  'Algeria':'CAF','Angola':'CAF','RD Congo':'CAF','Cabo Verde':'CAF',
+  // AFC
+  'Japon':'CAF','Japón':'AFC','Corea del Sur':'AFC','Arabia Saudita':'AFC',
+  'Australia':'AFC','Iran':'AFC','Irán':'AFC','Uzbekistan':'AFC','Uzbekistán':'AFC',
+  'Indonesia':'AFC','Qatar':'AFC','China':'AFC','Irak':'AFC','Jordania':'AFC',
+  // OFC
   'Nueva Zelanda':'OFC',
 };
+// Corrección AFC/CAF Japón
+CONFEDERACIONES['Japon'] = 'AFC';
 
 const CONF_META = {
   'UEFA':     { emoji:'🇪🇺', color:'#3b82f6', bg:'#eff6ff', equipos:16 },
-  'CONMEBOL': { emoji:'🌎', color:'#22c55e', bg:'#f0fdf4', equipos:6  },
-  'CONCACAF': { emoji:'🌐', color:'#f59e0b', bg:'#fffbeb', equipos:6  },
-  'CAF':      { emoji:'🌍', color:'#ef4444', bg:'#fef2f2', equipos:9  },
-  'AFC':      { emoji:'🌏', color:'#8b5cf6', bg:'#f5f3ff', equipos:8  },
-  'OFC':      { emoji:'🌊', color:'#06b6d4', bg:'#ecfeff', equipos:1  },
+  'CONMEBOL': { emoji:'🌎',  color:'#22c55e', bg:'#f0fdf4', equipos:6  },
+  'CONCACAF': { emoji:'🌐',  color:'#f59e0b', bg:'#fffbeb', equipos:6  },
+  'CAF':      { emoji:'🌍',  color:'#ef4444', bg:'#fef2f2', equipos:9  },
+  'AFC':      { emoji:'🌏',  color:'#8b5cf6', bg:'#f5f3ff', equipos:8  },
+  'OFC':      { emoji:'🌊',  color:'#06b6d4', bg:'#ecfeff', equipos:1  },
 };
 
 function paisToConf(pais) {
   if (!pais) return null;
   const norm = pais.trim();
   if (CONFEDERACIONES[norm]) return CONFEDERACIONES[norm];
-  // búsqueda parcial tolerante
+  const nl = norm.toLowerCase();
   for (const [p, c] of Object.entries(CONFEDERACIONES)) {
-    if (norm.toLowerCase().includes(p.toLowerCase()) || p.toLowerCase().includes(norm.toLowerCase())) return c;
+    if (nl.includes(p.toLowerCase()) || p.toLowerCase().includes(nl)) return c;
   }
   return null;
 }
 
 window.abrirModalEstadisticas = async function(tab) {
   _estadTab = tab || 'goleadores';
-  const modal = document.getElementById('modal-estadisticas');
-  modal.style.display = 'flex';
+  document.getElementById('modal-estadisticas').style.display = 'flex';
   try {
     const [snapG, snapT] = await Promise.all([
       getDoc(doc(db, 'config', 'goleadores')),
@@ -2188,7 +2203,6 @@ window.switchTabEstad = function(tab) {
   renderTabEstadisticasLocal(tab);
 };
 
-// Función local — acceso al scope del módulo (FG, FIXTURE_ELIM disponibles)
 const _estadPag = { goleadores: 0, tarjetas: 0, confederaciones: 0 };
 const _PAGE = 10;
 
@@ -2203,43 +2217,35 @@ function renderTabEstadisticasLocal(tab, pag) {
     if (pages <= 1) return '';
     const desde = pag * _PAGE + 1;
     const hasta = Math.min((pag + 1) * _PAGE, total);
-    const btnStyle = (dis) => `border:1px solid #e5e7eb;border-radius:6px;padding:5px 14px;font-size:.8rem;font-weight:600;cursor:${dis?'default':'pointer'};background:${dis?'#f3f4f6':'#fff'};color:${dis?'#9ca3af':'#111'};`;
+    const bs = (dis) => `border:1px solid #e5e7eb;border-radius:6px;padding:5px 14px;font-size:.8rem;font-weight:600;cursor:${dis?'default':'pointer'};background:${dis?'#f3f4f6':'#fff'};color:${dis?'#9ca3af':'#111'};`;
     return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #e5e7eb;background:#f9fafb;">
-      <button onclick="window._estadPagNav('${tab}',${pag-1})" ${pag===0?'disabled':''} style="${btnStyle(pag===0)}">← Anterior</button>
+      <button onclick="window._estadPagNav('${tab}',${pag-1})" ${pag===0?'disabled':''} style="${bs(pag===0)}">← Anterior</button>
       <span style="font-size:.75rem;color:#6b7280;">${desde}–${hasta} de ${total}</span>
-      <button onclick="window._estadPagNav('${tab}',${pag+1})" ${pag>=pages-1?'disabled':''} style="${btnStyle(pag>=pages-1)}">Siguiente →</button>
+      <button onclick="window._estadPagNav('${tab}',${pag+1})" ${pag>=pages-1?'disabled':''} style="${bs(pag>=pages-1)}">Siguiente →</button>
     </div>`;
   }
 
   if (tab === 'goleadores') {
     const lista = _estadDatos.goleadores || [];
-    if (!lista.length) {
-      body.innerHTML = `<div style="text-align:center;padding:40px;color:#6b7280;"><i class="fas fa-futbol" style="font-size:2rem;opacity:.3;display:block;margin-bottom:12px;"></i>La tabla se publicará cuando comiencen los partidos.</div>`;
-      return;
-    }
+    if (!lista.length) { body.innerHTML = `<div style="text-align:center;padding:40px;color:#6b7280;"><i class="fas fa-futbol" style="font-size:2rem;opacity:.3;display:block;margin-bottom:12px;"></i>La tabla se publicará cuando comiencen los partidos.</div>`; return; }
     const sorted = [...lista].sort((a,b) => b.goles - a.goles || a.nombre.localeCompare(b.nombre));
     const maxGoles = sorted[0]?.goles || 1;
     const slice = sorted.slice(pag * _PAGE, (pag + 1) * _PAGE);
     const offset = pag * _PAGE;
-    let html = `<table style="width:100%;border-collapse:collapse;">
-      <thead><tr style="border-bottom:2px solid #e5e7eb;">
-        <th style="padding:8px 14px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;width:36px;">#</th>
-        <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">Jugador</th>
-        <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">País</th>
-        <th style="padding:8px 14px;text-align:right;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#dc2626;">⚽ Goles</th>
-      </tr></thead><tbody>`;
+    let html = `<table style="width:100%;border-collapse:collapse;"><thead><tr style="border-bottom:2px solid #e5e7eb;">
+      <th style="padding:8px 14px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;width:36px;">#</th>
+      <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">Jugador</th>
+      <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">País</th>
+      <th style="padding:8px 14px;text-align:right;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#dc2626;">⚽ Goles</th>
+    </tr></thead><tbody>`;
     slice.forEach((g, i) => {
       const ri = offset + i;
       const medal = ri===0?'🥇':ri===1?'🥈':ri===2?'🥉':'';
       const pct = Math.round((g.goles / maxGoles) * 100);
       html += `<tr style="border-bottom:1px solid #f3f4f6;${ri===0?'background:#fffbeb;':''}">
         <td style="padding:11px 14px;font-weight:700;color:${ri<3?'#dc2626':'#6b7280'};">${medal||ri+1}</td>
-        <td style="padding:11px 10px;">
-          <div style="font-weight:${ri<3?'700':'500'};font-size:.88rem;color:#111;">${g.nombre}</div>
-          <div style="height:3px;background:#f3f4f6;border-radius:99px;margin-top:4px;max-width:120px;">
-            <div style="height:3px;background:#dc2626;border-radius:99px;width:${pct}%;"></div>
-          </div>
-        </td>
+        <td style="padding:11px 10px;"><div style="font-weight:${ri<3?'700':'500'};font-size:.88rem;color:#111;">${g.nombre}</div>
+          <div style="height:3px;background:#f3f4f6;border-radius:99px;margin-top:4px;max-width:120px;"><div style="height:3px;background:#dc2626;border-radius:99px;width:${pct}%;"></div></div></td>
         <td style="padding:11px 10px;color:#6b7280;font-size:.85rem;">${getFlag(g.pais)} ${g.pais}</td>
         <td style="padding:11px 14px;text-align:right;font-family:var(--font-display);font-weight:900;font-size:1.4rem;color:${ri===0?'#d97706':'#111'};">${g.goles}</td>
       </tr>`;
@@ -2249,21 +2255,17 @@ function renderTabEstadisticasLocal(tab, pag) {
 
   } else if (tab === 'tarjetas') {
     const lista = _estadDatos.tarjetas || [];
-    if (!lista.length) {
-      body.innerHTML = `<div style="text-align:center;padding:40px;color:#6b7280;"><i class="fas fa-square" style="font-size:2rem;opacity:.3;display:block;margin-bottom:12px;color:#f59e0b;"></i>La tabla se publicará cuando comiencen los partidos.</div>`;
-      return;
-    }
+    if (!lista.length) { body.innerHTML = `<div style="text-align:center;padding:40px;color:#6b7280;"><i class="fas fa-square" style="font-size:2rem;opacity:.3;display:block;margin-bottom:12px;color:#f59e0b;"></i>La tabla se publicará cuando comiencen los partidos.</div>`; return; }
     const sorted = [...lista].sort((a,b) => (b.rojas*3+b.amarillas) - (a.rojas*3+a.amarillas) || a.nombre.localeCompare(b.nombre));
     const slice = sorted.slice(pag * _PAGE, (pag + 1) * _PAGE);
     const offset = pag * _PAGE;
-    let html = `<table style="width:100%;border-collapse:collapse;">
-      <thead><tr style="border-bottom:2px solid #e5e7eb;">
-        <th style="padding:8px 14px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;width:36px;">#</th>
-        <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">Jugador</th>
-        <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">País</th>
-        <th style="padding:8px 10px;text-align:center;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#f59e0b;">🟨</th>
-        <th style="padding:8px 14px;text-align:center;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#dc2626;">🟥</th>
-      </tr></thead><tbody>`;
+    let html = `<table style="width:100%;border-collapse:collapse;"><thead><tr style="border-bottom:2px solid #e5e7eb;">
+      <th style="padding:8px 14px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;width:36px;">#</th>
+      <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">Jugador</th>
+      <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">País</th>
+      <th style="padding:8px 10px;text-align:center;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#f59e0b;">🟨</th>
+      <th style="padding:8px 14px;text-align:center;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#dc2626;">🟥</th>
+    </tr></thead><tbody>`;
     slice.forEach((g, i) => {
       const ri = offset + i;
       html += `<tr style="border-bottom:1px solid #f3f4f6;">
@@ -2278,46 +2280,31 @@ function renderTabEstadisticasLocal(tab, pag) {
     body.innerHTML = html;
 
   } else if (tab === 'confederaciones') {
-    // Acumular stats por confederación desde el fixture (FG = FIXTURE_GRUPOS)
     const stats = {};
     Object.keys(CONF_META).forEach(c => {
-      stats[c] = { goles:0, amarillas:0, rojas:0, victorias:0, empates:0, derrotas:0, partidos:0, equiposEnFase:{}, equiposTotales:CONF_META[c].equipos };
+      stats[c] = { goles:0, amarillas:0, rojas:0, victorias:0, empates:0, derrotas:0, partidos:0, equipos:{}, total:CONF_META[c].equipos };
     });
 
-    // Recorrer todos los partidos del fixture de grupos
-    let hayPartidos = false;
+    // V/E/D desde el fixture
+    let hayResultados = false;
     Object.values(FG || {}).forEach(grupo => {
       grupo.forEach(p => {
         if (p.resultado_local == null || p.resultado_visita == null) return;
-        hayPartidos = true;
+        hayResultados = true;
         const rl = parseInt(p.resultado_local), rv = parseInt(p.resultado_visita);
-        const confL = paisToConf(p.local), confV = paisToConf(p.visita);
-
-        [confL, confV].forEach((conf, idx) => {
+        [[p.local, rl, rv],[p.visita, rv, rl]].forEach(([equipo, mf, mc]) => {
+          const conf = paisToConf(equipo);
           if (!conf || !stats[conf]) return;
           stats[conf].partidos++;
-          const myG = idx===0 ? rl : rv;
-          const opG = idx===0 ? rv : rl;
-          stats[conf].goles += myG;
-          if (myG > opG)       stats[conf].victorias++;
-          else if (myG === opG) stats[conf].empates++;
-          else                  stats[conf].derrotas++;
-          // registrar equipo como avanzando (simplificado: si tiene al menos 1 partido)
-          const equipo = idx===0 ? p.local : p.visita;
-          if (equipo) stats[conf].equiposEnFase[equipo] = true;
+          stats[conf].equipos[equipo] = true;
+          if (mf > mc)      stats[conf].victorias++;
+          else if (mf===mc) stats[conf].empates++;
+          else              stats[conf].derrotas++;
         });
       });
     });
 
-    // Sumar goles y tarjetas desde las listas del admin
-    (_estadDatos.goleadores || []).forEach(g => {
-      const conf = paisToConf(g.pais);
-      if (conf && stats[conf]) stats[conf].goles += (g.goles||0);
-    });
-    // Nota: si los goles ya se calcularon del fixture, esta suma duplicaría.
-    // Usamos SOLO las listas del admin para goles/tarjetas (fuente de verdad)
-    // y el fixture para V/E/D
-    Object.keys(CONF_META).forEach(c => { stats[c].goles = 0; }); // reset, usar sólo admin
+    // Goles y tarjetas desde admin
     (_estadDatos.goleadores || []).forEach(g => {
       const conf = paisToConf(g.pais);
       if (conf && stats[conf]) stats[conf].goles += (g.goles||0);
@@ -2330,77 +2317,59 @@ function renderTabEstadisticasLocal(tab, pag) {
       }
     });
 
-    // Ordenar confederaciones por goles desc
-    const orden = Object.keys(CONF_META).sort((a,b) => stats[b].goles - stats[a].goles || a.localeCompare(b));
-
-    // % avance de fase = equipos que jugaron al menos 1 partido / total de equipos de la conf
-    function pctAvance(conf) {
-      const jugaron = Object.keys(stats[conf].equiposEnFase).length;
-      const total   = stats[conf].equiposTotales;
-      if (!total) return 0;
-      return Math.round((jugaron / total) * 100);
-    }
+    const orden = Object.keys(CONF_META).sort((a,b) =>
+      (stats[b].victorias*3 + stats[b].empates) - (stats[a].victorias*3 + stats[a].empates) ||
+      stats[b].goles - stats[a].goles
+    );
 
     let html = `<div style="padding:4px 0 8px;">`;
     orden.forEach(conf => {
-      const s  = stats[conf];
-      const m  = CONF_META[conf];
-      const pA = pctAvance(conf);
-      const totalTarjetas = s.amarillas + s.rojas;
-      html += `<div style="margin-bottom:14px;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
-        <!-- Header -->
-        <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:${m.bg};border-bottom:1px solid #e5e7eb;">
-          <span style="font-size:1.4rem;">${m.emoji}</span>
+      const s = stats[conf], m = CONF_META[conf];
+      const jugaron = Object.keys(s.equipos).length;
+      const pct = Math.round((jugaron / s.total) * 100);
+      html += `<div style="margin-bottom:12px;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+        <div style="display:flex;align-items:center;gap:10px;padding:11px 16px;background:${m.bg};border-bottom:1px solid #e5e7eb;">
+          <span style="font-size:1.3rem;">${m.emoji}</span>
           <div style="flex:1;">
-            <div style="font-family:var(--font-display,sans-serif);font-weight:900;font-size:1rem;letter-spacing:.05em;color:${m.color};">${conf}</div>
-            <div style="font-size:.7rem;color:#6b7280;">${s.equiposTotales} equipos · ${s.partidos} partidos jugados</div>
+            <div style="font-family:var(--font-display,sans-serif);font-weight:900;font-size:.95rem;letter-spacing:.05em;color:${m.color};">${conf}</div>
+            <div style="font-size:.68rem;color:#6b7280;">${s.total} equipos · ${s.partidos} partidos jugados</div>
           </div>
           <div style="text-align:right;">
-            <div style="font-family:var(--font-display,sans-serif);font-weight:900;font-size:1.5rem;color:${m.color};line-height:1;">${s.goles}</div>
-            <div style="font-size:.6rem;color:#6b7280;letter-spacing:.08em;text-transform:uppercase;">Goles</div>
+            <div style="font-family:var(--font-display,sans-serif);font-weight:900;font-size:1.4rem;color:${m.color};line-height:1;">${s.goles} ⚽</div>
           </div>
         </div>
-        <!-- Stats grid -->
         <div style="display:grid;grid-template-columns:repeat(5,1fr);background:#fff;">
-          <!-- Avance fase -->
-          <div style="padding:10px 8px;text-align:center;border-right:1px solid #f3f4f6;">
-            <div style="font-size:.6rem;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">% Avance</div>
-            <div style="font-family:var(--font-display,sans-serif);font-weight:900;font-size:1.15rem;color:${m.color};">${pA}%</div>
-            <div style="height:3px;background:#f3f4f6;border-radius:99px;margin-top:5px;"><div style="height:3px;background:${m.color};border-radius:99px;width:${pA}%;"></div></div>
+          <div style="padding:9px 6px;text-align:center;border-right:1px solid #f3f4f6;">
+            <div style="font-size:.58rem;color:#6b7280;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;">% Avance</div>
+            <div style="font-family:var(--font-display,sans-serif);font-weight:900;font-size:1.05rem;color:${m.color};">${pct}%</div>
+            <div style="height:3px;background:#f3f4f6;border-radius:99px;margin-top:4px;"><div style="height:3px;background:${m.color};border-radius:99px;width:${pct}%;"></div></div>
           </div>
-          <!-- Victorias -->
-          <div style="padding:10px 8px;text-align:center;border-right:1px solid #f3f4f6;">
-            <div style="font-size:.6rem;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Victorias</div>
-            <div style="font-family:var(--font-display,sans-serif);font-weight:900;font-size:1.15rem;color:#22c55e;">${s.victorias}</div>
+          <div style="padding:9px 6px;text-align:center;border-right:1px solid #f3f4f6;">
+            <div style="font-size:.58rem;color:#6b7280;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;">Victorias</div>
+            <div style="font-family:var(--font-display,sans-serif);font-weight:900;font-size:1.05rem;color:#22c55e;">${s.victorias}</div>
           </div>
-          <!-- Empates -->
-          <div style="padding:10px 8px;text-align:center;border-right:1px solid #f3f4f6;">
-            <div style="font-size:.6rem;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Empates</div>
-            <div style="font-family:var(--font-display,sans-serif);font-weight:900;font-size:1.15rem;color:#94a3b8;">${s.empates}</div>
+          <div style="padding:9px 6px;text-align:center;border-right:1px solid #f3f4f6;">
+            <div style="font-size:.58rem;color:#6b7280;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;">Empates</div>
+            <div style="font-family:var(--font-display,sans-serif);font-weight:900;font-size:1.05rem;color:#94a3b8;">${s.empates}</div>
           </div>
-          <!-- Derrotas -->
-          <div style="padding:10px 8px;text-align:center;border-right:1px solid #f3f4f6;">
-            <div style="font-size:.6rem;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Derrotas</div>
-            <div style="font-family:var(--font-display,sans-serif);font-weight:900;font-size:1.15rem;color:#ef4444;">${s.derrotas}</div>
+          <div style="padding:9px 6px;text-align:center;border-right:1px solid #f3f4f6;">
+            <div style="font-size:.58rem;color:#6b7280;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;">Derrotas</div>
+            <div style="font-family:var(--font-display,sans-serif);font-weight:900;font-size:1.05rem;color:#ef4444;">${s.derrotas}</div>
           </div>
-          <!-- Tarjetas -->
-          <div style="padding:10px 8px;text-align:center;">
-            <div style="font-size:.6rem;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Tarjetas</div>
-            <div style="display:flex;justify-content:center;gap:6px;align-items:center;">
-              <span style="font-family:var(--font-display,sans-serif);font-size:.95rem;color:#d97706;">🟨${s.amarillas}</span>
-              <span style="font-family:var(--font-display,sans-serif);font-size:.95rem;color:#dc2626;">🟥${s.rojas}</span>
+          <div style="padding:9px 6px;text-align:center;">
+            <div style="font-size:.58rem;color:#6b7280;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;">Tarjetas</div>
+            <div style="display:flex;justify-content:center;gap:5px;font-family:var(--font-display,sans-serif);font-size:.9rem;">
+              <span style="color:#d97706;">🟨${s.amarillas}</span>
+              <span style="color:#dc2626;">🟥${s.rojas}</span>
             </div>
           </div>
         </div>
       </div>`;
     });
 
-    if (!hayPartidos) {
-      html += `<div style="text-align:center;padding:24px;color:#6b7280;font-size:.85rem;">
-        Las estadísticas se actualizarán cuando comiencen los partidos.
-      </div>`;
+    if (!hayResultados) {
+      html += `<div style="text-align:center;padding:20px;color:#6b7280;font-size:.82rem;">Los datos aparecerán cuando comiencen los partidos.</div>`;
     }
-
     html += `</div>`;
     body.innerHTML = html;
   }
