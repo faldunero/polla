@@ -920,18 +920,8 @@ function renderGrupos(){
   Object.keys(FG).forEach(g => {
     FG[g].forEach(base => {
       const fs = firestoreById[base.id] || {};
-      // Merge: Firestore aporta solo resultado y datos extras; fixture es fuente de verdad
-      // para local/visita/fecha/hora/estadio/grupo (evita que Firestore pise horarios correctos)
-      const m = {
-        ...fs,
-        local:   base.local,
-        visita:  base.visita,
-        fecha:   base.fecha,
-        hora:    base.hora,
-        estadio: base.estadio,
-        grupo:   base.grupo,
-        id:      base.id,
-      };
+      // Firestore aporta solo resultado; fixture es fuente de verdad para horarios y equipos
+      const m = { ...fs, local:base.local, visita:base.visita, fecha:base.fecha, hora:base.hora, estadio:base.estadio, grupo:base.grupo, id:base.id };
       if (!porGrupo[g]) porGrupo[g] = [];
       porGrupo[g].push(m);
     });
@@ -2122,60 +2112,54 @@ function renderGoleadores() {
   container.innerHTML = html;
 }
 
-// ── MODAL ESTADÍSTICAS (Goleadores + Tarjetas + Confederaciones) ──────────
+// ── MODAL ESTADÍSTICAS ────────────────────────────────────────────────────
 let _estadTab = 'goleadores';
 let _estadDatos = { goleadores: null, tarjetas: null };
 
-// Mapa país → confederación (Mundial 2026)
-const CONFEDERACIONES = {
-  // UEFA
+// País → confederación (nombres tal como aparecen en fifa2026.js)
+const _CONF = {
+  // UEFA (16)
   'Alemania':'UEFA','España':'UEFA','Francia':'UEFA','Portugal':'UEFA',
-  'Inglaterra':'UEFA','Paises Bajos':'UEFA','Países Bajos':'UEFA','Belgica':'UEFA','Bélgica':'UEFA',
-  'Croacia':'UEFA','Serbia':'UEFA','Escocia':'UEFA','Austria':'UEFA',
-  'Turquia':'UEFA','Turquía':'UEFA','Ucrania':'UEFA','Suiza':'UEFA',
-  'Hungria':'UEFA','Hungría':'UEFA','Chequia':'UEFA','Suecia':'UEFA',
-  'Albania':'UEFA','Eslovenia':'UEFA','Georgia':'UEFA','Dinamarca':'UEFA',
-  'Bosnia y Herzegovina':'UEFA',
-  // CONMEBOL
+  'Inglaterra':'UEFA','Paises Bajos':'UEFA','Países Bajos':'UEFA',
+  'Belgica':'UEFA','Bélgica':'UEFA','Croacia':'UEFA','Serbia':'UEFA',
+  'Escocia':'UEFA','Austria':'UEFA','Turquia':'UEFA','Turquía':'UEFA',
+  'Suiza':'UEFA','Suecia':'UEFA','Chequia':'UEFA','Dinamarca':'UEFA',
+  'Bosnia y Herzegovina':'UEFA','Albania':'UEFA','Eslovenia':'UEFA','Georgia':'UEFA',
+  // CONMEBOL (6)
   'Argentina':'CONMEBOL','Brasil':'CONMEBOL','Colombia':'CONMEBOL',
   'Uruguay':'CONMEBOL','Ecuador':'CONMEBOL','Venezuela':'CONMEBOL',
   'Chile':'CONMEBOL','Bolivia':'CONMEBOL','Paraguay':'CONMEBOL','Peru':'CONMEBOL','Perú':'CONMEBOL',
-  // CONCACAF
-  'Estados Unidos':'CONCACAF','Mexico':'CONCACAF','México':'CONCACAF','Canada':'CONCACAF','Canadá':'CONCACAF',
-  'Costa Rica':'CONCACAF','Jamaica':'CONCACAF','Honduras':'CONCACAF',
-  'Panama':'CONCACAF','Panamá':'CONCACAF','Haiti':'CONCACAF','Haití':'CONCACAF',
-  'Curazao':'CONCACAF','Trinidad y Tobago':'CONCACAF','Guatemala':'CONCACAF',
-  // CAF
-  'Marruecos':'CAF','Senegal':'CAF','Camerun':'CAF','Camerún':'CAF','Egipto':'CAF',
-  'Sudafrica':'CAF','Sudáfrica':'CAF','Nigeria':'CAF','Ghana':'CAF',
-  'Mali':'CAF','Malí':'CAF','Costa de Marfil':'CAF','Tunez':'CAF','Túnez':'CAF',
-  'Algeria':'CAF','Angola':'CAF','RD Congo':'CAF','Cabo Verde':'CAF',
-  // AFC
-  'Japon':'CAF','Japón':'AFC','Corea del Sur':'AFC','Arabia Saudita':'AFC',
+  // CONCACAF (6)
+  'Estados Unidos':'CONCACAF','Mexico':'CONCACAF','México':'CONCACAF',
+  'Canada':'CONCACAF','Canadá':'CONCACAF','Costa Rica':'CONCACAF',
+  'Jamaica':'CONCACAF','Honduras':'CONCACAF','Panama':'CONCACAF','Panamá':'CONCACAF',
+  'Haiti':'CONCACAF','Haití':'CONCACAF','Curazao':'CONCACAF','Guatemala':'CONCACAF',
+  // CAF (9)
+  'Marruecos':'CAF','Senegal':'CAF','Camerun':'CAF','Camerún':'CAF',
+  'Egipto':'CAF','Sudafrica':'CAF','Sudáfrica':'CAF','Nigeria':'CAF',
+  'Ghana':'CAF','Mali':'CAF','Malí':'CAF','Costa de Marfil':'CAF',
+  'Tunez':'CAF','Túnez':'CAF','Algeria':'CAF','Cabo Verde':'CAF','RD Congo':'CAF',
+  // AFC (8)
+  'Japon':'AFC','Japón':'AFC','Corea del Sur':'AFC','Arabia Saudita':'AFC',
   'Australia':'AFC','Iran':'AFC','Irán':'AFC','Uzbekistan':'AFC','Uzbekistán':'AFC',
   'Indonesia':'AFC','Qatar':'AFC','China':'AFC','Irak':'AFC','Jordania':'AFC',
-  // OFC
+  // OFC (1)
   'Nueva Zelanda':'OFC',
 };
-// Corrección AFC/CAF Japón
-CONFEDERACIONES['Japon'] = 'AFC';
-
-const CONF_META = {
-  'UEFA':     { emoji:'🇪🇺', color:'#3b82f6', bg:'#eff6ff', equipos:16 },
-  'CONMEBOL': { emoji:'🌎',  color:'#22c55e', bg:'#f0fdf4', equipos:6  },
-  'CONCACAF': { emoji:'🌐',  color:'#f59e0b', bg:'#fffbeb', equipos:6  },
-  'CAF':      { emoji:'🌍',  color:'#ef4444', bg:'#fef2f2', equipos:9  },
-  'AFC':      { emoji:'🌏',  color:'#8b5cf6', bg:'#f5f3ff', equipos:8  },
-  'OFC':      { emoji:'🌊',  color:'#06b6d4', bg:'#ecfeff', equipos:1  },
+const _CONF_META = {
+  UEFA:     { emoji:'🇪🇺', color:'#3b82f6', equipos:16 },
+  CONMEBOL: { emoji:'🌎',  color:'#22c55e', equipos:6  },
+  CONCACAF: { emoji:'🌐',  color:'#f59e0b', equipos:6  },
+  CAF:      { emoji:'🌍',  color:'#ef4444', equipos:9  },
+  AFC:      { emoji:'🌏',  color:'#8b5cf6', equipos:8  },
+  OFC:      { emoji:'🌊',  color:'#06b6d4', equipos:1  },
 };
-
-function paisToConf(pais) {
+function _paisConf(pais) {
   if (!pais) return null;
-  const norm = pais.trim();
-  if (CONFEDERACIONES[norm]) return CONFEDERACIONES[norm];
-  const nl = norm.toLowerCase();
-  for (const [p, c] of Object.entries(CONFEDERACIONES)) {
-    if (nl.includes(p.toLowerCase()) || p.toLowerCase().includes(nl)) return c;
+  if (_CONF[pais]) return _CONF[pais];
+  const nl = pais.toLowerCase();
+  for (const [p,c] of Object.entries(_CONF)) {
+    if (nl === p.toLowerCase()) return c;
   }
   return null;
 }
@@ -2184,12 +2168,16 @@ window.abrirModalEstadisticas = async function(tab) {
   _estadTab = tab || 'goleadores';
   document.getElementById('modal-estadisticas').style.display = 'flex';
   try {
-    const [snapG, snapT] = await Promise.all([
+    const [snapG, snapT, snapP] = await Promise.all([
       getDoc(doc(db, 'config', 'goleadores')),
-      getDoc(doc(db, 'config', 'tarjetas'))
+      getDoc(doc(db, 'config', 'tarjetas')),
+      getDocs(collection(db, 'partidos')),
     ]);
     _estadDatos.goleadores = snapG.exists() ? (snapG.data().lista || []) : [];
     _estadDatos.tarjetas   = snapT.exists() ? (snapT.data().lista || []) : [];
+    // Guardar partidos con resultado para confederaciones
+    _estadDatos.partidos   = snapP.docs.map(d => ({ id: d.id, ...d.data() }))
+      .filter(p => p.resultado_local != null && p.resultado_visita != null);
   } catch(e) {
     try { _estadDatos.goleadores = JSON.parse(localStorage.getItem('lapolla2026_goleadores') || '[]'); } catch(e2) {}
   }
@@ -2217,7 +2205,7 @@ function renderTabEstadisticasLocal(tab, pag) {
     if (pages <= 1) return '';
     const desde = pag * _PAGE + 1;
     const hasta = Math.min((pag + 1) * _PAGE, total);
-    const bs = (dis) => `border:1px solid #e5e7eb;border-radius:6px;padding:5px 14px;font-size:.8rem;font-weight:600;cursor:${dis?'default':'pointer'};background:${dis?'#f3f4f6':'#fff'};color:${dis?'#9ca3af':'#111'};`;
+    const bs = d => `border:1px solid #e5e7eb;border-radius:6px;padding:5px 14px;font-size:.8rem;font-weight:600;cursor:${d?'default':'pointer'};background:${d?'#f3f4f6':'#fff'};color:${d?'#9ca3af':'#111'};`;
     return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #e5e7eb;background:#f9fafb;">
       <button onclick="window._estadPagNav('${tab}',${pag-1})" ${pag===0?'disabled':''} style="${bs(pag===0)}">← Anterior</button>
       <span style="font-size:.75rem;color:#6b7280;">${desde}–${hasta} de ${total}</span>
@@ -2230,147 +2218,180 @@ function renderTabEstadisticasLocal(tab, pag) {
     if (!lista.length) { body.innerHTML = `<div style="text-align:center;padding:40px;color:#6b7280;"><i class="fas fa-futbol" style="font-size:2rem;opacity:.3;display:block;margin-bottom:12px;"></i>La tabla se publicará cuando comiencen los partidos.</div>`; return; }
     const sorted = [...lista].sort((a,b) => b.goles - a.goles || a.nombre.localeCompare(b.nombre));
     const maxGoles = sorted[0]?.goles || 1;
-    const slice = sorted.slice(pag * _PAGE, (pag + 1) * _PAGE);
-    const offset = pag * _PAGE;
+    const slice = sorted.slice(pag * _PAGE, (pag+1) * _PAGE);
+    const off = pag * _PAGE;
     let html = `<table style="width:100%;border-collapse:collapse;"><thead><tr style="border-bottom:2px solid #e5e7eb;">
-      <th style="padding:8px 14px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;width:36px;">#</th>
+      <th style="padding:8px 14px;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;width:36px;">#</th>
       <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">Jugador</th>
       <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">País</th>
-      <th style="padding:8px 14px;text-align:right;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#dc2626;">⚽ Goles</th>
+      <th style="padding:8px 14px;text-align:right;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#dc2626;">⚽</th>
     </tr></thead><tbody>`;
     slice.forEach((g, i) => {
-      const ri = offset + i;
-      const medal = ri===0?'🥇':ri===1?'🥈':ri===2?'🥉':'';
-      const pct = Math.round((g.goles / maxGoles) * 100);
+      const ri = off+i, medal = ri===0?'🥇':ri===1?'🥈':ri===2?'🥉':'';
+      const pct = Math.round((g.goles/maxGoles)*100);
       html += `<tr style="border-bottom:1px solid #f3f4f6;${ri===0?'background:#fffbeb;':''}">
         <td style="padding:11px 14px;font-weight:700;color:${ri<3?'#dc2626':'#6b7280'};">${medal||ri+1}</td>
-        <td style="padding:11px 10px;"><div style="font-weight:${ri<3?'700':'500'};font-size:.88rem;color:#111;">${g.nombre}</div>
+        <td style="padding:11px 10px;"><div style="font-weight:${ri<3?700:500};font-size:.88rem;color:#111;">${g.nombre}</div>
           <div style="height:3px;background:#f3f4f6;border-radius:99px;margin-top:4px;max-width:120px;"><div style="height:3px;background:#dc2626;border-radius:99px;width:${pct}%;"></div></div></td>
         <td style="padding:11px 10px;color:#6b7280;font-size:.85rem;">${getFlag(g.pais)} ${g.pais}</td>
         <td style="padding:11px 14px;text-align:right;font-family:var(--font-display);font-weight:900;font-size:1.4rem;color:${ri===0?'#d97706':'#111'};">${g.goles}</td>
       </tr>`;
     });
-    html += `</tbody></table>` + paginador('goleadores', pag, sorted.length);
-    body.innerHTML = html;
+    body.innerHTML = html + `</tbody></table>` + paginador('goleadores', pag, sorted.length);
 
   } else if (tab === 'tarjetas') {
     const lista = _estadDatos.tarjetas || [];
     if (!lista.length) { body.innerHTML = `<div style="text-align:center;padding:40px;color:#6b7280;"><i class="fas fa-square" style="font-size:2rem;opacity:.3;display:block;margin-bottom:12px;color:#f59e0b;"></i>La tabla se publicará cuando comiencen los partidos.</div>`; return; }
-    const sorted = [...lista].sort((a,b) => (b.rojas*3+b.amarillas) - (a.rojas*3+a.amarillas) || a.nombre.localeCompare(b.nombre));
-    const slice = sorted.slice(pag * _PAGE, (pag + 1) * _PAGE);
-    const offset = pag * _PAGE;
+    const sorted = [...lista].sort((a,b) => (b.rojas*3+b.amarillas)-(a.rojas*3+a.amarillas) || a.nombre.localeCompare(b.nombre));
+    const slice = sorted.slice(pag * _PAGE, (pag+1) * _PAGE);
+    const off = pag * _PAGE;
     let html = `<table style="width:100%;border-collapse:collapse;"><thead><tr style="border-bottom:2px solid #e5e7eb;">
-      <th style="padding:8px 14px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;width:36px;">#</th>
+      <th style="padding:8px 14px;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;width:36px;">#</th>
       <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">Jugador</th>
       <th style="padding:8px 10px;text-align:left;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">País</th>
-      <th style="padding:8px 10px;text-align:center;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#f59e0b;">🟨</th>
+      <th style="padding:8px 8px;text-align:center;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#f59e0b;">🟨</th>
       <th style="padding:8px 14px;text-align:center;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#dc2626;">🟥</th>
     </tr></thead><tbody>`;
     slice.forEach((g, i) => {
-      const ri = offset + i;
+      const ri = off+i;
       html += `<tr style="border-bottom:1px solid #f3f4f6;">
         <td style="padding:11px 14px;font-weight:700;color:#6b7280;">${ri+1}</td>
         <td style="padding:11px 10px;font-weight:500;font-size:.88rem;color:#111;">${g.nombre}</td>
         <td style="padding:11px 10px;color:#6b7280;font-size:.85rem;">${getFlag(g.pais)} ${g.pais}</td>
-        <td style="padding:11px 10px;text-align:center;font-family:var(--font-display);font-size:1.2rem;color:#d97706;">${g.amarillas||0}</td>
-        <td style="padding:11px 14px;text-align:center;font-family:var(--font-display);font-size:1.2rem;color:#dc2626;">${g.rojas||0}</td>
+        <td style="padding:11px 8px;text-align:center;font-weight:700;font-size:.95rem;color:#d97706;">${g.amarillas||0}</td>
+        <td style="padding:11px 14px;text-align:center;font-weight:700;font-size:.95rem;color:#dc2626;">${g.rojas||0}</td>
       </tr>`;
     });
-    html += `</tbody></table>` + paginador('tarjetas', pag, sorted.length);
-    body.innerHTML = html;
+    body.innerHTML = html + `</tbody></table>` + paginador('tarjetas', pag, sorted.length);
 
   } else if (tab === 'confederaciones') {
+    // Acumular stats por confederación
     const stats = {};
-    Object.keys(CONF_META).forEach(c => {
-      stats[c] = { goles:0, amarillas:0, rojas:0, victorias:0, empates:0, derrotas:0, partidos:0, equipos:{}, total:CONF_META[c].equipos };
+    Object.keys(_CONF_META).forEach(c => {
+      stats[c] = { V:0, E:0, D:0, PJ:0, GF:0, GC:0, amarillas:0, rojas:0 };
     });
 
-    // V/E/D desde el fixture
-    let hayResultados = false;
-    Object.values(FG || {}).forEach(grupo => {
-      grupo.forEach(p => {
-        if (p.resultado_local == null || p.resultado_visita == null) return;
-        hayResultados = true;
-        const rl = parseInt(p.resultado_local), rv = parseInt(p.resultado_visita);
-        [[p.local, rl, rv],[p.visita, rv, rl]].forEach(([equipo, mf, mc]) => {
-          const conf = paisToConf(equipo);
-          if (!conf || !stats[conf]) return;
-          stats[conf].partidos++;
-          stats[conf].equipos[equipo] = true;
-          if (mf > mc)      stats[conf].victorias++;
-          else if (mf===mc) stats[conf].empates++;
-          else              stats[conf].derrotas++;
-        });
+    // V/E/D/GF/GC desde Firestore (partidos con resultado)
+    // Cruzar con fixture para saber qué equipo jugó de local/visita
+    const fixtureById = {};
+    Object.values(FG||{}).forEach(g => g.forEach(p => { fixtureById[p.id] = p; }));
+
+    (_estadDatos.partidos || []).forEach(p => {
+      // Buscar equipo local y visita en el fixture (Firestore puede no tenerlos)
+      const base = fixtureById[p.id] || fixtureById['fg'+p.id] || {};
+      const local  = p.local  || base.local;
+      const visita = p.visita || base.visita;
+      if (!local || !visita) return;
+      const rl = Number(p.resultado_local), rv = Number(p.resultado_visita);
+      if (isNaN(rl) || isNaN(rv)) return;
+
+      [[local, rl, rv],[visita, rv, rl]].forEach(([equipo, gf, gc]) => {
+        const c = _paisConf(equipo);
+        if (!c || !stats[c]) return;
+        stats[c].PJ++;
+        stats[c].GF += gf;
+        stats[c].GC += gc;
+        if (gf > gc)      stats[c].V++;
+        else if (gf===gc) stats[c].E++;
+        else              stats[c].D++;
       });
     });
 
     // Goles y tarjetas desde admin
-    (_estadDatos.goleadores || []).forEach(g => {
-      const conf = paisToConf(g.pais);
-      if (conf && stats[conf]) stats[conf].goles += (g.goles||0);
+    (_estadDatos.goleadores||[]).forEach(g => {
+      const c = _paisConf(g.pais); if (c && stats[c]) stats[c].golesAdmin = (stats[c].golesAdmin||0) + (g.goles||0);
     });
-    (_estadDatos.tarjetas || []).forEach(t => {
-      const conf = paisToConf(t.pais);
-      if (conf && stats[conf]) {
-        stats[conf].amarillas += (t.amarillas||0);
-        stats[conf].rojas     += (t.rojas||0);
-      }
+    (_estadDatos.tarjetas||[]).forEach(t => {
+      const c = _paisConf(t.pais); if (c && stats[c]) { stats[c].amarillas += t.amarillas||0; stats[c].rojas += t.rojas||0; }
     });
 
-    const orden = Object.keys(CONF_META).sort((a,b) =>
-      (stats[b].victorias*3 + stats[b].empates) - (stats[a].victorias*3 + stats[a].empates) ||
-      stats[b].goles - stats[a].goles
+    // Avance global del torneo (único, no por conf)
+    const totalGrupos = 72; // partidos fase de grupos
+    const jugadosGrupos = (_estadDatos.partidos||[]).filter(p => /^fg[A-L]/i.test(p.id)).length;
+    const pctTorneo = Math.round((jugadosGrupos / totalGrupos) * 100);
+
+    // Ordenar por puntos (V=3, E=1)
+    const orden = Object.keys(_CONF_META).sort((a,b) =>
+      (stats[b].V*3+stats[b].E) - (stats[a].V*3+stats[a].E) ||
+      (stats[b].GF-stats[b].GC) - (stats[a].GF-stats[a].GC)
     );
 
-    let html = `<div style="padding:4px 0 8px;">`;
-    orden.forEach(conf => {
-      const s = stats[conf], m = CONF_META[conf];
-      const jugaron = Object.keys(s.equipos).length;
-      const pct = Math.round((jugaron / s.total) * 100);
-      html += `<div style="margin-bottom:12px;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
-        <div style="display:flex;align-items:center;gap:10px;padding:11px 16px;background:${m.bg};border-bottom:1px solid #e5e7eb;">
-          <span style="font-size:1.3rem;">${m.emoji}</span>
-          <div style="flex:1;">
-            <div style="font-family:var(--font-display,sans-serif);font-weight:900;font-size:.95rem;letter-spacing:.05em;color:${m.color};">${conf}</div>
-            <div style="font-size:.68rem;color:#6b7280;">${s.total} equipos · ${s.partidos} partidos jugados</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-family:var(--font-display,sans-serif);font-weight:900;font-size:1.4rem;color:${m.color};line-height:1;">${s.goles} ⚽</div>
-          </div>
+    const hayDatos = orden.some(c => stats[c].PJ > 0);
+
+    // Header: avance global del torneo
+    let html = `
+    <div style="background:#f8fafc;border-bottom:1px solid #e5e7eb;padding:12px 16px;display:flex;align-items:center;gap:12px;">
+      <div style="flex:1;">
+        <div style="font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:4px;">Avance fase de grupos</div>
+        <div style="height:6px;background:#e5e7eb;border-radius:99px;">
+          <div style="height:6px;background:#22c55e;border-radius:99px;width:${pctTorneo}%;transition:width .5s;"></div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);background:#fff;">
-          <div style="padding:9px 6px;text-align:center;border-right:1px solid #f3f4f6;">
-            <div style="font-size:.58rem;color:#6b7280;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;">% Avance</div>
-            <div style="font-family:var(--font-display,sans-serif);font-weight:900;font-size:1.05rem;color:${m.color};">${pct}%</div>
-            <div style="height:3px;background:#f3f4f6;border-radius:99px;margin-top:4px;"><div style="height:3px;background:${m.color};border-radius:99px;width:${pct}%;"></div></div>
-          </div>
-          <div style="padding:9px 6px;text-align:center;border-right:1px solid #f3f4f6;">
-            <div style="font-size:.58rem;color:#6b7280;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;">Victorias</div>
-            <div style="font-family:var(--font-display,sans-serif);font-weight:900;font-size:1.05rem;color:#22c55e;">${s.victorias}</div>
-          </div>
-          <div style="padding:9px 6px;text-align:center;border-right:1px solid #f3f4f6;">
-            <div style="font-size:.58rem;color:#6b7280;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;">Empates</div>
-            <div style="font-family:var(--font-display,sans-serif);font-weight:900;font-size:1.05rem;color:#94a3b8;">${s.empates}</div>
-          </div>
-          <div style="padding:9px 6px;text-align:center;border-right:1px solid #f3f4f6;">
-            <div style="font-size:.58rem;color:#6b7280;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;">Derrotas</div>
-            <div style="font-family:var(--font-display,sans-serif);font-weight:900;font-size:1.05rem;color:#ef4444;">${s.derrotas}</div>
-          </div>
-          <div style="padding:9px 6px;text-align:center;">
-            <div style="font-size:.58rem;color:#6b7280;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;">Tarjetas</div>
-            <div style="display:flex;justify-content:center;gap:5px;font-family:var(--font-display,sans-serif);font-size:.9rem;">
-              <span style="color:#d97706;">🟨${s.amarillas}</span>
-              <span style="color:#dc2626;">🟥${s.rojas}</span>
+      </div>
+      <div style="text-align:right;min-width:64px;">
+        <div style="font-family:var(--font-display,sans-serif);font-weight:900;font-size:1.3rem;color:#22c55e;line-height:1;">${pctTorneo}%</div>
+        <div style="font-size:.62rem;color:#6b7280;">${jugadosGrupos}/${totalGrupos} partidos</div>
+      </div>
+    </div>
+
+    <!-- Tabla por confederación -->
+    <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
+      <thead>
+        <tr style="border-bottom:2px solid #e5e7eb;background:#f9fafb;">
+          <th style="padding:8px 12px;text-align:left;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">Confederación</th>
+          <th style="padding:8px 6px;text-align:center;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">PJ</th>
+          <th style="padding:8px 6px;text-align:center;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:#22c55e;">G</th>
+          <th style="padding:8px 6px;text-align:center;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:#94a3b8;">E</th>
+          <th style="padding:8px 6px;text-align:center;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:#ef4444;">P</th>
+          <th style="padding:8px 6px;text-align:center;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">GF</th>
+          <th style="padding:8px 6px;text-align:center;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">GC</th>
+          <th style="padding:8px 6px;text-align:center;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;">DG</th>
+          <th style="padding:8px 6px;text-align:center;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:#d97706;">⚽</th>
+          <th style="padding:8px 6px;text-align:center;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:#f59e0b;">🟨</th>
+          <th style="padding:8px 12px;text-align:center;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:#dc2626;">🟥</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    orden.forEach((c, i) => {
+      const s = stats[c], m = _CONF_META[c];
+      const pts = s.V*3 + s.E;
+      const dg = s.GF - s.GC;
+      const goles = s.golesAdmin || 0;
+      html += `<tr style="border-bottom:1px solid #f3f4f6;${i===0&&hayDatos?'background:#fffbeb;':''}">
+        <td style="padding:10px 12px;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:1rem;">${m.emoji}</span>
+            <div>
+              <div style="font-weight:700;font-size:.78rem;color:${m.color};">${c}</div>
+              <div style="font-size:.62rem;color:#9ca3af;">${m.equipos} equipos</div>
             </div>
           </div>
-        </div>
-      </div>`;
+        </td>
+        <td style="padding:10px 6px;text-align:center;color:#374151;font-weight:600;">${s.PJ}</td>
+        <td style="padding:10px 6px;text-align:center;color:#22c55e;font-weight:700;">${s.V}</td>
+        <td style="padding:10px 6px;text-align:center;color:#94a3b8;font-weight:600;">${s.E}</td>
+        <td style="padding:10px 6px;text-align:center;color:#ef4444;font-weight:700;">${s.D}</td>
+        <td style="padding:10px 6px;text-align:center;color:#374151;">${s.GF}</td>
+        <td style="padding:10px 6px;text-align:center;color:#374151;">${s.GC}</td>
+        <td style="padding:10px 6px;text-align:center;font-weight:600;color:${dg>0?'#22c55e':dg<0?'#ef4444':'#6b7280'};">${dg>0?'+':''}${dg}</td>
+        <td style="padding:10px 6px;text-align:center;color:#d97706;font-weight:600;">${goles}</td>
+        <td style="padding:10px 6px;text-align:center;color:#d97706;font-weight:600;">${s.amarillas}</td>
+        <td style="padding:10px 12px;text-align:center;color:#dc2626;font-weight:600;">${s.rojas}</td>
+      </tr>`;
     });
 
-    if (!hayResultados) {
-      html += `<div style="text-align:center;padding:20px;color:#6b7280;font-size:.82rem;">Los datos aparecerán cuando comiencen los partidos.</div>`;
+    html += `</tbody></table></div>`;
+
+    if (!hayDatos) {
+      html += `<div style="text-align:center;padding:16px;color:#9ca3af;font-size:.78rem;">Los datos aparecerán cuando comiencen los partidos.</div>`;
     }
-    html += `</div>`;
+
+    // Leyenda columnas
+    html += `<div style="padding:10px 14px;background:#f9fafb;border-top:1px solid #e5e7eb;display:flex;gap:12px;flex-wrap:wrap;">
+      ${[['PJ','Partidos jugados'],['G','Ganados'],['E','Empatados'],['P','Perdidos'],['GF','Goles a favor'],['GC','Goles en contra'],['DG','Diferencia de goles'],['⚽','Goles (admin)'],['🟨','Amarillas'],['🟥','Rojas']].map(([k,v])=>`<span style="font-size:.6rem;color:#6b7280;"><b style="color:#374151;">${k}</b> ${v}</span>`).join('')}
+    </div>`;
+
     body.innerHTML = html;
   }
 }
@@ -2526,7 +2547,7 @@ async function mostrarModalHoy() {
     <div style="display:flex;border-bottom:1px solid #e5e7eb;padding:0 22px;background:#fff;">
       <button class="estad-tab-btn active" data-tab="goleadores" onclick="switchTabEstad('goleadores')">⚽ Goleadores</button>
       <button class="estad-tab-btn" data-tab="tarjetas" onclick="switchTabEstad('tarjetas')">🟨 Tarjetas</button>
-      <button class="estad-tab-btn" data-tab="confederaciones" onclick="switchTabEstad('confederaciones')">🌎 Confederaciones</button>
+      <button class="estad-tab-btn" data-tab="confederaciones" onclick="switchTabEstad('confederaciones')">🌎 Confs.</button>
     </div>
     <div id="modal-estadisticas-body" style="padding:16px 20px;background:#fff;border-radius:0 0 16px 16px;"></div>
   </div>
