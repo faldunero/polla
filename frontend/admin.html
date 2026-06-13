@@ -1804,8 +1804,13 @@ async function renderFasesGestion() {
 
   // Obtener apuestas del usuario
   const apSnap = await getDocs(query(collection(db,'apuestas'), where('uid','==',_mgaUid)));
+  const normPidMga = id => (id && id.startsWith('fg')) ? id.slice(2) : id;
   const apuestasPorPartido = {};
-  apSnap.docs.forEach(d => { apuestasPorPartido[d.data().partidoId] = { ref: d.ref, ...d.data() }; });
+  apSnap.docs.forEach(d => {
+    const data = d.data();
+    const pid = normPidMga(data.partidoId);
+    apuestasPorPartido[pid] = { ref: d.ref, ...data };
+  });
 
   // Calcular ids de grupos desde FG global
   const idsGrupos = Object.values(FG || {}).flat().map(p => p.id);
