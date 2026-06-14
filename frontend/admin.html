@@ -2975,6 +2975,7 @@ function buildTablaGrupo(jugadores, grupoNombre, grupoId, mostrarGrupo, searchAc
         <div class="rk-bar-wrap">
           <span style="font-weight:700;font-size:1.05rem;color:var(--gold);min-width:32px;">${r.total}</span>
           <div class="rk-bar"><div class="rk-bar-fill" style="width:${pct}%"></div></div>
+          <button onclick="abrirDetalleJugador('${r.uid}','${r.nombre.replace(/'/g,"\'")}','${r.grupoNombre.replace(/'/g,"\'")}','${r.grupoId}')" title="Ver apuestas" style="background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 4px;font-size:0.85rem;opacity:0.7;transition:opacity 0.2s;" onmouseover="this.style.opacity=1;this.style.color='var(--gold)'" onmouseout="this.style.opacity=0.7;this.style.color='var(--muted)'"><i class="fas fa-search"></i></button>
         </div>
       </td>
     </tr>`;
@@ -6346,6 +6347,148 @@ window.goleadorLimpiarTodo = async function() {
   toast('Lista limpiada', 'success');
 };
 
+
+// ── Modal Detalle Jugador ────────────────────────────────────────────────
+let _mdjUid = null, _mdjGrupoId = null, _mdjGrupoActivo = 'A';
+
+window.abrirDetalleJugador = async function(uid, nombre, grupoNombre, grupoId) {
+  _mdjUid = uid;
+  _mdjGrupoId = grupoId;
+  document.getElementById('mdj-nombre').textContent = nombre;
+  document.getElementById('mdj-grupo').textContent = grupoNombre;
+  document.getElementById('mdj-pts').textContent = '…';
+  document.getElementById('mdj-exactos').textContent = '…';
+  document.getElementById('mdj-parciales').textContent = '…';
+  document.getElementById('mdj-jugados').textContent = '…';
+  document.getElementById('mdj-tabs').innerHTML = '';
+  document.getElementById('mdj-tabla').innerHTML = '<p style="color:var(--muted);padding:16px 0;"><i class="fas fa-spinner fa-spin"></i> Cargando…</p>';
+  document.getElementById('modal-detalle-jugador').style.display = 'flex';
+
+  // Cargar apuestas y partidos
+  const normP = id => (id && id.startsWith('fg')) ? id.slice(2) : id;
+  const [apSnap, partSnap] = await Promise.all([
+    getDocs(query(collection(db,'apuestas'), where('uid','==',uid))),
+    getDocs(collection(db,'partidos'))
+  ]);
+
+  const partidos = {};
+  partSnap.docs.forEach(d => { partidos[d.id] = d.data(); });
+
+  // Deduplicar apuestas
+  const apMap = new Map();
+  apSnap.docs.forEach(d => {
+    const a = d.data();
+    const key = normP(a.partidoId);
+    const existing = apMap.get(key);
+    if (!existing) { apMap.set(key, a); }
+    else {
+      const tNew = a.actualizadoEn?.seconds || a.creadoEn?.seconds || 0;
+      const tOld = existing.actualizadoEn?.seconds || existing.creadoEn?.seconds || 0;
+      if (tNew > tOld) apMap.set(key, a);
+    }
+  });
+
+  // Calcular stats globales
+  let total=0, exactos=0, parciales=0, jugados=0;
+  apMap.forEach((a, pid) => {
+    const p = partidos[pid];
+    if (!p || p.resultado_local == null) return;
+    jugados++;
+    const pts = calcularPuntaje(
+      {local: p.resultado_local, visita: p.resultado_visita},
+      {local: a.golesLocal, visita: a.golesVisita}
+    );
+    total += pts;
+    if (pts === 4 || pts === 2) exactos++;
+    else if (pts === 3 || pts === 1) parciales++;
+  });
+
+  document.getElementById('mdj-pts').textContent = total;
+  document.getElementById('mdj-exactos').textContent = exactos;
+  document.getElementById('mdj-parciales').textContent = parciales;
+  document.getElementById('mdj-jugados').textContent = jugados;
+
+  // Guardar datos para tabs
+  window._mdjApMap = apMap;
+  window._mdjPartidos = partidos;
+
+  // Tabs de grupos
+  const grupos = Object.keys(FG).sort();
+  _mdjGrupoActivo = grupos[0];
+  const tabsEl = document.getElementById('mdj-tabs');
+  tabsEl.innerHTML = grupos.map(g => `
+    <button class="mdj-tab" data-g="${g}" onclick="mdjMostrarGrupo('${g}')"
+      style="padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:${g===_mdjGrupoActivo?'var(--gold)':'var(--card2)'};color:${g===_mdjGrupoActivo?'#0a0e1a':'var(--text)'};font-size:0.78rem;font-weight:600;cursor:pointer;">
+      ${g}
+    </button>`).join('');
+
+  mdjMostrarGrupo(_mdjGrupoActivo);
+};
+
+window.mdjMostrarGrupo = function(g) {
+  _mdjGrupoActivo = g;
+  // Update tab styles
+  document.querySelectorAll('.mdj-tab').forEach(t => {
+    const isActive = t.dataset.g === g;
+    t.style.background = isActive ? 'var(--gold)' : 'var(--card2)';
+    t.style.color = isActive ? '#0a0e1a' : 'var(--text)';
+  });
+
+  const apMap = window._mdjApMap;
+  const partidos = window._mdjPartidos;
+  const partGroup = FG[g] || [];
+
+  let html = `<div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.05em;color:var(--gold);margin-bottom:10px;">Grupo ${g}</div>`;
+  html += `<table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+    <thead><tr style="color:var(--muted);font-size:0.72rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);">
+      <th style="padding:6px 8px;text-align:left;">Fecha</th>
+      <th style="padding:6px 8px;text-align:left;">Local</th>
+      <th style="padding:6px 8px;text-align:center;">Resultado</th>
+      <th style="padding:6px 8px;text-align:right;">Visita</th>
+      <th style="padding:6px 8px;text-align:center;color:var(--gold);">Apuesta</th>
+      <th style="padding:6px 8px;text-align:center;">Pts</th>
+    </tr></thead><tbody>`;
+
+  partGroup.forEach(p => {
+    const apuesta = apMap.get(p.id);
+    const partido = partidos[p.id];
+    const tieneReal = partido?.resultado_local != null;
+    const tieneApuesta = apuesta != null;
+    const pts = tieneReal && tieneApuesta ? calcularPuntaje(
+      {local: partido.resultado_local, visita: partido.resultado_visita},
+      {local: apuesta.golesLocal, visita: apuesta.golesVisita}
+    ) : null;
+    const ptsColor = pts===4||pts===2 ? 'var(--green)' : pts===3||pts===1 ? 'var(--gold)' : 'var(--muted)';
+    const rowBg = pts!=null && pts>0 ? 'rgba(34,197,94,0.04)' : '';
+
+    html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.04);${rowBg?'background:'+rowBg:''}">
+      <td style="padding:7px 8px;color:var(--muted);font-size:0.75rem;">${p.fecha}</td>
+      <td style="padding:7px 8px;font-weight:500;">${p.local}</td>
+      <td style="padding:7px 8px;text-align:center;">
+        ${tieneReal
+          ? `<span style="background:var(--card2);border-radius:6px;padding:2px 10px;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:.04em;">${partido.resultado_local}–${partido.resultado_visita}</span>`
+          : `<span style="color:var(--muted);font-size:0.75rem;">–</span>`}
+      </td>
+      <td style="padding:7px 8px;text-align:right;font-weight:500;">${p.visita}</td>
+      <td style="padding:7px 8px;text-align:center;">
+        ${tieneApuesta
+          ? `<span style="color:var(--gold);font-weight:700;">${apuesta.golesLocal}–${apuesta.golesVisita}</span>`
+          : `<span style="color:rgba(255,255,255,0.2);font-size:0.75rem;">sin apuesta</span>`}
+      </td>
+      <td style="padding:7px 8px;text-align:center;">
+        ${pts!=null ? `<span style="font-weight:700;color:${ptsColor};">${pts}pts</span>` : '–'}
+      </td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('mdj-tabla').innerHTML = html;
+};
+
+window.cerrarDetalleJugador = function() {
+  document.getElementById('modal-detalle-jugador').style.display = 'none';
+  _mdjUid = null;
+};
 </script>
 
 <!-- MODAL GESTIÓN APUESTAS USUARIO -->
@@ -6391,6 +6534,35 @@ window.goleadorLimpiarTodo = async function() {
         <i class="fas fa-rotate-left"></i> Sí, resetear
       </button>
     </div>
+  </div>
+</div>
+
+<!-- ── Modal Detalle Jugador ──────────────────────────────────────────── -->
+<div id="modal-detalle-jugador" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9100;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)cerrarDetalleJugador()">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);width:100%;max-width:780px;max-height:88vh;overflow-y:auto;padding:28px;position:relative;">
+    <button onclick="cerrarDetalleJugador()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;">✕</button>
+    <div id="mdj-nombre" style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--gold);letter-spacing:0.05em;"></div>
+    <div id="mdj-grupo" style="font-size:0.78rem;color:var(--muted);margin-bottom:18px;"></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px;">
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+        <div id="mdj-pts" style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--gold);"></div>
+        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">Puntos</div>
+      </div>
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+        <div id="mdj-exactos" style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--green);"></div>
+        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">Exactos</div>
+      </div>
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+        <div id="mdj-parciales" style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--blue);"></div>
+        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">Parciales</div>
+      </div>
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+        <div id="mdj-jugados" style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--text);"></div>
+        <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">Jugados</div>
+      </div>
+    </div>
+    <div id="mdj-tabs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;"></div>
+    <div id="mdj-tabla"></div>
   </div>
 </div>
 </body>
