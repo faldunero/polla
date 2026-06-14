@@ -1204,7 +1204,8 @@ nav {
         <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;">
           <span style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;">Lista actual</span>
           <div style="position:relative;max-width:200px;">
-            <input type="text" id="gol-filtro-pais" class="form-input" placeholder="🔍 País..." oninput="goleadorRenderAdmin()" style="padding:6px 28px 6px 10px;font-size:0.8rem;width:100%;">
+            <input type="text" id="gol-filtro-pais" class="form-input" list="gol-paises-list" placeholder="🔍 País..." oninput="goleadorRenderAdmin()" style="padding:6px 28px 6px 10px;font-size:0.8rem;width:100%;">
+            <datalist id="gol-paises-list"></datalist>
             <button onclick="document.getElementById('gol-filtro-pais').value='';goleadorRenderAdmin()" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.85rem;padding:0;line-height:1;">✕</button>
           </div>
           <button class="btn btn-outline btn-sm" onclick="goleadorLimpiarTodo()" style="color:var(--red);border-color:rgba(239,68,68,0.3);"><i class="fas fa-trash"></i> Limpiar todo</button>
@@ -1234,7 +1235,8 @@ nav {
         <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;">
           <span style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;">Lista actual</span>
           <div style="position:relative;max-width:200px;">
-            <input type="text" id="tar-filtro-pais" class="form-input" placeholder="🔍 País..." oninput="tarjetaRenderAdmin()" style="padding:6px 28px 6px 10px;font-size:0.8rem;width:100%;">
+            <input type="text" id="tar-filtro-pais" class="form-input" list="tar-paises-list" placeholder="🔍 País..." oninput="tarjetaRenderAdmin()" style="padding:6px 28px 6px 10px;font-size:0.8rem;width:100%;">
+            <datalist id="tar-paises-list"></datalist>
             <button onclick="document.getElementById('tar-filtro-pais').value='';tarjetaRenderAdmin()" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.85rem;padding:0;line-height:1;">✕</button>
           </div>
           <button class="btn btn-outline btn-sm" onclick="tarjetaLimpiarTodo()" style="color:var(--red);border-color:rgba(239,68,68,0.3);"><i class="fas fa-trash"></i> Limpiar todo</button>
@@ -6283,19 +6285,19 @@ async function loadDashboard() {
           tarPaisArr.map(t => {
             const pctAm = Math.round((t.amarillas / maxAm) * 100);
             const pctRo = Math.round((t.rojas / maxRo) * 100);
-            return `<div style="display:grid;grid-template-columns:1fr 80px 1fr;align-items:center;gap:0;margin-bottom:7px;">
-              <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end;">
-                <span style="font-size:0.78rem;color:#d97706;font-weight:700;min-width:16px;text-align:right;">${t.amarillas}</span>
-                <div style="height:8px;background:var(--card2);border-radius:99px;overflow:hidden;width:100%;display:flex;justify-content:flex-end;">
-                  <div style="width:${pctAm}%;background:#d97706;border-radius:99px;"></div>
+            return `<div style="display:grid;grid-template-columns:1fr 90px 1fr;align-items:center;gap:4px;margin-bottom:7px;">
+              <div style="display:flex;align-items:center;gap:5px;">
+                <div style="flex:1;height:8px;background:var(--card2);border-radius:99px;overflow:hidden;display:flex;justify-content:flex-end;">
+                  <div style="width:${pctAm}%;background:#d97706;border-radius:99px;transition:width .4s;"></div>
                 </div>
+                <span style="font-size:0.75rem;color:#d97706;font-weight:700;min-width:18px;text-align:right;">${t.amarillas}</span>
               </div>
-              <div style="text-align:center;font-size:0.75rem;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${t.pais}">${getFlag(t.pais)} ${t.pais}</div>
-              <div style="display:flex;align-items:center;gap:6px;">
-                <div style="height:8px;background:var(--card2);border-radius:99px;overflow:hidden;width:100%;">
-                  <div style="width:${pctRo}%;background:#dc2626;border-radius:99px;"></div>
+              <div style="text-align:center;font-size:0.72rem;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${t.pais}">${getFlag(t.pais)} ${t.pais}</div>
+              <div style="display:flex;align-items:center;gap:5px;">
+                <span style="font-size:0.75rem;color:#dc2626;font-weight:700;min-width:18px;text-align:left;">${t.rojas}</span>
+                <div style="flex:1;height:8px;background:var(--card2);border-radius:99px;overflow:hidden;">
+                  <div style="width:${pctRo}%;background:#dc2626;border-radius:99px;transition:width .4s;"></div>
                 </div>
-                <span style="font-size:0.78rem;color:#dc2626;font-weight:700;min-width:16px;">${t.rojas}</span>
               </div>
             </div>`;
           }).join('');
@@ -6337,25 +6339,35 @@ async function loadDashboard() {
 window.loadDashboard = loadDashboard;
 const GOL_KEY = 'lapolla2026_goleadores';
 
-async function goleadorCargar() {
+async function goleadorCargar(force=false) {
+  if (_golCache && !force) return _golCache;
   try {
     const snap = await getDoc(doc(db, 'config', 'goleadores'));
-    return snap.exists() ? (snap.data().lista || []) : [];
+    _golCache = snap.exists() ? (snap.data().lista || []) : [];
   } catch(e) {
     console.warn('Goleadores Firestore error, usando localStorage:', e.message);
-    try { return JSON.parse(localStorage.getItem(GOL_KEY) || '[]'); } catch(e2) { return []; }
+    try { _golCache = JSON.parse(localStorage.getItem(GOL_KEY) || '[]'); } catch(e2) { _golCache = []; }
   }
+  return _golCache;
 }
 
 async function goleadorGuardar(lista) {
+  _golCache = lista;
   await setDoc(doc(db, 'config', 'goleadores'), { lista }, { merge: false });
-  localStorage.setItem(GOL_KEY, JSON.stringify(lista)); // backup local
+  localStorage.setItem(GOL_KEY, JSON.stringify(lista));
 }
 
 async function goleadorRenderAdmin() {
   const lista = await goleadorCargar();
   const container = document.getElementById('goleadores-tabla');
   if (!container) return;
+
+  // Poblar datalist de países
+  const dlGol = document.getElementById('gol-paises-list');
+  if (dlGol) {
+    const paises = [...new Set(lista.map(g => g.pais).filter(Boolean))].sort();
+    dlGol.innerHTML = paises.map(p => `<option value="${p}">`).join('');
+  }
 
   const filtroPais = (document.getElementById('gol-filtro-pais')?.value || '').toLowerCase().trim();
   const listaFiltrada = filtroPais ? lista.filter(g => g.pais?.toLowerCase().includes(filtroPais)) : lista;
@@ -6596,18 +6608,23 @@ window.cerrarDetalleJugador = function() {
 
 // ── Tarjetas ────────────────────────────────────────────────────────────
 const TAR_KEY = 'lapolla2026_tarjetas';
+let _tarCache = null;
+let _golCache = null;
 
-async function tarjetaCargar() {
+async function tarjetaCargar(force=false) {
+  if (_tarCache && !force) return _tarCache;
   try {
     const snap = await getDoc(doc(db, 'config', 'tarjetas'));
-    return snap.exists() ? (snap.data().lista || []) : [];
+    _tarCache = snap.exists() ? (snap.data().lista || []) : [];
   } catch(e) {
     console.warn('Tarjetas Firestore error:', e.message);
-    try { return JSON.parse(localStorage.getItem(TAR_KEY) || '[]'); } catch(e2) { return []; }
+    try { _tarCache = JSON.parse(localStorage.getItem(TAR_KEY) || '[]'); } catch(e2) { _tarCache = []; }
   }
+  return _tarCache;
 }
 
 async function tarjetaGuardar(lista) {
+  _tarCache = lista;
   await setDoc(doc(db, 'config', 'tarjetas'), { lista }, { merge: false });
   localStorage.setItem(TAR_KEY, JSON.stringify(lista));
 }
@@ -6616,6 +6633,13 @@ async function tarjetaRenderAdmin() {
   const lista = await tarjetaCargar();
   const container = document.getElementById('tarjetas-tabla');
   if (!container) return;
+
+  // Poblar datalist de países
+  const dlTar = document.getElementById('tar-paises-list');
+  if (dlTar) {
+    const paises = [...new Set(lista.map(g => g.pais).filter(Boolean))].sort();
+    dlTar.innerHTML = paises.map(p => `<option value="${p}">`).join('');
+  }
 
   const filtroTarPais = (document.getElementById('tar-filtro-pais')?.value || '').toLowerCase().trim();
   const listaFiltradaTar = filtroTarPais ? lista.filter(g => g.pais?.toLowerCase().includes(filtroTarPais)) : lista;
