@@ -748,12 +748,20 @@ nav {
         </div>
       </div>
 
-      <!-- Tarjetas por país -->
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;margin-bottom:16px;color:var(--gold);">
-          <i class="fas fa-square" style="color:#f59e0b;"></i> Tarjetas por País
+      <!-- Tarjetas y Goles por país -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;margin-bottom:16px;color:var(--gold);">
+            <i class="fas fa-square" style="color:#f59e0b;"></i> Tarjetas por País
+          </div>
+          <div id="dash-tarjetas-pais"></div>
         </div>
-        <div id="dash-tarjetas-pais"></div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;margin-bottom:16px;color:var(--gold);">
+            <i class="fas fa-futbol"></i> Goles por País
+          </div>
+          <div id="dash-goles-pais"></div>
+        </div>
       </div>
     </div>
 
@@ -6301,6 +6309,37 @@ async function loadDashboard() {
               </div>
             </div>`;
           }).join('');
+      }
+    }
+
+    // ── Goles por país ───────────────────────────────────────────────────
+    const golPorPais = {};
+    listaGol.forEach(g => {
+      const pais = g.pais || '—';
+      if (!golPorPais[pais]) golPorPais[pais] = 0;
+      golPorPais[pais] += Number(g.goles) || 0;
+    });
+    const golPaisArr = Object.entries(golPorPais)
+      .map(([pais, goles]) => ({ pais, goles }))
+      .filter(t => t.goles > 0)
+      .sort((a, b) => b.goles - a.goles);
+    const maxGolPais = golPaisArr[0]?.goles || 1;
+    const golPaisEl = document.getElementById('dash-goles-pais');
+    if (golPaisEl) {
+      if (!golPaisArr.length) {
+        golPaisEl.innerHTML = '<div style="color:var(--muted);font-size:.8rem;padding:8px 0;">Sin goles registrados aún</div>';
+      } else {
+        golPaisEl.innerHTML = golPaisArr.map((t, i) => {
+          const pct = Math.round((t.goles / maxGolPais) * 100);
+          const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+          return `<div class="dash-bar-wrap" style="margin-bottom:7px;">
+            <div class="dash-bar-label" style="font-size:0.75rem;">${medal} ${getFlag(t.pais)} ${t.pais}</div>
+            <div class="dash-bar-track" style="height:8px;">
+              <div class="dash-bar-fill" style="width:${pct}%;background:#dc2626;height:8px;"></div>
+            </div>
+            <div class="dash-bar-val" style="color:#dc2626;font-size:0.75rem;font-weight:700;">${t.goles}</div>
+          </div>`;
+        }).join('');
       }
     }
 
