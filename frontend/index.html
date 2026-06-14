@@ -429,7 +429,7 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
 }
 #modal-hoy-overlay.open { display:flex; }
 #modal-hoy {
-  background:#fff;border-radius:12px;width:100%;max-width:680px;
+  background:#fff;border-radius:12px;width:100%;max-width:1100px;
   max-height:90vh;overflow:hidden;display:flex;flex-direction:column;
   box-shadow:0 24px 80px rgba(0,0,0,0.35);
 }
@@ -464,6 +464,10 @@ footer::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;back
   border:1.5px solid var(--border);border-radius:10px;overflow:hidden;
   transition:box-shadow 0.2s;
 }
+.mhoy-card-compact { font-size:0.88rem; }
+.mhoy-card-main-compact { padding:10px 12px; gap:8px; }
+.mhoy-team-compact { font-size:0.82rem; gap:5px; }
+.mhoy-team-compact .flag { font-size:1.1rem; }
 .mhoy-card:hover { box-shadow:0 4px 16px rgba(0,0,0,0.1); }
 .mhoy-card-top {
   background:var(--ink);padding:8px 16px;
@@ -2429,23 +2433,35 @@ async function mostrarModalHoy() {
 
   // Render INMEDIATO sin esperar clima ni Firestore
   const body = document.getElementById('mhoy-body');
+  const usaGrid = partidosHoy.length > 3;
+  if (usaGrid) {
+    body.style.display = 'grid';
+    body.style.gridTemplateColumns = 'repeat(3, 1fr)';
+    body.style.gap = '12px';
+    body.style.padding = '16px';
+  } else {
+    body.style.display = '';
+    body.style.gridTemplateColumns = '';
+    body.style.gap = '';
+    body.style.padding = '';
+  }
   body.innerHTML = partidosHoy.map(p => {
     const horaChile = fmtHoraChile(p.hora, p.estadio) || p.hora || '';
     const flagL = getFlag(p.local  || '') || '⬜';
     const flagV = getFlag(p.visita || '') || '⬜';
     const grupoLabel = p.grupo ? `Grupo ${p.grupo}` : (p.fase || '');
-    return `<div class="mhoy-card" id="mhoy-card-${p.id}">
+    return `<div class="mhoy-card${usaGrid?' mhoy-card-compact':''}" id="mhoy-card-${p.id}">
       <div class="mhoy-card-top">
         <span class="mhoy-grupo">${grupoLabel}</span>
-        <span class="mhoy-hora">🕐 ${horaChile} hrs CL</span>
+        <span class="mhoy-hora">🕐 ${horaChile} CL</span>
       </div>
-      <div class="mhoy-card-main">
-        <div class="mhoy-team">
+      <div class="mhoy-card-main${usaGrid?' mhoy-card-main-compact':''}">
+        <div class="mhoy-team${usaGrid?' mhoy-team-compact':''}">
           <span class="flag">${flagL}</span>
           <span>${p.local || 'Por definir'}</span>
         </div>
         <div class="mhoy-vs" id="mhoy-centro-${p.id}">VS</div>
-        <div class="mhoy-team right">
+        <div class="mhoy-team right${usaGrid?' mhoy-team-compact':''}">
           <span>${p.visita || 'Por definir'}</span>
           <span class="flag">${flagV}</span>
         </div>
