@@ -4,35 +4,55 @@
 <meta charset="UTF-8">
 <title>Limpiar Duplicados · La Polla 2026</title>
 <style>
-  body { font-family: monospace; background: #0a0e1a; color: #e8eaf0; padding: 32px; max-width: 800px; margin: 0 auto; }
+  body { font-family: monospace; background: #0a0e1a; color: #e8eaf0; padding: 32px; max-width: 900px; margin: 0 auto; }
   h1 { color: #f5c842; font-size: 1.4rem; margin-bottom: 4px; }
   p  { color: #6b7a99; font-size: 0.85rem; margin-bottom: 24px; }
-  button { padding: 10px 24px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 700; margin-right: 10px; }
+  button { padding: 10px 24px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 700; margin-right: 10px; margin-bottom: 16px; }
   #btn-dry  { background: #3b82f6; color: #fff; }
   #btn-real { background: #ef4444; color: #fff; display: none; }
   #btn-dry:disabled, #btn-real:disabled { opacity: 0.5; cursor: not-allowed; }
-  #log { margin-top: 24px; background: #0f1525; border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 16px; font-size: 0.78rem; line-height: 1.8; max-height: 500px; overflow-y: auto; white-space: pre-wrap; }
+  #log { margin-top: 8px; background: #0f1525; border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 16px; font-size: 0.78rem; line-height: 1.8; max-height: 400px; overflow-y: auto; white-space: pre-wrap; }
+  #tabla-wrap { margin-top: 24px; display: none; }
+  #tabla-wrap h2 { color: #f5c842; font-size: 1rem; margin-bottom: 12px; font-family: monospace; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  th { text-align: left; padding: 6px 10px; color: #6b7a99; font-size: 0.7rem; text-transform: uppercase; letter-spacing: .06em; border-bottom: 1px solid rgba(255,255,255,0.07); }
+  td { padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .dup  { color: #f5c842; }
   .ok   { color: #22c55e; }
   .warn { color: #f5c842; }
   .err  { color: #ef4444; }
   .info { color: #6b7a99; }
-  .big  { font-size: 1.1rem; font-weight: 700; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
 </style>
 </head>
 <body>
 <h1>🧹 Limpiar Duplicados de Apuestas</h1>
-<p>Primero haz un <strong>Dry Run</strong> para ver qué se borraría. Luego confirma con <strong>Borrar Duplicados</strong>.</p>
+<p>Primero haz un <strong>Dry Run</strong> para ver qué se borraría y cuántas apuestas quedará cada participante. Luego confirma con <strong>Borrar Duplicados</strong>.</p>
 
 <button id="btn-dry" onclick="correr(false)">🔍 Dry Run (solo analizar)</button>
 <button id="btn-real" onclick="correr(true)">🗑 Borrar Duplicados</button>
 
 <div id="log">Listo para analizar...</div>
+<div id="tabla-wrap">
+  <h2>📋 Apuestas por participante (después de limpiar)</h2>
+  <table>
+    <thead><tr>
+      <th>#</th>
+      <th>Nombre</th>
+      <th>Grupo</th>
+      <th style="text-align:center;">Docs actuales</th>
+      <th style="text-align:center;">Duplicados</th>
+      <th style="text-align:center;">Quedarán</th>
+    </tr></thead>
+    <tbody id="tabla-body"></tbody>
+  </table>
+</div>
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, getDocs, writeBatch, doc }
+import { getFirestore, collection, getDocs, writeBatch }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
@@ -62,7 +82,6 @@ function clearLog() { logEl.innerHTML = ''; }
 
 const normPid = id => (id && id.startsWith('fg')) ? id.slice(2) : id;
 
-// Auth check
 onAuthStateChanged(auth, user => {
   if (!user) {
     clearLog();
@@ -80,6 +99,7 @@ window.correr = async function(borrarReal) {
   clearLog();
   document.getElementById('btn-dry').disabled = true;
   document.getElementById('btn-real').style.display = 'none';
+  document.getElementById('tabla-wrap').style.display = 'none';
 
   log(borrarReal ? '🗑 MODO BORRADO REAL' : '🔍 MODO DRY RUN — no se borra nada', borrarReal ? 'err' : 'info');
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
@@ -88,35 +108,78 @@ window.correr = async function(borrarReal) {
   const snap = await getDocs(collection(db, 'apuestas'));
   log(`Total documentos en apuestas: ${snap.size}`, 'info');
 
-  // Agrupar por uid+partidoId normalizado
-  const grupos = new Map();
+  // Agrupar por uid
+  const porUsuario = new Map(); // uid -> { nombre, grupo, docs: [] }
   snap.docs.forEach(d => {
     const data = d.data();
-    const pid = normPid(data.partidoId);
-    const key = `${data.uid}__${pid}`;
-    if (!grupos.has(key)) grupos.set(key, []);
-    grupos.get(key).push({ id: d.id, ref: d.ref, data, ts: data.actualizadoEn?.seconds || data.creadoEn?.seconds || 0 });
+    const uid = data.uid;
+    if (!porUsuario.has(uid)) {
+      porUsuario.set(uid, {
+        nombre: data.nombre || data.email || uid,
+        grupo: data.grupoNombre || '—',
+        docs: []
+      });
+    }
+    porUsuario.get(uid).docs.push({ id: d.id, ref: d.ref, data, pid: normPid(data.partidoId), ts: data.actualizadoEn?.seconds || data.creadoEn?.seconds || 0 });
   });
 
-  // Encontrar duplicados
+  // Encontrar duplicados por usuario
   const aBorrar = [];
-  let usuariosConDups = new Set();
+  const resumenUsuarios = [];
 
-  grupos.forEach((docs, key) => {
-    if (docs.length <= 1) return;
-    // Ordenar por timestamp desc — el más reciente primero
-    docs.sort((a, b) => b.ts - a.ts);
-    const uid = docs[0].data.uid;
-    const pid = normPid(docs[0].data.partidoId);
-    usuariosConDups.add(uid);
-    log(`DUP: ${docs[0].data.nombre || uid} | partido ${pid} | ${docs.length} docs → conservar 1, borrar ${docs.length-1}`, 'warn');
-    // El primero (más reciente) se conserva, el resto se borra
-    docs.slice(1).forEach(d => aBorrar.push(d.ref));
+  porUsuario.forEach((u, uid) => {
+    // Agrupar por partidoId normalizado
+    const porPartido = new Map();
+    u.docs.forEach(d => {
+      if (!porPartido.has(d.pid)) porPartido.set(d.pid, []);
+      porPartido.get(d.pid).push(d);
+    });
+
+    let dupsDocs = 0;
+    porPartido.forEach(docs => {
+      if (docs.length <= 1) return;
+      docs.sort((a, b) => b.ts - a.ts);
+      const extras = docs.slice(1);
+      dupsDocs += extras.length;
+      extras.forEach(d => aBorrar.push(d.ref));
+    });
+
+    if (dupsDocs > 0) {
+      log(`DUP: ${u.nombre} | ${u.grupo} | ${u.docs.length} docs → borrar ${dupsDocs} → quedarán ${u.docs.length - dupsDocs}`, 'warn');
+    }
+
+    resumenUsuarios.push({
+      nombre: u.nombre,
+      grupo: u.grupo,
+      total: u.docs.length,
+      dups: dupsDocs,
+      final: u.docs.length - dupsDocs
+    });
   });
+
+  // Ordenar por grupo y nombre
+  resumenUsuarios.sort((a, b) => a.grupo.localeCompare(b.grupo) || a.nombre.localeCompare(b.nombre));
 
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
-  log(`Usuarios con duplicados: ${usuariosConDups.size}`, 'warn');
+  log(`Usuarios con duplicados: ${resumenUsuarios.filter(u => u.dups > 0).length}`, 'warn');
   log(`Documentos a borrar: ${aBorrar.length}`, aBorrar.length > 0 ? 'warn' : 'ok');
+
+  // Mostrar tabla
+  const tbody = document.getElementById('tabla-body');
+  tbody.innerHTML = '';
+  resumenUsuarios.forEach((u, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="color:#6b7a99;">${i+1}</td>
+      <td style="font-weight:600;">${u.nombre}</td>
+      <td style="color:#6b7a99;">${u.grupo}</td>
+      <td style="text-align:center;color:#6b7a99;">${u.total}</td>
+      <td style="text-align:center;" class="${u.dups>0?'dup':''}">${u.dups > 0 ? '-'+u.dups : '—'}</td>
+      <td style="text-align:center;font-weight:700;" class="${u.final===72?'ok':u.final>0?'warn':'err'}">${u.final}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('tabla-wrap').style.display = 'block';
 
   if (aBorrar.length === 0) {
     log('✅ No hay duplicados. Nada que limpiar.', 'ok');
@@ -126,13 +189,13 @@ window.correr = async function(borrarReal) {
 
   if (!borrarReal) {
     log('', '');
-    log('👆 Dry run completado. Si todo se ve bien, haz clic en "Borrar Duplicados".', 'ok');
+    log('👆 Dry run completado. Revisa la tabla y si todo OK haz clic en "Borrar Duplicados".', 'ok');
     document.getElementById('btn-real').style.display = 'inline-block';
     document.getElementById('btn-dry').disabled = false;
     return;
   }
 
-  // BORRADO REAL en batches de 400
+  // BORRADO REAL
   log('', '');
   log('Borrando...', 'warn');
   let borrados = 0;
@@ -147,6 +210,7 @@ window.correr = async function(borrarReal) {
 
   log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'info');
   log(`✅ Listo. ${borrados} documentos duplicados eliminados.`, 'ok');
+  log('Recarga la tabla con Dry Run para confirmar.', 'info');
   document.getElementById('btn-dry').disabled = false;
 };
 </script>
