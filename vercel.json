@@ -1,7 +1,10 @@
 {
   "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
     { "src": "/polla.html", "dest": "/frontend/polla.html" },
     { "src": "/admin.html", "dest": "/frontend/admin.html" },
+    { "src": "/selecciones.html", "dest": "/frontend/selecciones.html" },
+    { "src": "/(.*\\.html)", "dest": "/frontend/$1" },
     { "src": "/(.*)", "dest": "/frontend/index.html" }
   ]
 }
