@@ -1,10 +1,8 @@
 {
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/polla.html", "dest": "/frontend/polla.html" },
-    { "src": "/admin.html", "dest": "/frontend/admin.html" },
-    { "src": "/selecciones.html", "dest": "/frontend/selecciones.html" },
-    { "src": "/(.*\\.html)", "dest": "/frontend/$1" },
-    { "src": "/(.*)", "dest": "/frontend/index.html" }
+  "rewrites": [
+    { "source": "/polla.html", "destination": "/frontend/polla.html" },
+    { "source": "/admin.html", "destination": "/frontend/admin.html" },
+    { "source": "/selecciones.html", "destination": "/frontend/selecciones.html" },
+    { "source": "/:path*", "destination": "/frontend/index.html" }
   ]
 }
