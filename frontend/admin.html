@@ -6153,8 +6153,8 @@ async function loadDashboard() {
       { label:'Puntos repartidos',     value: totalPuntos,        sub:`Promedio ${promPuntos} pts por jugador`, color:'#ef4444' },
       { label:'Avance Fase Grupos',    value: pctAvance+'%',      sub:`${partidosConRes.filter(esGrupo).length}/${totalPartidos} partidos con resultado`, color:'#8b5cf6' },
       { label:'Actividad reciente',    value: activosRecientes,   sub:'Apuestas en las últimas 24 horas', color:'#06b6d4' },
-      { label:'Goles del torneo',      value: totalGoles,         sub:`${listaGol.length} goleadores registrados`, color:'#dc2626' },
-      { label:'Tarjetas amarillas',    value: totalAmarillas,     sub:`${totalRojas} rojas · ${listaTar.length} jugadores`, color:'#d97706' },
+      { label:'Goles del torneo',      value: totalGoles,         sub:`${listaGol.length} jugadores registrados`, color:'#dc2626' },
+      { label:'Total tarjetas',        value: totalAmarillas+totalRojas, sub:`${totalRojas} rojas · ${totalAmarillas} amarillas`, color:'#d97706' },
     ].map(k => `
       <div class="dash-kpi">
         <div class="dash-kpi-label">${k.label}</div>
