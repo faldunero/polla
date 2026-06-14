@@ -1204,9 +1204,9 @@ nav {
         <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;">
           <span style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;">Lista actual</span>
           <div style="position:relative;max-width:200px;">
-            <input type="text" id="gol-filtro-pais" class="form-input" list="gol-paises-list" placeholder="🔍 País..." oninput="goleadorRenderAdmin()" style="padding:6px 28px 6px 10px;font-size:0.8rem;width:100%;">
+            <input type="text" id="gol-filtro-pais" class="form-input" list="gol-paises-list" placeholder="🔍 País..." oninput="goleadorFiltrar()" style="padding:6px 28px 6px 10px;font-size:0.8rem;width:100%;">
             <datalist id="gol-paises-list"></datalist>
-            <button onclick="document.getElementById('gol-filtro-pais').value='';goleadorRenderAdmin()" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.85rem;padding:0;line-height:1;">✕</button>
+            <button onclick="document.getElementById('gol-filtro-pais').value='';goleadorFiltrar()" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.85rem;padding:0;line-height:1;">✕</button>
           </div>
           <button class="btn btn-outline btn-sm" onclick="goleadorLimpiarTodo()" style="color:var(--red);border-color:rgba(239,68,68,0.3);"><i class="fas fa-trash"></i> Limpiar todo</button>
         </div>
@@ -1235,9 +1235,9 @@ nav {
         <div style="padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;">
           <span style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;">Lista actual</span>
           <div style="position:relative;max-width:200px;">
-            <input type="text" id="tar-filtro-pais" class="form-input" list="tar-paises-list" placeholder="🔍 País..." oninput="tarjetaRenderAdmin()" style="padding:6px 28px 6px 10px;font-size:0.8rem;width:100%;">
+            <input type="text" id="tar-filtro-pais" class="form-input" list="tar-paises-list" placeholder="🔍 País..." oninput="tarjetaFiltrar()" style="padding:6px 28px 6px 10px;font-size:0.8rem;width:100%;">
             <datalist id="tar-paises-list"></datalist>
-            <button onclick="document.getElementById('tar-filtro-pais').value='';tarjetaRenderAdmin()" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.85rem;padding:0;line-height:1;">✕</button>
+            <button onclick="document.getElementById('tar-filtro-pais').value='';tarjetaFiltrar()" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.85rem;padding:0;line-height:1;">✕</button>
           </div>
           <button class="btn btn-outline btn-sm" onclick="tarjetaLimpiarTodo()" style="color:var(--red);border-color:rgba(239,68,68,0.3);"><i class="fas fa-trash"></i> Limpiar todo</button>
         </div>
@@ -6286,8 +6286,8 @@ async function loadDashboard() {
             const pctAm = Math.round((t.amarillas / maxAm) * 100);
             const pctRo = Math.round((t.rojas / maxRo) * 100);
             return `<div style="display:grid;grid-template-columns:1fr 90px 1fr;align-items:center;gap:4px;margin-bottom:7px;">
-              <div style="display:flex;align-items:center;gap:5px;">
-                <div style="flex:1;height:8px;background:var(--card2);border-radius:99px;overflow:hidden;display:flex;justify-content:flex-end;">
+              <div style="display:flex;flex-direction:row-reverse;align-items:center;gap:5px;">
+                <div style="flex:1;height:8px;background:var(--card2);border-radius:99px;overflow:hidden;display:flex;flex-direction:row-reverse;">
                   <div style="width:${pctAm}%;background:#d97706;border-radius:99px;transition:width .4s;"></div>
                 </div>
                 <span style="font-size:0.75rem;color:#d97706;font-weight:700;min-width:18px;text-align:right;">${t.amarillas}</span>
@@ -6357,8 +6357,7 @@ async function goleadorGuardar(lista) {
   localStorage.setItem(GOL_KEY, JSON.stringify(lista));
 }
 
-async function goleadorRenderAdmin() {
-  const lista = await goleadorCargar();
+function _goleadorRender(lista) {
   const container = document.getElementById('goleadores-tabla');
   if (!container) return;
 
@@ -6410,6 +6409,13 @@ async function goleadorRenderAdmin() {
     </div>`;
   container.innerHTML = html;
 }
+
+async function goleadorRenderAdmin() {
+  const lista = await goleadorCargar();
+  _goleadorRender(lista);
+}
+
+window.goleadorFiltrar = function() { if (_golCache) _goleadorRender(_golCache); };
 
 window.goleadorAgregar = async function() {
   const nombre    = document.getElementById('gol-nombre').value.trim();
@@ -6629,8 +6635,7 @@ async function tarjetaGuardar(lista) {
   localStorage.setItem(TAR_KEY, JSON.stringify(lista));
 }
 
-async function tarjetaRenderAdmin() {
-  const lista = await tarjetaCargar();
+function _tarjetaRender(lista) {
   const container = document.getElementById('tarjetas-tabla');
   if (!container) return;
 
@@ -6681,6 +6686,13 @@ async function tarjetaRenderAdmin() {
     </div>`;
   container.innerHTML = html;
 }
+
+async function tarjetaRenderAdmin() {
+  const lista = await tarjetaCargar();
+  _tarjetaRender(lista);
+}
+
+window.tarjetaFiltrar = function() { if (_tarCache) _tarjetaRender(_tarCache); };
 
 window.tarjetaAgregar = async function() {
   const nombre   = document.getElementById('tar-nombre').value.trim();
