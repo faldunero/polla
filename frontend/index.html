@@ -2143,10 +2143,10 @@ window.switchTabEstad = function(tab) {
 };
 
 // Función local (no window) — tiene acceso al scope del módulo
-const _estadPag = { goleadores: 0, tarjetas: 0 };
+const _estadPag = { goleadores: 0, tarjetas: 0, 'tarjetas-pais': 0, 'goles-pais': 0, 'estado-torneo': 0 };
 const _PAGE = 10;
 
-function renderTabEstadisticasLocal(tab, pag) {
+async function renderTabEstadisticasLocal(tab, pag) {
   const body = document.getElementById('modal-estadisticas-body');
   if (!body) return;
   if (pag === undefined) pag = _estadPag[tab] || 0;
@@ -2238,6 +2238,120 @@ function renderTabEstadisticasLocal(tab, pag) {
     html += `</tbody></table>`;
     html += paginador('tarjetas', pag, sorted.length);
     body.innerHTML = html;
+
+  } else if (tab === 'tarjetas-pais') {
+    const lista = _estadDatos.tarjetas || [];
+    if (!lista.length) {
+      body.innerHTML = `<div style="text-align:center;padding:40px;color:#6b7280;"><i class="fas fa-square" style="font-size:2rem;opacity:.3;display:block;margin-bottom:12px;color:#f59e0b;"></i>Sin datos disponibles.</div>`;
+      return;
+    }
+    const porPais = {};
+    lista.forEach(g => {
+      const p = g.pais || '—';
+      if (!porPais[p]) porPais[p] = { amarillas: 0, rojas: 0 };
+      porPais[p].amarillas += Number(g.amarillas) || 0;
+      porPais[p].rojas     += Number(g.rojas) || 0;
+    });
+    const arr = Object.entries(porPais)
+      .map(([pais, t]) => ({ pais, ...t }))
+      .sort((a, b) => (b.amarillas + b.rojas) - (a.amarillas + a.rojas));
+    const maxAm = Math.max(...arr.map(t => t.amarillas), 1);
+    const maxRo = Math.max(...arr.map(t => t.rojas), 1);
+    let html = `<div style="margin-bottom:12px;">
+      <div style="display:grid;grid-template-columns:1fr 100px 1fr;gap:4px;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:10px;">
+        <div style="text-align:right;color:#d97706;">🟨 Amarillas</div>
+        <div style="text-align:center;">País</div>
+        <div style="color:#dc2626;">🟥 Rojas</div>
+      </div>`;
+    arr.forEach(t => {
+      const pctAm = Math.round((t.amarillas / maxAm) * 100);
+      const pctRo = Math.round((t.rojas / maxRo) * 100);
+      html += `<div style="display:grid;grid-template-columns:1fr 100px 1fr;align-items:center;gap:4px;margin-bottom:8px;">
+        <div style="display:flex;flex-direction:row-reverse;align-items:center;gap:5px;">
+          <div style="width:100%;height:8px;background:#f3f4f6;border-radius:99px;position:relative;overflow:hidden;">
+            <div style="position:absolute;right:0;top:0;bottom:0;width:${pctAm}%;background:#d97706;border-radius:99px;"></div>
+          </div>
+          <span style="font-size:0.75rem;color:#d97706;font-weight:700;min-width:16px;text-align:right;flex-shrink:0;">${t.amarillas}</span>
+        </div>
+        <div style="text-align:center;font-size:0.72rem;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${t.pais}">${getFlag(t.pais)} ${t.pais}</div>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <span style="font-size:0.75rem;color:#dc2626;font-weight:700;min-width:16px;flex-shrink:0;">${t.rojas}</span>
+          <div style="width:100%;height:8px;background:#f3f4f6;border-radius:99px;position:relative;overflow:hidden;">
+            <div style="position:absolute;left:0;top:0;bottom:0;width:${pctRo}%;background:#dc2626;border-radius:99px;"></div>
+          </div>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+    body.innerHTML = html;
+
+  } else if (tab === 'goles-pais') {
+    const lista = _estadDatos.goleadores || [];
+    if (!lista.length) {
+      body.innerHTML = `<div style="text-align:center;padding:40px;color:#6b7280;"><i class="fas fa-futbol" style="font-size:2rem;opacity:.3;display:block;margin-bottom:12px;"></i>Sin datos disponibles.</div>`;
+      return;
+    }
+    const porPais = {};
+    lista.forEach(g => {
+      const p = g.pais || '—';
+      porPais[p] = (porPais[p] || 0) + (Number(g.goles) || 0);
+    });
+    const arr = Object.entries(porPais)
+      .map(([pais, goles]) => ({ pais, goles }))
+      .filter(t => t.goles > 0)
+      .sort((a, b) => b.goles - a.goles);
+    const maxG = arr[0]?.goles || 1;
+    let html = '';
+    arr.forEach(t => {
+      const pct = Math.round((t.goles / maxG) * 100);
+      html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div style="font-size:0.78rem;color:#374151;min-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${getFlag(t.pais)} ${t.pais}</div>
+        <div style="flex:1;height:8px;background:#f3f4f6;border-radius:99px;position:relative;overflow:hidden;">
+          <div style="position:absolute;left:0;top:0;bottom:0;width:${pct}%;background:#3b82f6;border-radius:99px;"></div>
+        </div>
+        <span style="font-size:0.75rem;font-weight:700;color:#3b82f6;min-width:18px;text-align:right;">${t.goles}</span>
+      </div>`;
+    });
+    body.innerHTML = html;
+
+  } else if (tab === 'estado-torneo') {
+    body.innerHTML = `<div style="padding:8px 0;">
+      <div style="font-size:0.72rem;color:#6b7280;margin-bottom:16px;">Partidos jugados por fase</div>
+      <div id="estad-torneo-content" style="color:#6b7280;text-align:center;padding:20px;">Cargando...</div>
+    </div>`;
+    // Load partidos from Firestore
+    try {
+      const snap = await getDocs(collection(db, 'partidos'));
+      const partidos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const esGrupo = p => /^[A-L]\d$/.test(p.id) || /^fg[A-L]\d$/i.test(p.id);
+      const fases = [
+        { label: 'Fase de Grupos',  total: partidos.filter(esGrupo).length,                    jugados: partidos.filter(p => esGrupo(p) && p.resultado_local != null).length },
+        { label: '32avos de Final', total: partidos.filter(p => /^r32_/.test(p.id)).length,    jugados: partidos.filter(p => /^r32_/.test(p.id) && p.resultado_local != null).length },
+        { label: 'Octavos de Final',total: partidos.filter(p => /^r16_/.test(p.id)).length,    jugados: partidos.filter(p => /^r16_/.test(p.id) && p.resultado_local != null).length },
+        { label: 'Cuartos de Final',total: partidos.filter(p => /^qf/.test(p.id)).length,      jugados: partidos.filter(p => /^qf/.test(p.id) && p.resultado_local != null).length },
+        { label: 'Semifinales',     total: partidos.filter(p => /^sf/.test(p.id)).length,      jugados: partidos.filter(p => /^sf/.test(p.id) && p.resultado_local != null).length },
+        { label: '3er Lugar',       total: partidos.filter(p => p.id === '3p').length,         jugados: partidos.filter(p => p.id === '3p' && p.resultado_local != null).length },
+        { label: 'Gran Final',      total: partidos.filter(p => p.id === 'fin').length,        jugados: partidos.filter(p => p.id === 'fin' && p.resultado_local != null).length },
+      ];
+      let html = '';
+      fases.forEach(f => {
+        if (!f.total) return;
+        const pct = Math.round((f.jugados / f.total) * 100);
+        const completo = f.jugados === f.total;
+        html += `<div style="margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+            <span style="font-size:0.82rem;font-weight:600;color:${completo?'#16a34a':'#111'};">${f.label}</span>
+            <span style="font-size:0.75rem;font-weight:700;color:${completo?'#16a34a':'#6b7280'};">${f.jugados}/${f.total}</span>
+          </div>
+          <div style="height:8px;background:#f3f4f6;border-radius:99px;overflow:hidden;">
+            <div style="height:8px;width:${pct}%;background:${completo?'#16a34a':'#dc2626'};border-radius:99px;transition:width .4s;"></div>
+          </div>
+        </div>`;
+      });
+      document.getElementById('estad-torneo-content').outerHTML = html;
+    } catch(e) {
+      document.getElementById('estad-torneo-content').textContent = 'Error cargando datos.';
+    }
   }
 }
 
@@ -2392,6 +2506,9 @@ async function mostrarModalHoy() {
     <div style="display:flex;border-bottom:1px solid #e5e7eb;padding:0 22px;background:#fff;">
       <button class="estad-tab-btn active" data-tab="goleadores" onclick="switchTabEstad('goleadores')">⚽ Goleadores</button>
       <button class="estad-tab-btn" data-tab="tarjetas" onclick="switchTabEstad('tarjetas')">🟨 Tarjetas</button>
+      <button class="estad-tab-btn" data-tab="tarjetas-pais" onclick="switchTabEstad('tarjetas-pais')">🌍 Tarjetas País</button>
+      <button class="estad-tab-btn" data-tab="goles-pais" onclick="switchTabEstad('goles-pais')">⚽ Goles País</button>
+      <button class="estad-tab-btn" data-tab="estado-torneo" onclick="switchTabEstad('estado-torneo')">🏆 Torneo</button>
     </div>
     <div id="modal-estadisticas-body" style="padding:16px 20px;background:#fff;border-radius:0 0 16px 16px;"></div>
   </div>
