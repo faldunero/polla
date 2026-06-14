@@ -6287,16 +6287,16 @@ async function loadDashboard() {
             const pctRo = Math.round((t.rojas / maxRo) * 100);
             return `<div style="display:grid;grid-template-columns:1fr 90px 1fr;align-items:center;gap:4px;margin-bottom:7px;">
               <div style="display:flex;flex-direction:row-reverse;align-items:center;gap:5px;">
-                <div style="flex:1;height:8px;background:var(--card2);border-radius:99px;overflow:hidden;display:flex;flex-direction:row-reverse;">
-                  <div style="width:${pctAm}%;background:#d97706;border-radius:99px;transition:width .4s;"></div>
+                <div style="width:100%;height:8px;background:var(--card2);border-radius:99px;position:relative;overflow:hidden;">
+                  <div style="position:absolute;right:0;top:0;bottom:0;width:${pctAm}%;background:#d97706;border-radius:99px;transition:width .4s;"></div>
                 </div>
-                <span style="font-size:0.75rem;color:#d97706;font-weight:700;min-width:18px;text-align:right;">${t.amarillas}</span>
+                <span style="font-size:0.75rem;color:#d97706;font-weight:700;min-width:18px;text-align:right;flex-shrink:0;">${t.amarillas}</span>
               </div>
               <div style="text-align:center;font-size:0.72rem;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${t.pais}">${getFlag(t.pais)} ${t.pais}</div>
               <div style="display:flex;align-items:center;gap:5px;">
-                <span style="font-size:0.75rem;color:#dc2626;font-weight:700;min-width:18px;text-align:left;">${t.rojas}</span>
-                <div style="flex:1;height:8px;background:var(--card2);border-radius:99px;overflow:hidden;">
-                  <div style="width:${pctRo}%;background:#dc2626;border-radius:99px;transition:width .4s;"></div>
+                <span style="font-size:0.75rem;color:#dc2626;font-weight:700;min-width:18px;text-align:left;flex-shrink:0;">${t.rojas}</span>
+                <div style="width:100%;height:8px;background:var(--card2);border-radius:99px;position:relative;overflow:hidden;">
+                  <div style="position:absolute;left:0;top:0;bottom:0;width:${pctRo}%;background:#dc2626;border-radius:99px;transition:width .4s;"></div>
                 </div>
               </div>
             </div>`;
