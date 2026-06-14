@@ -6104,11 +6104,13 @@ async function loadDashboard() {
 
   try {
     // Cargar datos en paralelo
-    const [participantesSnap, apuestasSnap, gruposSnap, partidosSnap] = await Promise.all([
+    const [participantesSnap, apuestasSnap, gruposSnap, partidosSnap, snapGol, snapTar] = await Promise.all([
       getDocs(collection(db, 'participantes')),
       getDocs(collection(db, 'apuestas')),
       getDocs(collection(db, 'grupos')),
       getDocs(collection(db, 'partidos')),
+      getDoc(doc(db, 'config', 'goleadores')),
+      getDoc(doc(db, 'config', 'tarjetas')),
     ]);
 
     const participantes = participantesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -6124,9 +6126,16 @@ async function loadDashboard() {
     const totalApuestas = apuestas.length;
     const totalGrupos   = grupos.length;
 
-    const partidosConRes = partidos.filter(p => p.resultado_local != null);
-    const totalPartidos  = partidos.filter(p => /^fg[A-L]/i.test(p.id)).length; // solo grupos
-    const pctAvance      = totalPartidos ? Math.round((partidosConRes.filter(p => /^fg[A-L]/i.test(p.id)).length / totalPartidos) * 100) : 0;
+    const partidosConRes  = partidos.filter(p => p.resultado_local != null);
+    const esGrupo = p => /^[A-L]\d$/.test(p.id) || /^fg[A-L]\d$/i.test(p.id);
+    const totalPartidos  = partidos.filter(esGrupo).length;
+    const pctAvance      = totalPartidos ? Math.round((partidosConRes.filter(esGrupo).length / totalPartidos) * 100) : 0;
+
+    const listaGol = snapGol.exists() ? (snapGol.data().lista || []) : [];
+    const listaTar = snapTar.exists() ? (snapTar.data().lista || []) : [];
+    const totalGoles     = listaGol.reduce((s, g) => s + (Number(g.goles) || 0), 0);
+    const totalAmarillas = listaTar.reduce((s, g) => s + (Number(g.amarillas) || 0), 0);
+    const totalRojas     = listaTar.reduce((s, g) => s + (Number(g.rojas) || 0), 0);
 
     const apuestasConPuntaje = apuestas.filter(a => a.puntaje != null && a.puntaje > 0).length;
     const totalPuntos = apuestas.reduce((s, a) => s + (Number(a.puntaje) || 0), 0);
@@ -6142,8 +6151,10 @@ async function loadDashboard() {
       { label:'Grupos activos',        value: totalGrupos,        sub:`${Math.round(aprobados/Math.max(totalGrupos,1))} jugadores/grupo promedio`, color:'#3b82f6' },
       { label:'Total apuestas',        value: totalApuestas,      sub:`${apuestasConPuntaje} con puntaje · ${totalApuestas - apuestasConPuntaje} sin resultado aún`, color:'#f59e0b' },
       { label:'Puntos repartidos',     value: totalPuntos,        sub:`Promedio ${promPuntos} pts por jugador`, color:'#ef4444' },
-      { label:'Avance Fase Grupos',    value: pctAvance+'%',      sub:`${partidosConRes.filter(p=>/^fg[A-L]/i.test(p.id)).length}/${totalPartidos} partidos con resultado`, color:'#8b5cf6' },
+      { label:'Avance Fase Grupos',    value: pctAvance+'%',      sub:`${partidosConRes.filter(esGrupo).length}/${totalPartidos} partidos con resultado`, color:'#8b5cf6' },
       { label:'Actividad reciente',    value: activosRecientes,   sub:'Apuestas en las últimas 24 horas', color:'#06b6d4' },
+      { label:'Goles del torneo',      value: totalGoles,         sub:`${listaGol.length} goleadores registrados`, color:'#dc2626' },
+      { label:'Tarjetas amarillas',    value: totalAmarillas,     sub:`${totalRojas} rojas · ${listaTar.length} jugadores`, color:'#d97706' },
     ].map(k => `
       <div class="dash-kpi">
         <div class="dash-kpi-label">${k.label}</div>
@@ -6177,7 +6188,7 @@ async function loadDashboard() {
       cuartos:'Cuartos', semi:'Semis', tercer:'3er Lugar', final:'Final'
     };
     function detectFaseApuesta(id) {
-      if (/^fg[A-L]/i.test(id)) return 'grupos';
+      if (/^[A-L]\d$/.test(id) || /^fg[A-L]\d$/i.test(id)) return 'grupos';
       if (/^r32_/.test(id))     return 'r32';
       if (/^r16_/.test(id))     return 'octavos';
       if (/^qf/.test(id))       return 'cuartos';
@@ -6230,7 +6241,7 @@ async function loadDashboard() {
 
     // ── Estado del torneo ─────────────────────────────────────────────────
     const fases = [
-      { label:'Fase de Grupos',   ids: partidos.filter(p=>/^fg[A-L]/i.test(p.id)) },
+      { label:'Fase de Grupos',   ids: partidos.filter(esGrupo) },
       { label:'32avos de Final',  ids: partidos.filter(p=>/^r32_/.test(p.id)) },
       { label:'Octavos de Final', ids: partidos.filter(p=>/^r16_/.test(p.id)) },
       { label:'Cuartos de Final', ids: partidos.filter(p=>/^qf/.test(p.id)) },
