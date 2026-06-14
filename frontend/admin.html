@@ -712,7 +712,23 @@ nav {
         <div class="dash-kpi-skeleton"></div><div class="dash-kpi-skeleton"></div>
       </div>
 
-      <!-- Estado del torneo + Tarjetas y Goles por país -->
+      <!-- Tarjetas y Goles por país -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;margin-bottom:16px;color:var(--gold);">
+            <i class="fas fa-square" style="color:#eab308;"></i> Tarjetas por País
+          </div>
+          <div id="dash-tarjetas-pais"></div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;margin-bottom:16px;color:var(--gold);">
+            <i class="fas fa-futbol"></i> Goles por País
+          </div>
+          <div id="dash-goles-pais"></div>
+        </div>
+      </div>
+
+      <!-- Estado del torneo -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;">
         <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;">
           <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;margin-bottom:14px;color:var(--gold);">
@@ -720,32 +736,16 @@ nav {
           </div>
           <div id="dash-torneo"></div>
         </div>
-        <div style="display:grid;grid-template-rows:1fr 1fr;gap:18px;">
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;margin-bottom:16px;color:var(--gold);">
-              <i class="fas fa-square" style="color:#eab308;"></i> Tarjetas por País
-            </div>
-            <div id="dash-tarjetas-pais"></div>
-          </div>
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;margin-bottom:16px;color:var(--gold);">
-              <i class="fas fa-futbol"></i> Goles por País
-            </div>
-            <div id="dash-goles-pais"></div>
-          </div>
-        </div>
       </div>
 
+      <!-- Participantes y Apuestas -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;">
-        <!-- Participación por grupo -->
         <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;">
           <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;margin-bottom:14px;color:var(--gold);">
             <i class="fas fa-users"></i> Participantes por Grupo
           </div>
           <div id="dash-grupos-chart"></div>
         </div>
-
-        <!-- Apuestas por fase -->
         <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;">
           <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;margin-bottom:14px;color:var(--gold);">
             <i class="fas fa-futbol"></i> Apuestas por Fase
@@ -754,8 +754,8 @@ nav {
         </div>
       </div>
 
+      <!-- Top jugadores -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;">
-        <!-- Top jugadores -->
         <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;">
           <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;margin-bottom:14px;color:var(--gold);">
             <i class="fas fa-trophy"></i> Top 5 Jugadores
