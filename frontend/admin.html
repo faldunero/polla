@@ -1233,7 +1233,7 @@ nav {
         <div style="display:grid;grid-template-columns:1fr 1fr 100px 100px auto;gap:12px;align-items:end;">
           <div><label class="form-label">Jugador</label><input type="text" id="tar-nombre" class="form-input" placeholder="Ej: Vinícius Jr."></div>
           <div><label class="form-label">País</label><input type="text" id="tar-pais" class="form-input" placeholder="Ej: Brasil"></div>
-          <div><label class="form-label" style="color:#d97706;">🟨 Amarillas</label><input type="number" id="tar-amarillas" class="form-input" min="0" max="99" placeholder="0" style="text-align:center;"></div>
+          <div><label class="form-label" style="color:#eab308;">🟨 Amarillas</label><input type="number" id="tar-amarillas" class="form-input" min="0" max="99" placeholder="0" style="text-align:center;"></div>
           <div><label class="form-label" style="color:#dc2626;">🟥 Rojas</label><input type="number" id="tar-rojas" class="form-input" min="0" max="99" placeholder="0" style="text-align:center;"></div>
           <div><button class="btn btn-gold" onclick="tarjetaAgregar()"><i class="fas fa-plus"></i> Agregar</button></div>
         </div>
@@ -6180,7 +6180,7 @@ async function loadDashboard() {
       { label:'Avance Fase Grupos',    value: pctAvance+'%',      sub:`${partidosConRes.filter(esGrupo).length}/${totalPartidos} partidos con resultado`, color:'#8b5cf6' },
       { label:'Actividad reciente',    value: activosRecientes,   sub:'Apuestas en las últimas 24 horas', color:'#06b6d4' },
       { label:'Goles del torneo',      value: totalGoles,         sub:`${listaGol.length} jugadores registrados`, color:'#dc2626' },
-      { label:'Total tarjetas',        value: totalAmarillas+totalRojas, sub:`${totalRojas} rojas · ${totalAmarillas} amarillas`, color:'#d97706' },
+      { label:'Total tarjetas',        value: totalAmarillas+totalRojas, sub:`${totalRojas} rojas · ${totalAmarillas} amarillas`, color:'#eab308' },
     ].map(k => `
       <div class="dash-kpi">
         <div class="dash-kpi-label">${k.label}</div>
@@ -6286,7 +6286,7 @@ async function loadDashboard() {
         const maxRo = Math.max(...tarPaisArr.map(t=>t.rojas), 1);
         tarPaisEl.innerHTML = 
           `<div style="display:grid;grid-template-columns:1fr 80px 1fr;gap:0;margin-bottom:8px;font-size:0.65rem;color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase;">
-            <div style="text-align:right;color:#d97706;">🟨 Amarillas</div>
+            <div style="text-align:right;color:#eab308;">🟨 Amarillas</div>
             <div style="text-align:center;">País</div>
             <div style="color:#dc2626;">🟥 Rojas</div>
           </div>` +
@@ -6296,9 +6296,9 @@ async function loadDashboard() {
             return `<div style="display:grid;grid-template-columns:1fr 90px 1fr;align-items:center;gap:4px;margin-bottom:7px;">
               <div style="display:flex;flex-direction:row-reverse;align-items:center;gap:5px;">
                 <div style="width:100%;height:8px;background:var(--card2);border-radius:99px;position:relative;overflow:hidden;">
-                  <div style="position:absolute;right:0;top:0;bottom:0;width:${pctAm}%;background:#d97706;border-radius:99px;transition:width .4s;"></div>
+                  <div style="position:absolute;right:0;top:0;bottom:0;width:${pctAm}%;background:#eab308;border-radius:99px;transition:width .4s;"></div>
                 </div>
-                <span style="font-size:0.75rem;color:#d97706;font-weight:700;min-width:18px;text-align:right;flex-shrink:0;">${t.amarillas}</span>
+                <span style="font-size:0.75rem;color:#eab308;font-weight:700;min-width:18px;text-align:right;flex-shrink:0;">${t.amarillas}</span>
               </div>
               <div style="text-align:center;font-size:0.72rem;padding:0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${t.pais}">${getFlag(t.pais)} ${t.pais}</div>
               <div style="display:flex;align-items:center;gap:5px;">
@@ -6329,15 +6329,14 @@ async function loadDashboard() {
       if (!golPaisArr.length) {
         golPaisEl.innerHTML = '<div style="color:var(--muted);font-size:.8rem;padding:8px 0;">Sin goles registrados aún</div>';
       } else {
-        golPaisEl.innerHTML = golPaisArr.map((t, i) => {
+        golPaisEl.innerHTML = golPaisArr.map((t) => {
           const pct = Math.round((t.goles / maxGolPais) * 100);
-          const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
           return `<div class="dash-bar-wrap" style="margin-bottom:7px;">
-            <div class="dash-bar-label" style="font-size:0.75rem;">${medal} ${getFlag(t.pais)} ${t.pais}</div>
+            <div class="dash-bar-label" style="font-size:0.75rem;">${getFlag(t.pais)} ${t.pais}</div>
             <div class="dash-bar-track" style="height:8px;">
-              <div class="dash-bar-fill" style="width:${pct}%;background:#dc2626;height:8px;"></div>
+              <div class="dash-bar-fill" style="width:${pct}%;background:#3b82f6;height:8px;"></div>
             </div>
-            <div class="dash-bar-val" style="color:#dc2626;font-size:0.75rem;font-weight:700;">${t.goles}</div>
+            <div class="dash-bar-val" style="color:#3b82f6;font-size:0.75rem;font-weight:700;">${t.goles}</div>
           </div>`;
         }).join('');
       }
@@ -6698,7 +6697,7 @@ function _tarjetaRender(lista) {
       <th style="padding:10px 16px;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);width:36px;">#</th>
       <th style="padding:10px 8px;text-align:left;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);">Jugador</th>
       <th style="padding:10px 8px;text-align:left;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);">País</th>
-      <th style="padding:10px 8px;text-align:center;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:#d97706;">🟨 Amarillas</th>
+      <th style="padding:10px 8px;text-align:center;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:#eab308;">🟨 Amarillas</th>
       <th style="padding:10px 8px;text-align:center;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:#dc2626;">🟥 Rojas</th>
       <th style="padding:10px 16px;width:90px;"></th>
     </tr></thead><tbody>`;
@@ -6708,7 +6707,7 @@ function _tarjetaRender(lista) {
       <td style="padding:10px 16px;font-weight:700;color:var(--muted);">${i+1}</td>
       <td style="padding:10px 8px;font-weight:600;">${g.nombre}</td>
       <td style="padding:10px 8px;color:var(--muted);">${getFlag(g.pais)} ${g.pais}</td>
-      <td style="padding:10px 8px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#d97706;">${g.amarillas||0}</td>
+      <td style="padding:10px 8px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#eab308;">${g.amarillas||0}</td>
       <td style="padding:10px 8px;text-align:center;font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#dc2626;">${g.rojas||0}</td>
       <td style="padding:10px 16px;">
         <div style="display:flex;gap:6px;justify-content:flex-end;">
