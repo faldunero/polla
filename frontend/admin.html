@@ -7142,29 +7142,36 @@ window.generarNewsletter = async function() {
       + '<div class="section section-bg">'
       + '<div class="section-title">Estadisticas del Grupo</div>'
       + '<div class="stat-cols">'
-      + '<div class="stat-box"><div class="stat-val">' + promPts + '</div><div class="stat-lbl">Promedio de puntos</div></div>'
-      + '<div class="stat-box"><div class="stat-val">' + totalAciertosGrupo + '</div><div class="stat-lbl">Exactos del grupo</div></div>'
-      + '<div class="stat-box"><div class="stat-val">' + totalApuestasGrupo + '</div><div class="stat-lbl">Apuestas con resultado</div></div>'
+      + '<div class="stat-box"><div class="stat-val">' + promPts + '</div><div class="stat-lbl">Promedio de puntos por jugador</div></div>'
+      + '<div class="stat-box"><div class="stat-val">' + (ranking.length ? (totalAciertosGrupo/ranking.length).toFixed(1) : 0) + '</div><div class="stat-lbl">Promedio de exactos por jugador</div></div>'
       + '<div class="stat-box"><div class="stat-val">' + ranking.length + '</div><div class="stat-lbl">Participantes activos</div></div>'
+      + '<div class="stat-box"><div class="stat-val">' + totalApuestasGrupo + ' / ' + (ranking.length * totalPartidosJugados) + '</div><div class="stat-lbl">Apuestas ejecutadas vs posibles</div></div>'
       + '</div>'
-      + (mejorPartido ? '<div class="highlight-box highlight-green" style="margin-top:14px;"><strong>Mas acertado:</strong> ' + mejorPartido.partido.local + ' vs ' + mejorPartido.partido.visita + ' \u2014 ' + mejorPartido.aciertos + ' de ' + mejorPartido.total + ' lo acertaron (' + Math.round(mejorPartido.aciertos/mejorPartido.total*100) + '%)</div>' : '')
-      + (peorPartido && peorPartido!==mejorPartido ? '<div class="highlight-box highlight-red" style="margin-top:8px;"><strong>Menos acertado:</strong> ' + peorPartido.partido.local + ' vs ' + peorPartido.partido.visita + ' \u2014 solo ' + peorPartido.aciertos + ' de ' + peorPartido.total + ' lo acertaron</div>' : '')
+      + '<div style="margin-top:12px;padding:10px 14px;background:#fff;border-radius:8px;border:1px solid #eee;font-family:Arial,sans-serif;font-size:0.78rem;color:#666;line-height:1.5;">'
+      + 'Promedio de puntos: total de puntos del grupo dividido por participantes. '
+      + 'Apuestas ejecutadas (' + totalApuestasGrupo + ') sobre maximas posibles (' + (ranking.length * totalPartidosJugados) + ' = ' + ranking.length + ' jugadores x ' + totalPartidosJugados + ' partidos).'
       + '</div>'
+      + '</div>'
+
 
       /* TWO COL: GOLEADORES + TARJETAS */
       + '<div class="section">'
       + '<div class="two-col">'
 
-      /* GOLEADORES */
+      /* GOLEADORES (solo con >1 gol) */
       + '<div>'
       + '<div class="section-title">Goleadores</div>'
       + '<div style="font-size:0.72rem;color:#999;margin-bottom:10px;">' + totalGoles + ' goles en ' + totalPartidosJugados + ' partidos</div>'
-      + (goleadores.length ? goleadores.map((g,i) => '<div class="gol-row">'
-          + '<div style="min-width:90px;font-size:0.78rem;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (i===0?'<strong>':'') + g.nombre + (i===0?'</strong>':'') + '</div>'
-          + '<div class="gol-bar-wrap"><div class="gol-bar" style="width:' + Math.round(g.goles/goleadores[0].goles*100) + '%;"></div></div>'
-          + '<div class="gol-val">' + g.goles + '</div>'
-          + '</div>').join('')
-        : '<p style="color:#999;font-size:0.78rem;">Sin datos.</p>')
+      + (() => {
+          const gols = (_golCache||[]).filter(g=>Number(g.goles)>1).sort((a,b)=>b.goles-a.goles);
+          if (!gols.length) return '<p style="color:#999;font-size:0.78rem;">Sin goleadores con mas de 1 gol aun.</p>';
+          const max = gols[0].goles;
+          return gols.map((g,i) => '<div class="gol-row">'
+            + '<div style="min-width:90px;font-size:0.78rem;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (i===0?'<strong>':'') + g.nombre + (i===0?'</strong>':'') + '</div>'
+            + '<div class="gol-bar-wrap"><div class="gol-bar" style="width:' + Math.round(g.goles/max*100) + '%;"></div></div>'
+            + '<div class="gol-val">' + g.goles + '</div>'
+            + '</div>').join('');
+        })()
       + '</div>'
 
       /* TARJETAS */
