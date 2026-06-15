@@ -7225,24 +7225,7 @@ window.generarNewsletter = async function() {
       + '<p style="margin-top:4px;">Este es un proyecto independiente sin afiliacion con FIFA.</p>'
       + '</div>'
 
-      + '</div>
-<!-- Modal Newsletter -->
-<div id="modal-newsletter" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:99999;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)cerrarModalNewsletter()">
-  <div style="background:#fff;border-radius:12px;width:100%;max-width:700px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 25px 60px rgba(0,0,0,0.5);">
-    <div style="background:#1a1a2e;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-      <span style="color:#f5c842;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.06em;">NEWSLETTER · PREVISUALIZACIÓN</span>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <button onclick="descargarNewsletter()" class="btn btn-gold btn-sm"><i class="fas fa-download"></i> Descargar PDF</button>
-        <button onclick="cerrarModalNewsletter()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:1.2rem;cursor:pointer;line-height:1;">✕</button>
-      </div>
-    </div>
-    <div style="flex:1;overflow-y:auto;min-height:0;">
-      <div id="nl-iframe-wrap"></div>
-    </div>
-  </div>
-</div>
-</body></html>';
-
+      + '</div></body></html>';
 
     // Mostrar en modal via blob URL (evita problemas de escaping)
     const blob = new Blob([_nlHtml], { type: 'text/html;charset=utf-8' });
@@ -7282,6 +7265,22 @@ window.descargarNewsletter = function() {
   setTimeout(() => { win.print(); }, 600);
 };
 </script>
+
+<!-- Modal Newsletter -->
+<div id="modal-newsletter" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:99999;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)cerrarModalNewsletter()">
+  <div style="background:#fff;border-radius:12px;width:100%;max-width:700px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 25px 60px rgba(0,0,0,0.5);">
+    <div style="background:#1a1a2e;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <span style="color:#f5c842;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.06em;">NEWSLETTER · PREVISUALIZACIÓN</span>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button onclick="descargarNewsletter()" class="btn btn-gold btn-sm"><i class="fas fa-download"></i> Descargar PDF</button>
+        <button onclick="cerrarModalNewsletter()" style="background:none;border:none;color:rgba(255,255,255,0.6);font-size:1.5rem;cursor:pointer;line-height:1;">✕</button>
+      </div>
+    </div>
+    <div style="flex:1;overflow-y:auto;min-height:0;">
+      <div id="nl-iframe-wrap"></div>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL GESTIÓN APUESTAS USUARIO -->
 <div id="modal-gestion-apuestas" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9000;align-items:center;justify-content:center;padding:20px;">
