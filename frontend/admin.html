@@ -6981,7 +6981,7 @@ window.generarNewsletter = async function() {
     // Próximos 3 partidos sin resultado
     const proximos = Object.entries(partidos)
       .filter(([,p]) => p.resultado_local == null && p.local && p.visita && p.fecha)
-      .sort(([,a],[,b]) => (a.fecha+a.hora||'').localeCompare(b.fecha+b.hora||''))
+      .sort(([,a],[,b]) => ((a.fecha||'')+(a.hora||'')).localeCompare((b.fecha||'')+(b.hora||'')))
       .slice(0, 3)
       .map(([,p]) => p);
 
@@ -7253,6 +7253,7 @@ window.descargarNewsletter = function() {
   </div>
 </div>
 
+
     <!-- TAB NEWSLETTER -->
     <div id="tab-newsletter" class="page">
       <div class="section-title"><i class="fas fa-newspaper"></i> Newsletter
@@ -7283,8 +7284,8 @@ window.descargarNewsletter = function() {
         Selecciona un grupo y haz clic en Generar Newsletter
       </div>
     </div>
-    </div><!-- /content -->
 
+    </div><!-- /content -->
 
 <!-- ── Modal Detalle Jugador ──────────────────────────────────────────── -->
 <div id="modal-detalle-jugador" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9100;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)cerrarDetalleJugador()">
