@@ -960,6 +960,38 @@ nav {
 
       <!-- Contenido ranking -->
       <div id="ranking-global"></div>
+
+      <!-- Heatmap -->
+      <div id="heatmap-section" style="display:none;margin-top:28px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.04em;color:var(--gold);margin-bottom:6px;">
+          <i class="fas fa-th"></i> Heatmap de Aciertos por Grupo del Mundial
+        </div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:16px;">
+          Promedio de puntos por jugador en cada grupo del Mundial · 🔴 Frío (0pts) → 🟡 Tibio → 🟠 Caliente → 🟢 Exacto (4pts)
+        </div>
+        <div id="heatmap-container" style="overflow-x:auto;"></div>
+        <div style="display:flex;align-items:center;gap:16px;margin-top:12px;flex-wrap:wrap;">
+          <span style="font-size:0.7rem;color:var(--muted);">Escala:</span>
+          <div style="display:flex;align-items:center;gap:4px;font-size:0.7rem;color:var(--muted);">
+            <div style="width:14px;height:14px;border-radius:3px;background:#1e293b;border:1px solid rgba(255,255,255,0.1);"></div> Sin apuestas
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:0.7rem;color:var(--muted);">
+            <div style="width:14px;height:14px;border-radius:3px;background:#7f1d1d;"></div> 0 pts
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:0.7rem;color:var(--muted);">
+            <div style="width:14px;height:14px;border-radius:3px;background:#854d0e;"></div> 1 pt
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:0.7rem;color:var(--muted);">
+            <div style="width:14px;height:14px;border-radius:3px;background:#d97706;"></div> 2 pts
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:0.7rem;color:var(--muted);">
+            <div style="width:14px;height:14px;border-radius:3px;background:#ea580c;"></div> 3 pts
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:0.7rem;color:var(--muted);">
+            <div style="width:14px;height:14px;border-radius:3px;background:#15803d;"></div> 4 pts
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- TAB SELECCIONES -->
@@ -2979,11 +3011,18 @@ window.limpiarFiltrosRanking = function() {
   window.renderRankingVista();
 };
 
-window.onRkGrupoChange = function() {
+window.onRkGrupoChange = async function() {
   // Sync old _rkFiltro so existing setRkFiltro buttons still work
   const g = document.getElementById('rk-grupo-select');
   _rkFiltro = g ? g.value : 'todos';
   window.renderRankingVista();
+  // Render heatmap for selected grupo
+  const grupoId = _rkData?.porGrupo && _rkFiltro !== 'todos'
+    ? Object.keys(_rkData.porGrupo).find(id => _rkData.porGrupo[id]?.nombre === _rkFiltro || id === _rkFiltro)
+    : null;
+  // Find grupoId from select option value
+  const selVal = g ? g.value : 'todos';
+  await renderHeatmap(selVal === 'todos' ? null : selVal);
 };
 
 window.setRkFiltro = function(filtro) {
@@ -6851,6 +6890,109 @@ window.tarjetaLimpiarTodo = async function() {
   toast('Tabla limpiada ✓', 'success');
 };
 
+
+// ── Heatmap de Aciertos ─────────────────────────────────────────────────
+const GRUPOS_MUNDIAL = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+
+async function renderHeatmap(grupoId) {
+  const section = document.getElementById('heatmap-section');
+  const container = document.getElementById('heatmap-container');
+  if (!section || !container) return;
+
+  // Solo mostrar cuando hay un grupo seleccionado (no "todos")
+  if (!grupoId || grupoId === 'todos') {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+  container.innerHTML = '<div style="color:var(--muted);padding:20px 0;"><i class="fas fa-spinner fa-spin"></i> Calculando heatmap...</div>';
+
+  const normPid = id => (id && id.startsWith('fg')) ? id.slice(2) : id;
+
+  // Cargar apuestas del grupo con puntaje
+  const apSnap = await getDocs(query(
+    collection(db, 'apuestas'),
+    where('grupoId', '==', grupoId),
+    where('fase', '==', 'grupos')
+  ));
+
+  // Estructura: { uid: { nombre, grupoMundial: { total, sumPts } } }
+  const jugMap = {};
+  const nombresMap = {};
+
+  apSnap.docs.forEach(d => {
+    const a = d.data();
+    if (!a.uid || a.puntaje == null) return;
+    const pid = normPid(a.partidoId);
+    // Extraer grupo del mundial del ID del partido (A1→A, B3→B, etc.)
+    const gMundial = pid?.match(/^([A-L])\d+$/)?.[1];
+    if (!gMundial) return;
+
+    if (!jugMap[a.uid]) {
+      jugMap[a.uid] = {};
+      nombresMap[a.uid] = a.nombre || a.email || a.uid;
+    }
+    if (!jugMap[a.uid][gMundial]) jugMap[a.uid][gMundial] = { total: 0, sumPts: 0 };
+    jugMap[a.uid][gMundial].total++;
+    jugMap[a.uid][gMundial].sumPts += Number(a.puntaje) || 0;
+  });
+
+  if (!Object.keys(jugMap).length) {
+    container.innerHTML = '<div style="color:var(--muted);padding:20px 0;">Sin datos de apuestas con puntaje para este grupo.</div>';
+    return;
+  }
+
+  // Ordenar jugadores por total de puntos desc
+  const uids = Object.keys(jugMap).sort((a, b) => {
+    const ptsA = Object.values(jugMap[a]).reduce((s, g) => s + g.sumPts, 0);
+    const ptsB = Object.values(jugMap[b]).reduce((s, g) => s + g.sumPts, 0);
+    return ptsB - ptsA;
+  });
+
+  // Color según promedio de puntos
+  function heatColor(avg) {
+    if (avg === null) return { bg: '#1e293b', border: 'rgba(255,255,255,0.06)', text: 'transparent' };
+    if (avg === 0)    return { bg: '#7f1d1d', border: '#991b1b', text: '#fca5a5' };
+    if (avg < 1.5)   return { bg: '#854d0e', border: '#92400e', text: '#fcd34d' };
+    if (avg < 2.5)   return { bg: '#d97706', border: '#b45309', text: '#fff' };
+    if (avg < 3.5)   return { bg: '#ea580c', border: '#c2410c', text: '#fff' };
+    return              { bg: '#15803d', border: '#166534', text: '#bbf7d0' };
+  }
+
+  // Build table
+  const cellSize = 42;
+  const nameCol = 160;
+
+  let html = `<table style="border-collapse:separate;border-spacing:3px;min-width:${nameCol + GRUPOS_MUNDIAL.length * (cellSize+3)}px;">
+    <thead>
+      <tr>
+        <th style="width:${nameCol}px;text-align:left;font-size:0.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:4px 8px;">Jugador</th>
+        ${GRUPOS_MUNDIAL.map(g => `<th style="width:${cellSize}px;text-align:center;font-size:0.7rem;font-family:'Bebas Neue',sans-serif;color:var(--muted);padding:4px 2px;">G.${g}</th>`).join('')}
+        <th style="text-align:center;font-size:0.65rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:4px 8px;">Total</th>
+      </tr>
+    </thead>
+    <tbody>`;
+
+  uids.forEach(uid => {
+    const nombre = nombresMap[uid];
+    const totalPts = Object.values(jugMap[uid]).reduce((s, g) => s + g.sumPts, 0);
+    html += `<tr>
+      <td style="font-size:0.8rem;font-weight:600;color:var(--text);padding:3px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:${nameCol}px;">${nombre}</td>
+      ${GRUPOS_MUNDIAL.map(g => {
+        const data = jugMap[uid][g];
+        const avg = data ? data.sumPts / data.total : null;
+        const c = heatColor(avg);
+        const label = data ? (avg % 1 === 0 ? avg.toFixed(0) : avg.toFixed(1)) : '·';
+        const tip = data ? `${data.sumPts}pts en ${data.total} partidos (prom ${avg.toFixed(1)})` : 'Sin apuestas';
+        return `<td title="${tip}" style="width:${cellSize}px;height:${cellSize}px;text-align:center;background:${c.bg};border:1px solid ${c.border};border-radius:6px;font-family:'Bebas Neue',sans-serif;font-size:0.9rem;color:${c.text};cursor:default;">${label}</td>`;
+      }).join('')}
+      <td style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--gold);padding:3px 8px;font-weight:700;">${totalPts}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
 </script>
 
 <!-- MODAL GESTIÓN APUESTAS USUARIO -->
