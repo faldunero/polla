@@ -6978,12 +6978,10 @@ window.generarNewsletter = async function() {
     const totalGoles = goleadores.reduce((s, g) => s + (Number(g.goles)||0), 0) +
                        (snapGol.exists() ? (snapGol.data().lista||[]).slice(5).reduce((s,g)=>s+(Number(g.goles)||0),0) : 0);
 
-    // Próximos 3 partidos sin resultado
-    const proximos = Object.entries(partidos)
-      .filter(([,p]) => p.resultado_local == null && p.local && p.visita && p.fecha)
-      .sort(([,a],[,b]) => ((a.fecha||'')+(a.hora||'')).localeCompare((b.fecha||'')+(b.hora||'')))
-      .slice(0, 3)
-      .map(([,p]) => p);
+    // Próximos 3 partidos sin resultado (sin ordenar para evitar errores de tipo)
+    const proximos = Object.values(partidos)
+      .filter(p => p.resultado_local == null && p.local && p.visita)
+      .slice(0, 3);
 
     const fecha = new Date().toLocaleDateString('es-CL', { day:'numeric', month:'long', year:'numeric' });
 
@@ -7256,32 +7254,30 @@ window.descargarNewsletter = function() {
 
     <!-- TAB NEWSLETTER -->
     <div id="tab-newsletter" class="page">
-      <div class="section-title"><i class="fas fa-newspaper"></i> Newsletter
-        <span style="font-size:0.78rem;font-weight:400;color:var(--muted);font-family:'Barlow',sans-serif;margin-left:10px;">Genera y descarga el newsletter por grupo</span>
+      <div class="section-title"><i class="fas fa-newspaper"></i> Newsletter</div>
+
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;">
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+          <select id="nl-grupo-select" class="sol-select" style="min-width:200px;">
+            <option value="">-- Selecciona un grupo --</option>
+          </select>
+          <button class="btn btn-gold" onclick="generarNewsletter()" id="btn-nl-generar">
+            <i class="fas fa-magic"></i> Generar
+          </button>
+          <button class="btn btn-outline" onclick="descargarNewsletter()" id="btn-nl-descargar" style="display:none;">
+            <i class="fas fa-download"></i> Descargar HTML
+          </button>
+        </div>
       </div>
 
-      <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap;">
-        <select id="nl-grupo-select" class="sol-select" style="min-width:200px;">
-          <option value="">-- Selecciona un grupo --</option>
-        </select>
-        <button class="btn btn-gold" onclick="generarNewsletter()" id="btn-nl-generar">
-          <i class="fas fa-magic"></i> Generar Newsletter
-        </button>
-        <button class="btn btn-outline" onclick="descargarNewsletter()" id="btn-nl-descargar" style="display:none;">
-          <i class="fas fa-download"></i> Descargar HTML
-        </button>
+      <div id="nl-empty" style="text-align:center;padding:40px 0;color:var(--muted);">
+        <i class="fas fa-newspaper" style="font-size:2rem;opacity:.2;display:block;margin-bottom:12px;"></i>
+        Selecciona un grupo y genera el newsletter
       </div>
 
       <div id="nl-preview" style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:12px;overflow:hidden;display:none;">
-        <div style="padding:10px 16px;background:#e9ecef;border-bottom:1px solid #dee2e6;font-size:0.75rem;color:#6c757d;font-weight:600;">
-          PREVISUALIZACIÓN
-        </div>
-        <div id="nl-iframe-wrap" style="padding:0;"></div>
-      </div>
-
-      <div id="nl-empty" style="text-align:center;padding:60px 0;color:var(--muted);">
-        <i class="fas fa-newspaper" style="font-size:2.5rem;opacity:.2;display:block;margin-bottom:14px;"></i>
-        Selecciona un grupo y haz clic en Generar Newsletter
+        <div style="padding:10px 16px;background:#e9ecef;border-bottom:1px solid #dee2e6;font-size:0.75rem;color:#6c757d;font-weight:600;">PREVISUALIZACIÓN</div>
+        <div id="nl-iframe-wrap"></div>
       </div>
     </div>
 
