@@ -707,6 +707,7 @@ nav {
       <button class="tab" onclick="showTab('plazos')"><i class="fas fa-clock"></i> Plazos</button>
       <button class="tab" onclick="showTab('goleadores')"><i class="fas fa-futbol"></i> Goleadores</button>
       <button class="tab" onclick="showTab('tarjetas')"><i class="fas fa-square" style="color:#f59e0b;"></i> Tarjetas</button>
+      <button class="tab" onclick="showTab('newsletter')"><i class="fas fa-newspaper"></i> Newsletter</button>
       </div>
     </div><!-- /sidebar -->
 
@@ -1657,6 +1658,7 @@ window.showTab = async (tab) => {
   if (tab === 'plazos') loadPlazos();
   if (tab === 'goleadores') goleadorRenderAdmin();
   if (tab === 'tarjetas')   tarjetaRenderAdmin();
+  if (tab === 'newsletter') renderNewsletterTab();
 };
 
 // ── SOLICITUDES (directo a Firestore) ────────────────────────────────────
@@ -6851,6 +6853,358 @@ window.tarjetaLimpiarTodo = async function() {
   toast('Tabla limpiada ✓', 'success');
 };
 
+
+// ── Newsletter ───────────────────────────────────────────────────────────
+let _nlHtml = '';
+
+async function renderNewsletterTab() {
+  // Poblar selector de grupos
+  const sel = document.getElementById('nl-grupo-select');
+  if (sel && sel.options.length <= 1) {
+    const snap = await getDocs(collection(db, 'grupos'));
+    snap.docs.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d.id;
+      opt.textContent = d.data().nombre || d.id;
+      sel.appendChild(opt);
+    });
+  }
+}
+
+window.generarNewsletter = async function() {
+  const grupoId = document.getElementById('nl-grupo-select').value;
+  if (!grupoId) { toast('Selecciona un grupo', 'warn'); return; }
+
+  const btn = document.getElementById('btn-nl-generar');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
+  document.getElementById('nl-preview').style.display = 'none';
+  document.getElementById('nl-empty').style.display = 'none';
+  document.getElementById('btn-nl-descargar').style.display = 'none';
+
+  try {
+    const normPid = id => (id && id.startsWith('fg')) ? id.slice(2) : id;
+
+    // 1. Datos del grupo
+    const grupoDoc = await getDoc(doc(db, 'grupos', grupoId));
+    const grupoNombre = grupoDoc.exists() ? grupoDoc.data().nombre : grupoId;
+
+    // 2. Participantes aprobados
+    const partSnap = await getDocs(query(collection(db, 'participantes'), where('grupoId', '==', grupoId)));
+    const participantes = partSnap.docs.map(d => ({ uid: d.data().uid || d.id, ...d.data() })).filter(p => p.estado === 'aprobado');
+
+    // 3. Partidos con resultado
+    const partidosSnap = await getDocs(collection(db, 'partidos'));
+    const partidos = {};
+    partidosSnap.docs.forEach(d => { partidos[d.id] = d.data(); });
+    const jugados = Object.entries(partidos).filter(([,p]) => p.resultado_local != null);
+
+    // 4. Apuestas del grupo
+    const apSnap = await getDocs(query(collection(db, 'apuestas'), where('grupoId', '==', grupoId)));
+
+    // Deduplicar
+    const apMap = new Map();
+    apSnap.docs.forEach(d => {
+      const a = d.data();
+      const key = `${a.uid}__${normPid(a.partidoId)}`;
+      const existing = apMap.get(key);
+      if (!existing) { apMap.set(key, a); }
+      else {
+        const tNew = a.actualizadoEn?.seconds || 0;
+        const tOld = existing.actualizadoEn?.seconds || 0;
+        if (tNew > tOld) apMap.set(key, a);
+      }
+    });
+
+    // 5. Calcular ranking del grupo
+    const jugadores = {};
+    participantes.forEach(p => {
+      jugadores[p.uid] = { nombre: p.nombre || p.email, total: 0, exactos: 0, parciales: 0, apostados: 0 };
+    });
+
+    apMap.forEach((a, key) => {
+      const j = jugadores[a.uid];
+      if (!j) return;
+      const pid = normPid(a.partidoId);
+      const p = partidos[pid];
+      if (!p || p.resultado_local == null) return;
+      j.apostados++;
+      const pts = calcularPuntaje(
+        { local: p.resultado_local, visita: p.resultado_visita },
+        { local: a.golesLocal, visita: a.golesVisita }
+      );
+      j.total += pts;
+      if (pts === 4 || pts === 2) j.exactos++;
+      else if (pts === 3 || pts === 1) j.parciales++;
+    });
+
+    const ranking = Object.values(jugadores).sort((a, b) => b.total - a.total || b.exactos - a.exactos);
+    const lider = ranking[0];
+    const totalPartidosJugados = jugados.length;
+
+    // 6. Estadísticas del grupo
+    let totalPtsGrupo = 0, totalAciertosGrupo = 0, totalParcialesGrupo = 0, totalApuestasGrupo = 0;
+    ranking.forEach(j => {
+      totalPtsGrupo += j.total;
+      totalAciertosGrupo += j.exactos;
+      totalParcialesGrupo += j.parciales;
+      totalApuestasGrupo += j.apostados;
+    });
+    const promPts = ranking.length ? (totalPtsGrupo / ranking.length).toFixed(1) : 0;
+
+    // Partido más acertado del grupo
+    const aciertoPorPartido = {};
+    apMap.forEach(a => {
+      const pid = normPid(a.partidoId);
+      const p = partidos[pid];
+      if (!p || p.resultado_local == null) return;
+      const pts = calcularPuntaje({ local: p.resultado_local, visita: p.resultado_visita }, { local: a.golesLocal, visita: a.golesVisita });
+      if (!aciertoPorPartido[pid]) aciertoPorPartido[pid] = { aciertos: 0, total: 0, partido: p };
+      aciertoPorPartido[pid].total++;
+      if (pts > 0) aciertoPorPartido[pid].aciertos++;
+    });
+    const mejorPartido = Object.values(aciertoPorPartido).sort((a, b) => (b.aciertos/b.total) - (a.aciertos/a.total))[0];
+    const peorPartido  = Object.values(aciertoPorPartido).sort((a, b) => (a.aciertos/a.total) - (b.aciertos/b.total))[0];
+
+    // 7. Goleadores y tarjetas desde config
+    const [snapGol, snapTar] = await Promise.all([
+      getDoc(doc(db, 'config', 'goleadores')),
+      getDoc(doc(db, 'config', 'tarjetas')),
+    ]);
+    const goleadores = snapGol.exists() ? (snapGol.data().lista || []).sort((a,b) => b.goles - a.goles).slice(0, 5) : [];
+    const tarjetas   = snapTar.exists() ? (snapTar.data().lista || []) : [];
+    const totalAm    = tarjetas.reduce((s, t) => s + (Number(t.amarillas)||0), 0);
+    const totalRo    = tarjetas.reduce((s, t) => s + (Number(t.rojas)||0), 0);
+    const totalGoles = goleadores.reduce((s, g) => s + (Number(g.goles)||0), 0) +
+                       (snapGol.exists() ? (snapGol.data().lista||[]).slice(5).reduce((s,g)=>s+(Number(g.goles)||0),0) : 0);
+
+    // Próximos 3 partidos sin resultado
+    const proximos = Object.entries(partidos)
+      .filter(([,p]) => p.resultado_local == null && p.local && p.visita && p.fecha)
+      .sort(([,a],[,b]) => (a.fecha+a.hora||'').localeCompare(b.fecha+b.hora||''))
+      .slice(0, 3)
+      .map(([,p]) => p);
+
+    const fecha = new Date().toLocaleDateString('es-CL', { day:'numeric', month:'long', year:'numeric' });
+
+    // 8. Generar HTML del newsletter
+    _nlHtml = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Polla 2026 · Newsletter · ${grupoNombre}</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Georgia', serif; background:#f4f4f4; color:#1a1a2e; }
+  .wrap { max-width:640px; margin:0 auto; background:#fff; }
+  .header { background:#1a1a2e; padding:32px 40px; text-align:center; }
+  .header-sub { color:#f5c842; font-size:0.72rem; letter-spacing:.2em; text-transform:uppercase; margin-bottom:8px; font-family:'Arial',sans-serif; }
+  .header-title { color:#fff; font-size:2rem; font-weight:900; letter-spacing:.04em; font-family:'Arial',sans-serif; }
+  .header-grupo { color:#f5c842; font-size:1rem; margin-top:6px; font-family:'Arial',sans-serif; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+  .header-fecha { color:rgba(255,255,255,0.4); font-size:0.72rem; margin-top:8px; font-family:'Arial',sans-serif; }
+  .section { padding:28px 40px; border-bottom:1px solid #eee; }
+  .section-title { font-size:0.68rem; font-weight:800; letter-spacing:.18em; text-transform:uppercase; color:#f5c842; font-family:'Arial',sans-serif; margin-bottom:16px; }
+  .section-bg { background:#f8f8f8; }
+  .podio { display:flex; gap:12px; justify-content:center; margin-bottom:8px; }
+  .podio-card { flex:1; text-align:center; padding:16px 10px; border-radius:8px; }
+  .podio-card.oro  { background:#1a1a2e; color:#fff; border:2px solid #f5c842; }
+  .podio-card.plata{ background:#f0f0f0; color:#333; border:2px solid #aaa; }
+  .podio-card.bronce{ background:#fff8f0; color:#333; border:2px solid #cd7f32; }
+  .podio-pos  { font-size:1.2rem; font-weight:900; font-family:'Arial',sans-serif; }
+  .podio-nombre { font-size:0.78rem; font-weight:700; margin:4px 0; font-family:'Arial',sans-serif; }
+  .podio-pts  { font-size:1.6rem; font-weight:900; font-family:'Arial',sans-serif; }
+  .podio-sub  { font-size:0.65rem; opacity:.6; font-family:'Arial',sans-serif; }
+  .ranking-table { width:100%; border-collapse:collapse; font-family:'Arial',sans-serif; font-size:0.82rem; }
+  .ranking-table th { text-align:left; padding:6px 8px; font-size:0.65rem; text-transform:uppercase; letter-spacing:.08em; color:#999; border-bottom:2px solid #eee; }
+  .ranking-table td { padding:8px 8px; border-bottom:1px solid #f0f0f0; }
+  .ranking-table tr:last-child td { border-bottom:none; }
+  .pos-badge { display:inline-block; width:22px; height:22px; border-radius:50%; background:#1a1a2e; color:#f5c842; font-weight:900; font-size:0.72rem; text-align:center; line-height:22px; }
+  .stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .stat-card { background:#fff; border:1px solid #eee; border-radius:8px; padding:14px 16px; }
+  .stat-val { font-size:1.6rem; font-weight:900; font-family:'Arial',sans-serif; color:#1a1a2e; }
+  .stat-label { font-size:0.68rem; text-transform:uppercase; letter-spacing:.08em; color:#999; font-family:'Arial',sans-serif; margin-top:2px; }
+  .goleador-row { display:flex; align-items:center; justify-content:space-between; padding:7px 0; border-bottom:1px solid #f0f0f0; font-family:'Arial',sans-serif; font-size:0.82rem; }
+  .goleador-row:last-child { border-bottom:none; }
+  .goleador-pts { font-weight:900; color:#1a1a2e; font-size:0.95rem; }
+  .proximo { padding:10px 0; border-bottom:1px solid #f0f0f0; font-family:'Arial',sans-serif; }
+  .proximo:last-child { border-bottom:none; }
+  .proximo-fecha { font-size:0.68rem; color:#999; text-transform:uppercase; letter-spacing:.06em; }
+  .proximo-match { font-size:0.88rem; font-weight:700; color:#1a1a2e; margin-top:2px; }
+  .highlight { color:#f5c842; background:#1a1a2e; padding:2px 6px; border-radius:4px; font-weight:700; font-family:'Arial',sans-serif; font-size:0.75rem; }
+  .footer { background:#1a1a2e; padding:20px 40px; text-align:center; }
+  .footer p { color:rgba(255,255,255,0.4); font-size:0.68rem; font-family:'Arial',sans-serif; line-height:1.6; }
+  .footer a { color:#f5c842; text-decoration:none; }
+  .divider { height:3px; background:linear-gradient(90deg,#1a1a2e,#f5c842,#1a1a2e); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-sub">Copa Mundial FIFA 2026</div>
+    <div class="header-title">LA POLLA 2026</div>
+    <div class="header-grupo">${grupoNombre}</div>
+    <div class="header-fecha">${fecha} · ${totalPartidosJugados} partidos jugados de 104</div>
+  </div>
+  <div class="divider"></div>
+
+  <!-- PODIO -->
+  <div class="section">
+    <div class="section-title">El Podio</div>
+    <div class="podio">
+      ${ranking[1] ? `<div class="podio-card plata">
+        <div class="podio-pos">2°</div>
+        <div class="podio-nombre">${ranking[1].nombre}</div>
+        <div class="podio-pts">${ranking[1].total}</div>
+        <div class="podio-sub">${ranking[1].exactos} exactos · ${ranking[1].parciales} parciales</div>
+      </div>` : '<div style="flex:1"></div>'}
+      ${ranking[0] ? `<div class="podio-card oro">
+        <div class="podio-pos">1°</div>
+        <div class="podio-nombre">${ranking[0].nombre}</div>
+        <div class="podio-pts">${ranking[0].total}</div>
+        <div class="podio-sub">${ranking[0].exactos} exactos · ${ranking[0].parciales} parciales</div>
+      </div>` : ''}
+      ${ranking[2] ? `<div class="podio-card bronce">
+        <div class="podio-pos">3°</div>
+        <div class="podio-nombre">${ranking[2].nombre}</div>
+        <div class="podio-pts">${ranking[2].total}</div>
+        <div class="podio-sub">${ranking[2].exactos} exactos · ${ranking[2].parciales} parciales</div>
+      </div>` : '<div style="flex:1"></div>'}
+    </div>
+  </div>
+
+  <!-- RANKING COMPLETO -->
+  <div class="section section-bg">
+    <div class="section-title">Ranking Completo</div>
+    <table class="ranking-table">
+      <thead><tr>
+        <th>#</th><th>Jugador</th><th style="text-align:center;">Pts</th>
+        <th style="text-align:center;">Exactos</th><th style="text-align:center;">Parciales</th>
+      </tr></thead>
+      <tbody>
+        ${ranking.map((j, i) => `<tr>
+          <td><span class="pos-badge">${i+1}</span></td>
+          <td style="font-weight:${i===0?'700':'400'};">${j.nombre}</td>
+          <td style="text-align:center;font-weight:700;font-size:1rem;">${j.total}</td>
+          <td style="text-align:center;color:#16a34a;">${j.exactos}</td>
+          <td style="text-align:center;color:#d97706;">${j.parciales}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ESTADISTICAS DEL GRUPO -->
+  <div class="section">
+    <div class="section-title">Estadisticas del Grupo</div>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-val">${promPts}</div>
+        <div class="stat-label">Promedio de puntos</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">${totalAciertosGrupo}</div>
+        <div class="stat-label">Exactos del grupo</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">${totalApuestasGrupo}</div>
+        <div class="stat-label">Apuestas con resultado</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">${ranking.length}</div>
+        <div class="stat-label">Participantes activos</div>
+      </div>
+    </div>
+    ${mejorPartido ? `<div style="margin-top:16px;padding:12px 16px;background:#f0fdf4;border-left:3px solid #16a34a;border-radius:4px;font-family:'Arial',sans-serif;font-size:0.82rem;">
+      <strong>Partido mas acertado:</strong> ${mejorPartido.partido.local} vs ${mejorPartido.partido.visita}
+      — ${mejorPartido.aciertos} de ${mejorPartido.total} lo acertaron
+      (${Math.round(mejorPartido.aciertos/mejorPartido.total*100)}%)
+    </div>` : ''}
+    ${peorPartido && peorPartido !== mejorPartido ? `<div style="margin-top:8px;padding:12px 16px;background:#fff5f5;border-left:3px solid #dc2626;border-radius:4px;font-family:'Arial',sans-serif;font-size:0.82rem;">
+      <strong>Partido menos acertado:</strong> ${peorPartido.partido.local} vs ${peorPartido.partido.visita}
+      — solo ${peorPartido.aciertos} de ${peorPartido.total} lo acertaron
+    </div>` : ''}
+  </div>
+
+  <!-- GOLEADORES MUNDIALES -->
+  <div class="section section-bg">
+    <div class="section-title">Goleadores del Mundial</div>
+    <div style="margin-bottom:12px;font-family:'Arial',sans-serif;font-size:0.82rem;color:#666;">
+      ${totalGoles} goles en ${totalPartidosJugados} partidos · Promedio ${totalPartidosJugados ? (totalGoles/totalPartidosJugados).toFixed(2) : 0} por partido
+    </div>
+    ${goleadores.length ? goleadores.map((g, i) => `
+      <div class="goleador-row">
+        <span>${i===0?'<strong>':''}${g.nombre} <span style="color:#999;font-size:0.75rem;">${g.pais}</span>${i===0?'</strong>':''}</span>
+        <span class="goleador-pts">${g.goles} ${g.goles===1?'gol':'goles'}</span>
+      </div>`).join('') : '<p style="color:#999;font-size:0.82rem;font-family:Arial,sans-serif;">Sin goleadores registrados aun.</p>'}
+  </div>
+
+  <!-- TARJETAS -->
+  <div class="section">
+    <div class="section-title">Disciplina en el Mundial</div>
+    <div class="stat-grid">
+      <div class="stat-card" style="border-left:3px solid #d97706;">
+        <div class="stat-val" style="color:#d97706;">${totalAm}</div>
+        <div class="stat-label">Tarjetas Amarillas</div>
+      </div>
+      <div class="stat-card" style="border-left:3px solid #dc2626;">
+        <div class="stat-val" style="color:#dc2626;">${totalRo}</div>
+        <div class="stat-label">Tarjetas Rojas</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROXIMOS PARTIDOS -->
+  ${proximos.length ? `<div class="section section-bg">
+    <div class="section-title">Proximos Partidos</div>
+    ${proximos.map(p => `<div class="proximo">
+      <div class="proximo-fecha">${p.fecha} · ${p.hora} hrs CL · ${p.estadio||''}</div>
+      <div class="proximo-match">${p.local} vs ${p.visita}</div>
+    </div>`).join('')}
+  </div>` : ''}
+
+  <!-- FOOTER -->
+  <div class="divider"></div>
+  <div class="footer">
+    <p>La Polla 2026 &middot; Diseñado por <a href="https://ludolab.cl">Ludolab.cl</a> &middot; <a href="mailto:felipe@ludolab.cl">felipe@ludolab.cl</a></p>
+    <p style="margin-top:4px;">Este newsletter fue generado automaticamente el ${fecha}</p>
+  </div>
+
+</div>
+</body>
+</html>`;
+
+    // Mostrar preview
+    const preview = document.getElementById('nl-preview');
+    const wrap = document.getElementById('nl-iframe-wrap');
+    wrap.innerHTML = `<iframe srcdoc="${_nlHtml.replace(/"/g,'&quot;')}" style="width:100%;height:700px;border:none;" title="Newsletter Preview"></iframe>`;
+    preview.style.display = 'block';
+    document.getElementById('nl-empty').style.display = 'none';
+    document.getElementById('btn-nl-descargar').style.display = 'inline-flex';
+    toast('Newsletter generado', 'success');
+
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-magic"></i> Generar Newsletter';
+  }
+};
+
+window.descargarNewsletter = function() {
+  if (!_nlHtml) return;
+  const grupoNombre = document.getElementById('nl-grupo-select').options[document.getElementById('nl-grupo-select').selectedIndex]?.text || 'grupo';
+  const fecha = new Date().toISOString().slice(0,10);
+  const blob = new Blob([_nlHtml], { type: 'text/html;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `newsletter-${grupoNombre.toLowerCase().replace(/\s+/g,'-')}-${fecha}.html`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Descargado', 'success');
+};
 </script>
 
 <!-- MODAL GESTIÓN APUESTAS USUARIO -->
@@ -6900,6 +7254,37 @@ window.tarjetaLimpiarTodo = async function() {
 </div>
 
     </div><!-- /content -->
+
+    <!-- TAB NEWSLETTER -->
+    <div id="tab-newsletter" class="page">
+      <div class="section-title"><i class="fas fa-newspaper"></i> Newsletter
+        <span style="font-size:0.78rem;font-weight:400;color:var(--muted);font-family:'Barlow',sans-serif;margin-left:10px;">Genera y descarga el newsletter por grupo</span>
+      </div>
+
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap;">
+        <select id="nl-grupo-select" class="sol-select" style="min-width:200px;">
+          <option value="">-- Selecciona un grupo --</option>
+        </select>
+        <button class="btn btn-gold" onclick="generarNewsletter()" id="btn-nl-generar">
+          <i class="fas fa-magic"></i> Generar Newsletter
+        </button>
+        <button class="btn btn-outline" onclick="descargarNewsletter()" id="btn-nl-descargar" style="display:none;">
+          <i class="fas fa-download"></i> Descargar HTML
+        </button>
+      </div>
+
+      <div id="nl-preview" style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:12px;overflow:hidden;display:none;">
+        <div style="padding:10px 16px;background:#e9ecef;border-bottom:1px solid #dee2e6;font-size:0.75rem;color:#6c757d;font-weight:600;">
+          PREVISUALIZACIÓN
+        </div>
+        <div id="nl-iframe-wrap" style="padding:0;"></div>
+      </div>
+
+      <div id="nl-empty" style="text-align:center;padding:60px 0;color:var(--muted);">
+        <i class="fas fa-newspaper" style="font-size:2.5rem;opacity:.2;display:block;margin-bottom:14px;"></i>
+        Selecciona un grupo y haz clic en Generar Newsletter
+      </div>
+    </div>
 
 <!-- ── Modal Detalle Jugador ──────────────────────────────────────────── -->
 <div id="modal-detalle-jugador" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9100;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)cerrarDetalleJugador()">
