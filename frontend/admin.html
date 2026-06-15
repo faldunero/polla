@@ -6897,12 +6897,19 @@ window.generarNewsletter = async function() {
 
     const grupoNombre = grupoData.nombre;
 
-    // Goleadores y tarjetas (ya en cache)
-    const goleadores = (_golCache || []).slice().sort((a,b) => b.goles - a.goles).slice(0, 5);
-    const tarjetas   = _tarCache || [];
+    // Goleadores y tarjetas — cargar si no están en cache
+    if (!_golCache) {
+      const snapGol = await getDoc(doc(db, 'config', 'goleadores'));
+      _golCache = snapGol.exists() ? (snapGol.data().lista || []) : [];
+    }
+    if (!_tarCache) {
+      const snapTar = await getDoc(doc(db, 'config', 'tarjetas'));
+      _tarCache = snapTar.exists() ? (snapTar.data().lista || []) : [];
+    }
+    const tarjetas   = _tarCache;
     const totalAm    = tarjetas.reduce((s,t) => s + (Number(t.amarillas)||0), 0);
     const totalRo    = tarjetas.reduce((s,t) => s + (Number(t.rojas)||0), 0);
-    const totalGoles = (_golCache || []).reduce((s,g) => s + (Number(g.goles)||0), 0);
+    const totalGoles = _golCache.reduce((s,g) => s + (Number(g.goles)||0), 0);
 
     // Partidos — usar resCache si tiene datos, sino cargar
     let partidos = resCache || {};
