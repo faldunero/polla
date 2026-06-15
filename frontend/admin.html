@@ -6891,54 +6891,98 @@ window.generarNewsletter = async function() {
   try {
     const normPid = id => (id && id.startsWith('fg')) ? id.slice(2) : id;
 
-    // ── Usar datos ya cacheados en admin (sin consultas Firestore) ──────────
+    // ── Usar datos cacheados + 2 consultas ligeras si faltan ──────────────
     const grupoData = _rkData.porGrupo[grupoId];
-    if (!grupoData) { toast('Grupo no encontrado en cache. Ve al tab Ranking primero.', 'warn'); return; }
+    if (!grupoData) { toast('Ve primero al tab Ranking para cargar los datos', 'warn'); return; }
 
     const grupoNombre = grupoData.nombre;
-    const rankingRaw  = grupoData.jugadores; // ya calculado con total, aciertos, exactos
 
-    // Partidos desde resCache
-    const partidos = resCache; // { A1: {local, visita, resultado_local, ...} }
-    const jugados   = Object.values(partidos).filter(p => p.resultado_local != null);
-    const totalPartidosJugados = jugados.length;
-
-    // Goleadores y tarjetas desde cache
-    const goleadores = (_golCache || []).sort((a,b) => b.goles - a.goles).slice(0, 5);
+    // Goleadores y tarjetas (ya en cache)
+    const goleadores = (_golCache || []).slice().sort((a,b) => b.goles - a.goles).slice(0, 5);
     const tarjetas   = _tarCache || [];
     const totalAm    = tarjetas.reduce((s,t) => s + (Number(t.amarillas)||0), 0);
     const totalRo    = tarjetas.reduce((s,t) => s + (Number(t.rojas)||0), 0);
     const totalGoles = (_golCache || []).reduce((s,g) => s + (Number(g.goles)||0), 0);
 
-    // ── Recalcular breakdown exactos/parciales por tipo ─────────────────────
-    // _rkData solo tiene exactos totales, necesitamos el desglose G vs E
-    // Para eso necesitamos las apuestas — pero podemos aproximar:
-    // exactoGanador = pts===4, exactoEmpate = pts===2
-    // Hacemos una pasada rápida sobre resCache y apuestas del grupo desde _rkData
-    // Como no tenemos apuestas en cache, recalculamos solo el ranking del grupo
-    const ranking = rankingRaw.map(j => ({
-      ...j,
-      nombre: j.nombre,
-      total: j.total,
-      exactos: j.aciertos || j.exactos || 0,
-      parciales: j.parciales || 0,
-      exactoGanador: j.exactoGanador || 0,
-      exactoEmpate:  j.exactoEmpate  || 0,
-      parcialGanador: j.parcialGanador || 0,
-      parcialEmpate:  j.parcialEmpate  || 0,
-    }));
+    // Partidos — usar resCache si tiene datos, sino cargar
+    let partidos = resCache || {};
+    if (!Object.keys(partidos).length) {
+      const pSnap = await getDocs(collection(db, 'partidos'));
+      pSnap.docs.forEach(d => { partidos[d.id] = d.data(); });
+    }
+    const jugados = Object.values(partidos).filter(p => p.resultado_local != null);
+    const totalPartidosJugados = jugados.length;
+
+    // Apuestas del grupo — para desglose exacto G/E y ranking completo
+    const apSnap = await getDocs(query(collection(db, 'apuestas'), where('grupoId', '==', grupoId)));
+    const apMap = new Map();
+    apSnap.docs.forEach(d => {
+      const a = d.data();
+      const key = normPid(a.uid) + '__' + normPid(a.partidoId);
+      const ex = apMap.get(key);
+      if (!ex || (a.actualizadoEn?.seconds||0) > (ex.actualizadoEn?.seconds||0)) apMap.set(key, a);
+    });
+
+    // Calcular ranking completo con desglose
+    const jugMap = {};
+    grupoData.jugadores.forEach(j => {
+      jugMap[j.uid] = { nombre: j.nombre, email: j.email, grupoId: j.grupoId, grupoNombre: j.grupoNombre,
+        total:0, exactos:0, parciales:0, apostados:0,
+        exactoGanador:0, exactoEmpate:0, parcialGanador:0, parcialEmpate:0 };
+    });
+    apMap.forEach(a => {
+      const j = jugMap[a.uid];
+      if (!j) return;
+      const p = partidos[normPid(a.partidoId)];
+      if (!p || p.resultado_local == null) return;
+      j.apostados++;
+      const pts = calcularPuntaje({local:p.resultado_local,visita:p.resultado_visita},{local:a.golesLocal,visita:a.golesVisita});
+      j.total += pts;
+      if (pts===4) { j.exactos++; j.exactoGanador++; }
+      else if (pts===2) { j.exactos++; j.exactoEmpate++; }
+      else if (pts===3) { j.parciales++; j.parcialGanador++; }
+      else if (pts===1) { j.parciales++; j.parcialEmpate++; }
+    });
+    const ranking = Object.values(jugMap).sort((a,b) => b.total-a.total || b.exactos-a.exactos);
 
     // Stats del grupo
     const promPts = ranking.length ? (ranking.reduce((s,j)=>s+j.total,0)/ranking.length).toFixed(1) : 0;
     const totalAciertosGrupo  = ranking.reduce((s,j)=>s+j.exactos,0);
     const totalParcialesGrupo = ranking.reduce((s,j)=>s+j.parciales,0);
-    const totalApuestasGrupo  = ranking.reduce((s,j)=>s+(j.apostados||j.verificadas||0),0);
+    const totalApuestasGrupo  = ranking.reduce((s,j)=>s+j.apostados,0);
 
-    // Partido más/menos acertado — desde resCache y _rkData (aproximado)
-    const mejorPartido = null; // requiere apuestas detalladas
+    const mejorPartido = null;
     const peorPartido  = null;
 
     const fecha = new Date().toLocaleDateString('es-CL', { day:'numeric', month:'long', year:'numeric' });
+
+    // Pre-calcular estado del torneo
+    const esGrupo = p => /^[A-L]\d$/.test(p.id||'') || /^fg[A-L]\d$/i.test(p.id||'');
+    const fasesNL = [
+      { label:'Fase de Grupos',   filter: p => esGrupo(p) },
+      { label:'32avos de Final',  filter: p => /^r32_/.test(p.id||'') },
+      { label:'Octavos de Final', filter: p => /^r16_/.test(p.id||'') },
+      { label:'Cuartos de Final', filter: p => /^qf/.test(p.id||'') },
+      { label:'Semifinales',      filter: p => /^sf/.test(p.id||'') },
+      { label:'3er Lugar',        filter: p => (p.id||'')==='3p' },
+      { label:'Gran Final',       filter: p => (p.id||'')==='fin' },
+    ];
+    const partidosArr = Object.entries(partidos).map(([id,p]) => ({...p, id}));
+    const htmlEstadoTorneo = fasesNL.map(f => {
+      const total   = partidosArr.filter(p => f.filter(p)).length;
+      if (!total) return '';
+      const jugados2 = partidosArr.filter(p => f.filter(p) && p.resultado_local != null).length;
+      const pct = Math.round(jugados2/total*100);
+      const completo = jugados2 === total;
+      return '<div style="margin-bottom:12px;">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-family:Arial,sans-serif;font-size:0.82rem;">'
+        + '<span style="font-weight:' + (completo?'700':'400') + ';color:' + (completo?'#16a34a':'#333') + ';">' + f.label + '</span>'
+        + '<span style="color:' + (completo?'#16a34a':'#999') + ';font-size:0.75rem;font-weight:600;">' + jugados2 + '/' + total + '</span>'
+        + '</div>'
+        + '<div style="height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden;">'
+        + '<div style="height:8px;width:' + pct + '%;background:' + (completo?'#16a34a':'#1a1a2e') + ';border-radius:99px;"></div>'
+        + '</div></div>';
+    }).join('');
 
     // Pre-calcular goles por pais
     const golesPorPais = {};
@@ -7081,7 +7125,7 @@ window.generarNewsletter = async function() {
       + '<th>#</th><th>Jugador</th><th style="text-align:center;">Pts</th>'
       + '<th style="text-align:center;">Exactos</th><th style="text-align:center;">Parciales</th>'
       + '</tr></thead><tbody>'
-      + ranking.map((j,i) => {
+      + ranking.slice(0,9).map((j,i) => {
           const pos = i===0 ? 1 : (ranking[i-1].total===j.total && ranking[i-1].exactos===j.exactos ? ranking[i-1]._pos : i+1);
           j._pos = pos;
           return '<tr>'
@@ -7138,6 +7182,12 @@ window.generarNewsletter = async function() {
       + '<div class="section section-bg">'
       + '<div class="section-title">Goles por Pais</div>'
       + htmlGolesPais
+      + '</div>'
+
+      /* ESTADO DEL TORNEO */
+      + '<div class="section">'
+      + '<div class="section-title">Avance del Torneo</div>'
+      + htmlEstadoTorneo
       + '</div>'
 
       /* FOOTER */
