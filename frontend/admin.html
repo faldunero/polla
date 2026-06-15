@@ -3030,13 +3030,14 @@ function buildTablaGrupo(jugadores, grupoNombre, grupoId, mostrarGrupo, searchAc
   </tr></thead><tbody>`;
 
   jugadores.forEach((r, i) => {
-    const pos = i + 1;
+    // Igualdad de puntos = mismo lugar
+    const pos = i === 0 ? 1 : (jugadores[i-1].total === r.total && jugadores[i-1].aciertos === r.aciertos ? jugadores[i-1]._pos : i+1);
+    r._pos = pos;
     const posClass = pos===1?'pos-1':pos===2?'pos-2':pos===3?'pos-3':'pos-n';
     const pct = maxPts ? Math.round((r.total/maxPts)*100) : 0;
-    const medalla = pos===1?'🥇':pos===2?'🥈':pos===3?'🥉':'';
     html += `<tr style="${searchActive ? 'background:rgba(245,200,66,0.04);' : ''}">
       <td><span class="pos-badge ${posClass}">${pos}</span></td>
-      <td style="font-weight:600;">${medalla?medalla+' ':''}${r.nombre}</td>
+      <td style="font-weight:600;">${r.nombre}</td>
       ${mostrarGrupo ? '' : `<td style="color:var(--muted);font-size:0.82rem;">${r.grupoNombre}</td>`}
       <td style="color:var(--muted);font-size:0.78rem;">${r.email}</td>
       <td style="text-align:center;color:var(--muted);font-size:0.85rem;">${r.apuestas}</td>
@@ -6856,6 +6857,7 @@ window.tarjetaLimpiarTodo = async function() {
 
 // ── Newsletter ───────────────────────────────────────────────────────────
 let _nlHtml = '';
+let _nlCache = null; // cache de datos para evitar recargar Firestore
 
 async function renderNewsletterTab() {
   // Poblar selector de grupos
@@ -6875,123 +6877,72 @@ window.generarNewsletter = async function() {
   const grupoId = document.getElementById('nl-grupo-select').value;
   if (!grupoId) { toast('Selecciona un grupo', 'warn'); return; }
 
+  // Verificar que hay datos cacheados
+  if (!_rkData || !_rkData.porGrupo) {
+    toast('Ve primero al tab Ranking para cargar los datos', 'warn');
+    return;
+  }
+
   const btn = document.getElementById('btn-nl-generar');
   btn.disabled = true;
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
-  document.getElementById('nl-preview').style.display = 'none';
   document.getElementById('nl-empty').style.display = 'none';
-  document.getElementById('btn-nl-descargar').style.display = 'none';
 
   try {
     const normPid = id => (id && id.startsWith('fg')) ? id.slice(2) : id;
 
-    // 1. Datos del grupo
-    const grupoDoc = await getDoc(doc(db, 'grupos', grupoId));
-    const grupoNombre = grupoDoc.exists() ? grupoDoc.data().nombre : grupoId;
+    // ── Usar datos ya cacheados en admin (sin consultas Firestore) ──────────
+    const grupoData = _rkData.porGrupo[grupoId];
+    if (!grupoData) { toast('Grupo no encontrado en cache. Ve al tab Ranking primero.', 'warn'); return; }
 
-    // 2. Participantes aprobados
-    const partSnap = await getDocs(query(collection(db, 'participantes'), where('grupoId', '==', grupoId)));
-    const participantes = partSnap.docs.map(d => ({ uid: d.data().uid || d.id, ...d.data() })).filter(p => p.estado === 'aprobado');
+    const grupoNombre = grupoData.nombre;
+    const rankingRaw  = grupoData.jugadores; // ya calculado con total, aciertos, exactos
 
-    // 3. Partidos con resultado
-    const partidosSnap = await getDocs(collection(db, 'partidos'));
-    const partidos = {};
-    partidosSnap.docs.forEach(d => { partidos[d.id] = d.data(); });
-    const jugados = Object.entries(partidos).filter(([,p]) => p.resultado_local != null);
-
-    // 4. Apuestas del grupo
-    const apSnap = await getDocs(query(collection(db, 'apuestas'), where('grupoId', '==', grupoId)));
-
-    // Deduplicar
-    const apMap = new Map();
-    apSnap.docs.forEach(d => {
-      const a = d.data();
-      const key = `${a.uid}__${normPid(a.partidoId)}`;
-      const existing = apMap.get(key);
-      if (!existing) { apMap.set(key, a); }
-      else {
-        const tNew = a.actualizadoEn?.seconds || 0;
-        const tOld = existing.actualizadoEn?.seconds || 0;
-        if (tNew > tOld) apMap.set(key, a);
-      }
-    });
-
-    // 5. Calcular ranking del grupo
-    const jugadores = {};
-    participantes.forEach(p => {
-      jugadores[p.uid] = { nombre: p.nombre || p.email, total: 0, exactos: 0, parciales: 0, apostados: 0, exactoGanador: 0, exactoEmpate: 0, parcialGanador: 0, parcialEmpate: 0 };
-    });
-
-    apMap.forEach((a, key) => {
-      const j = jugadores[a.uid];
-      if (!j) return;
-      const pid = normPid(a.partidoId);
-      const p = partidos[pid];
-      if (!p || p.resultado_local == null) return;
-      j.apostados++;
-      const pts = calcularPuntaje(
-        { local: p.resultado_local, visita: p.resultado_visita },
-        { local: a.golesLocal, visita: a.golesVisita }
-      );
-      j.total += pts;
-      if (pts === 4) { j.exactos++; j.exactoGanador++; }
-      else if (pts === 2) { j.exactos++; j.exactoEmpate++; }
-      else if (pts === 3) { j.parciales++; j.parcialGanador++; }
-      else if (pts === 1) { j.parciales++; j.parcialEmpate++; }
-    });
-
-    const ranking = Object.values(jugadores).sort((a, b) => b.total - a.total || b.exactos - a.exactos);
-    const lider = ranking[0];
+    // Partidos desde resCache
+    const partidos = resCache; // { A1: {local, visita, resultado_local, ...} }
+    const jugados   = Object.values(partidos).filter(p => p.resultado_local != null);
     const totalPartidosJugados = jugados.length;
 
-    // 6. Estadísticas del grupo
-    let totalPtsGrupo = 0, totalAciertosGrupo = 0, totalParcialesGrupo = 0, totalApuestasGrupo = 0;
-    ranking.forEach(j => {
-      totalPtsGrupo += j.total;
-      totalAciertosGrupo += j.exactos;
-      totalParcialesGrupo += j.parciales;
-      totalApuestasGrupo += j.apostados;
-    });
-    const promPts = ranking.length ? (totalPtsGrupo / ranking.length).toFixed(1) : 0;
+    // Goleadores y tarjetas desde cache
+    const goleadores = (_golCache || []).sort((a,b) => b.goles - a.goles).slice(0, 5);
+    const tarjetas   = _tarCache || [];
+    const totalAm    = tarjetas.reduce((s,t) => s + (Number(t.amarillas)||0), 0);
+    const totalRo    = tarjetas.reduce((s,t) => s + (Number(t.rojas)||0), 0);
+    const totalGoles = (_golCache || []).reduce((s,g) => s + (Number(g.goles)||0), 0);
 
-    // Partido más acertado del grupo
-    const aciertoPorPartido = {};
-    apMap.forEach(a => {
-      const pid = normPid(a.partidoId);
-      const p = partidos[pid];
-      if (!p || p.resultado_local == null) return;
-      const pts = calcularPuntaje({ local: p.resultado_local, visita: p.resultado_visita }, { local: a.golesLocal, visita: a.golesVisita });
-      if (!aciertoPorPartido[pid]) aciertoPorPartido[pid] = { aciertos: 0, total: 0, partido: p };
-      aciertoPorPartido[pid].total++;
-      if (pts > 0) aciertoPorPartido[pid].aciertos++;
-    });
-    const mejorPartido = Object.values(aciertoPorPartido).sort((a, b) => (b.aciertos/b.total) - (a.aciertos/a.total))[0];
-    const peorPartido  = Object.values(aciertoPorPartido).sort((a, b) => (a.aciertos/a.total) - (b.aciertos/b.total))[0];
+    // ── Recalcular breakdown exactos/parciales por tipo ─────────────────────
+    // _rkData solo tiene exactos totales, necesitamos el desglose G vs E
+    // Para eso necesitamos las apuestas — pero podemos aproximar:
+    // exactoGanador = pts===4, exactoEmpate = pts===2
+    // Hacemos una pasada rápida sobre resCache y apuestas del grupo desde _rkData
+    // Como no tenemos apuestas en cache, recalculamos solo el ranking del grupo
+    const ranking = rankingRaw.map(j => ({
+      ...j,
+      nombre: j.nombre,
+      total: j.total,
+      exactos: j.aciertos || j.exactos || 0,
+      parciales: j.parciales || 0,
+      exactoGanador: j.exactoGanador || 0,
+      exactoEmpate:  j.exactoEmpate  || 0,
+      parcialGanador: j.parcialGanador || 0,
+      parcialEmpate:  j.parcialEmpate  || 0,
+    }));
 
-    // 7. Goleadores y tarjetas desde config
-    const [snapGol, snapTar] = await Promise.all([
-      getDoc(doc(db, 'config', 'goleadores')),
-      getDoc(doc(db, 'config', 'tarjetas')),
-    ]);
-    const goleadores = snapGol.exists() ? (snapGol.data().lista || []).sort((a,b) => b.goles - a.goles).slice(0, 5) : [];
-    const tarjetas   = snapTar.exists() ? (snapTar.data().lista || []) : [];
-    const totalAm    = tarjetas.reduce((s, t) => s + (Number(t.amarillas)||0), 0);
-    const totalRo    = tarjetas.reduce((s, t) => s + (Number(t.rojas)||0), 0);
-    const totalGoles = goleadores.reduce((s, g) => s + (Number(g.goles)||0), 0) +
-                       (snapGol.exists() ? (snapGol.data().lista||[]).slice(5).reduce((s,g)=>s+(Number(g.goles)||0),0) : 0);
+    // Stats del grupo
+    const promPts = ranking.length ? (ranking.reduce((s,j)=>s+j.total,0)/ranking.length).toFixed(1) : 0;
+    const totalAciertosGrupo  = ranking.reduce((s,j)=>s+j.exactos,0);
+    const totalParcialesGrupo = ranking.reduce((s,j)=>s+j.parciales,0);
+    const totalApuestasGrupo  = ranking.reduce((s,j)=>s+(j.apostados||j.verificadas||0),0);
 
-    // Próximos 3 partidos sin resultado (sin ordenar para evitar errores de tipo)
-    const proximos = Object.values(partidos)
-      .filter(p => p.resultado_local == null && p.local && p.visita)
-      .slice(0, 3);
+    // Partido más/menos acertado — desde resCache y _rkData (aproximado)
+    const mejorPartido = null; // requiere apuestas detalladas
+    const peorPartido  = null;
 
     const fecha = new Date().toLocaleDateString('es-CL', { day:'numeric', month:'long', year:'numeric' });
 
     // Pre-calcular goles por pais
     const golesPorPais = {};
-    (snapGol.exists() ? (snapGol.data().lista||[]) : []).forEach(g => {
-      golesPorPais[g.pais] = (golesPorPais[g.pais]||0) + (Number(g.goles)||0);
-    });
+    (_golCache||[]).forEach(g => { golesPorPais[g.pais] = (golesPorPais[g.pais]||0) + (Number(g.goles)||0); });
     const golesPaisArr = Object.entries(golesPorPais).filter(([,g])=>g>0).sort((a,b)=>b[1]-a[1]);
     const maxGoles = golesPaisArr[0]?.[1] || 1;
     const htmlGolesPais = golesPaisArr.length
@@ -7007,7 +6958,7 @@ window.generarNewsletter = async function() {
 
     // Pre-calcular tarjetas por pais
     const tarPorPais = {};
-    (snapTar.exists() ? (snapTar.data().lista||[]) : []).forEach(g => {
+    (_tarCache||[]).forEach(g => {
       if (!tarPorPais[g.pais]) tarPorPais[g.pais] = {am:0,ro:0};
       tarPorPais[g.pais].am += Number(g.amarillas)||0;
       tarPorPais[g.pais].ro += Number(g.rojas)||0;
@@ -7016,23 +6967,22 @@ window.generarNewsletter = async function() {
     const maxAmNl = Math.max(...tarPaisArr.map(([,t])=>t.am), 1);
     const maxRoNl = Math.max(...tarPaisArr.map(([,t])=>t.ro), 1);
     const htmlTarjetasPais = tarPaisArr.length
-      ? '<div style="display:grid;grid-template-columns:1fr 100px 1fr;gap:4px;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#999;margin-bottom:8px;font-family:Arial,sans-serif;">'
-        + '<div style="text-align:right;">Amarillas</div><div style="text-align:center;">Pais</div><div>Rojas</div></div>'
-        + tarPaisArr.map(([pais,t]) => {
-            const pctAm = Math.round(t.am/maxAmNl*100);
-            const pctRo = Math.round(t.ro/maxRoNl*100);
-            return '<div style="display:grid;grid-template-columns:1fr 100px 1fr;align-items:center;gap:4px;margin-bottom:6px;font-family:Arial,sans-serif;font-size:0.78rem;">'
-              + '<div style="display:flex;flex-direction:row-reverse;align-items:center;gap:4px;">'
-              + '<div style="width:100%;height:8px;background:#f3f4f6;border-radius:99px;position:relative;overflow:hidden;">'
-              + '<div style="position:absolute;right:0;top:0;bottom:0;width:' + pctAm + '%;background:#d97706;border-radius:99px;"></div></div>'
-              + '<span style="color:#d97706;font-weight:700;min-width:16px;text-align:right;flex-shrink:0;">' + t.am + '</span></div>'
-              + '<div style="text-align:center;font-size:0.7rem;color:#333;">' + pais + '</div>'
-              + '<div style="display:flex;align-items:center;gap:4px;">'
-              + '<span style="color:#dc2626;font-weight:700;min-width:16px;flex-shrink:0;">' + t.ro + '</span>'
-              + '<div style="width:100%;height:8px;background:#f3f4f6;border-radius:99px;position:relative;overflow:hidden;">'
-              + '<div style="position:absolute;left:0;top:0;bottom:0;width:' + pctRo + '%;background:#dc2626;border-radius:99px;"></div></div></div></div>';
-          }).join('')
+      ? tarPaisArr.map(([pais,t]) => {
+          const pctAm = Math.round(t.am/maxAmNl*100);
+          const pctRo = Math.round(t.ro/maxRoNl*100);
+          return '<div style="display:grid;grid-template-columns:1fr 100px 1fr;align-items:center;gap:4px;margin-bottom:6px;font-family:Arial,sans-serif;font-size:0.78rem;">'
+            + '<div style="display:flex;flex-direction:row-reverse;align-items:center;gap:4px;">'
+            + '<div style="width:100%;height:8px;background:#f3f4f6;border-radius:99px;position:relative;overflow:hidden;">'
+            + '<div style="position:absolute;right:0;top:0;bottom:0;width:' + pctAm + '%;background:#d97706;border-radius:99px;"></div></div>'
+            + '<span style="color:#d97706;font-weight:700;min-width:16px;text-align:right;flex-shrink:0;">' + t.am + '</span></div>'
+            + '<div style="text-align:center;font-size:0.7rem;color:#333;">' + pais + '</div>'
+            + '<div style="display:flex;align-items:center;gap:4px;">'
+            + '<span style="color:#dc2626;font-weight:700;min-width:16px;flex-shrink:0;">' + t.ro + '</span>'
+            + '<div style="width:100%;height:8px;background:#f3f4f6;border-radius:99px;position:relative;overflow:hidden;">'
+            + '<div style="position:absolute;left:0;top:0;bottom:0;width:' + pctRo + '%;background:#dc2626;border-radius:99px;"></div></div></div></div>';
+        }).join('')
       : '<p style="color:#999;font-size:0.82rem;font-family:Arial,sans-serif;">Sin datos.</p>';
+
 
     // 8. Generar HTML del newsletter
     _nlHtml = '<!DOCTYPE html>'
