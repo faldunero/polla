@@ -324,6 +324,15 @@
     }
     .ranking-table tr:last-child td{border-bottom:none}
     .ranking-table tr:hover td{background:var(--card2)}
+    .rk-tooltip-wrap{position:relative;display:inline-block;cursor:default;}
+    .rk-tooltip{display:none;position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);
+      background:#1a1a2e;color:#fff;font-size:0.68rem;font-weight:700;letter-spacing:.06em;
+      padding:4px 10px;border-radius:6px;white-space:nowrap;z-index:100;
+      border:1px solid rgba(245,200,66,0.3);}
+    .rk-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);
+      border:4px solid transparent;border-top-color:#1a1a2e;}
+    .rk-tooltip-wrap:hover .rk-tooltip{display:block;}
+
     .pos-badge{
       width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;
       font-weight:700;font-size:.85rem;
@@ -1418,6 +1427,10 @@ const FG = FIXTURE_GRUPOS;
             parciales:0,   // ganador/empate correcto pero no el marcador exacto
             apostados:0,   // total de partidos con apuesta
             jugados:  0,   // partidos ya jugados donde apostó
+            exactoV:  0,   // 4pts: marcador exacto ganador
+            exactoE:  0,   // 2pts: empate exacto
+            parcialV: 0,   // 3pts: ganador correcto sin marcador exacto
+            parcialE: 0,   // 1pt:  empate correcto sin marcador exacto
           };
         });
 
@@ -1462,10 +1475,10 @@ const FG = FIXTURE_GRUPOS;
           ) ?? 0;
 
           acumulado[uid].total += pts;
-          if (pts === 4)      acumulado[uid].aciertos++;    // exacto: marcador exacto ganador
-          else if (pts === 2) acumulado[uid].aciertos++;    // exacto: empate exacto
-          else if (pts === 3) acumulado[uid].parciales++;   // parcial: ganador correcto sin marcador exacto
-          else if (pts === 1) acumulado[uid].parciales++;   // parcial: empate correcto sin marcador exacto // parcial (1–2 pts)
+          if (pts === 4)      { acumulado[uid].aciertos++; acumulado[uid].exactoV++; }
+          else if (pts === 2) { acumulado[uid].aciertos++; acumulado[uid].exactoE++; }
+          else if (pts === 3) { acumulado[uid].parciales++; acumulado[uid].parcialV++; }
+          else if (pts === 1) { acumulado[uid].parciales++; acumulado[uid].parcialE++; }
         });
 
         // 5) Ordenar y asignar posición
@@ -1531,8 +1544,18 @@ const FG = FIXTURE_GRUPOS;
                 ${esTu ? `<span class="badge badge-gold" style="padding:2px 8px;margin-left:6px;font-size:.65rem;">Tú</span>` : ''}
               </td>
               <td style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--gold);font-weight:700;">${r.total}</td>
-              <td style="text-align:center;color:#16a34a;font-weight:600;">${r.aciertos}</td>
-              <td style="text-align:center;color:#ca8a04;">${r.parciales}</td>
+              <td style="text-align:center;">
+                <span class="rk-tooltip-wrap">
+                  <span style="color:#16a34a;font-weight:600;">${r.aciertos}</span>
+                  ${r.aciertos > 0 ? `<span class="rk-tooltip">${[r.exactoV>0?'GE:'+r.exactoV:'', r.exactoE>0?'EE:'+r.exactoE:''].filter(Boolean).join(' ')}</span>` : ''}
+                </span>
+              </td>
+              <td style="text-align:center;">
+                <span class="rk-tooltip-wrap">
+                  <span style="color:#ca8a04;">${r.parciales}</span>
+                  ${r.parciales > 0 ? `<span class="rk-tooltip">${[r.parcialV>0?'G:'+r.parcialV:'', r.parcialE>0?'E:'+r.parcialE:''].filter(Boolean).join(' ')}</span>` : ''}
+                </span>
+              </td>
               <td style="min-width:80px;">
                 <div class="score-bar-wrap">
                   <div class="score-bar"><div class="score-bar-fill" style="width:${pct}%"></div></div>
