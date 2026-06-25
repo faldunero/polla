@@ -998,6 +998,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
         return;
       }
 
+      await cargarPartidos();
       await cargarMisApuestas();
       // Refrescar plazos antes de renderizar (garantiza datos frescos desde Firestore)
       await cargarPlazos();
