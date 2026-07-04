@@ -2157,24 +2157,24 @@ const FG = {
 };
 
 const FASES_ELIM_ADMIN = [
-  {id:'r32avos', label:'32avos de Final', sublabel:'28 jun–4 jul · 16 partidos', icon:'fas fa-circle-nodes', iconClass:'fase-icon-octavos',
+  {id:'r32avos', label:'32avos de Final', sublabel:'1–8 jul · 16 partidos', icon:'fas fa-circle-nodes', iconClass:'fase-icon-octavos',
    partidos:[
-    {id:'r32_1', local:'Sudafrica',          visita:'Canada',               fecha:'28 jun', estadio:'SoFi Stadium, Los Ángeles'},
-    {id:'r32_2', local:'Alemania',            visita:'Paraguay',             fecha:'29 jun', estadio:'Gillette Stadium, Boston'},
-    {id:'r32_3', local:'Paises Bajos',        visita:'Marruecos',            fecha:'29 jun', estadio:'Estadio BBVA, Monterrey'},
-    {id:'r32_4', local:'Brasil',              visita:'Japon',                fecha:'29 jun', estadio:'NRG Stadium, Houston'},
-    {id:'r32_5', local:'Francia',             visita:'Suecia',               fecha:'30 jun', estadio:'MetLife Stadium, Nueva York'},
-    {id:'r32_6', local:'Costa de Marfil',     visita:'Noruega',              fecha:'30 jun', estadio:'AT&T Stadium, Dallas'},
-    {id:'r32_7', local:'Estados Unidos',      visita:'Bosnia y Herzegovina', fecha:'1 jul',  estadio:"Levi's Stadium, Santa Clara"},
-    {id:'r32_8', local:'Belgica',             visita:'Mejor 3. A/E/H/I/J',  fecha:'1 jul',  estadio:'Lumen Field, Seattle'},
-    {id:'r32_9', local:'Espana',              visita:'2.J',                  fecha:'2 jul',  estadio:'SoFi Stadium, Los Ángeles'},
-    {id:'r32_10',local:'Suiza',               visita:'Mejor 3. E/F/G/I/J',  fecha:'2 jul',  estadio:'BC Place, Vancouver'},
-    {id:'r32_11',local:'Argentina',           visita:'Cabo Verde',           fecha:'3 jul',  estadio:'Hard Rock Stadium, Miami'},
-    {id:'r32_12',local:'Australia',           visita:'Egipto',               fecha:'3 jul',  estadio:'AT&T Stadium, Dallas'},
-    {id:'r32_13',local:'2.K',                 visita:'2.L',                  fecha:'3 jul',  estadio:'BMO Field, Toronto'},
-    {id:'r32_14',local:'2.D',                 visita:'2.G',                  fecha:'3 jul',  estadio:'Lincoln Financial Field, Filadelfia'},
-    {id:'r32_15',local:'1.K',                 visita:'Mejor 3. D/E/I/J/L',  fecha:'4 jul',  estadio:'Arrowhead Stadium, Kansas City'},
-    {id:'r32_16',local:'Inglaterra',          visita:'Mejor 3. E/H/I/J/K',  fecha:'4 jul',  estadio:'BC Place, Vancouver'},
+    {id:'r32_1', local:'1.A', visita:'2.B', fecha:'1 jul', estadio:'MetLife Stadium, Nueva York'},
+    {id:'r32_2', local:'1.C', visita:'2.D', fecha:'1 jul', estadio:'AT&T Stadium, Dallas'},
+    {id:'r32_3', local:'1.E', visita:'2.F', fecha:'2 jul', estadio:'SoFi Stadium, Los Ángeles'},
+    {id:'r32_4', local:'1.G', visita:'2.H', fecha:'2 jul', estadio:'Mercedes-Benz Stadium, Atlanta'},
+    {id:'r32_5', local:'1.I', visita:'2.J', fecha:'3 jul', estadio:'Gillette Stadium, Boston'},
+    {id:'r32_6', local:'1.K', visita:'2.L', fecha:'3 jul', estadio:'Arrowhead Stadium, Kansas City'},
+    {id:'r32_7', local:'1.B', visita:'2.A', fecha:'4 jul', estadio:'BC Place, Vancouver'},
+    {id:'r32_8', local:'1.D', visita:'2.C', fecha:'4 jul', estadio:'NRG Stadium, Houston'},
+    {id:'r32_9', local:'1.F', visita:'2.E', fecha:'5 jul', estadio:'BMO Field, Toronto'},
+    {id:'r32_10',local:'1.H', visita:'2.G', fecha:'5 jul', estadio:'Hard Rock Stadium, Miami'},
+    {id:'r32_11',local:'1.J', visita:'2.I', fecha:'6 jul', estadio:'Lumen Field, Seattle'},
+    {id:'r32_12',local:'1.L', visita:'2.K', fecha:'6 jul', estadio:'Lincoln Financial Field, Filadelfia'},
+    {id:'r32_13',local:'3er mejor 1', visita:'3er mejor 2', fecha:'7 jul', estadio:'AT&T Stadium, Dallas'},
+    {id:'r32_14',local:'3er mejor 3', visita:'3er mejor 4', fecha:'7 jul', estadio:'MetLife Stadium, Nueva York'},
+    {id:'r32_15',local:'3er mejor 5', visita:'3er mejor 6', fecha:'8 jul', estadio:'SoFi Stadium, Los Ángeles'},
+    {id:'r32_16',local:'3er mejor 7', visita:'3er mejor 8', fecha:'8 jul', estadio:'Mercedes-Benz Stadium, Atlanta'},
   ]},
   {id:'octavos', label:'Octavos de Final (R16)', sublabel:'11–14 jul · 8 partidos', icon:'fas fa-shield-halved', iconClass:'fase-icon-octavos',
    partidos:[
@@ -2474,16 +2474,16 @@ window.resetTotalEliminatorias = async function() {
 
   // Placeholders originales por fase
   const PLACEHOLDERS = {
-    r32_1:{local:'Sudafrica',visita:'Canada'}, r32_2:{local:'Alemania',visita:'Paraguay'},
-    r32_3:{local:'Paises Bajos',visita:'Marruecos'}, r32_4:{local:'Brasil',visita:'Japon'},
-    r32_5:{local:'Francia',visita:'Suecia'}, r32_6:{local:'Costa de Marfil',visita:'Noruega'},
-    r32_7:{local:'Estados Unidos',visita:'Bosnia y Herzegovina'}, r32_8:{local:'Belgica',visita:'Mejor 3. A/E/H/I/J'},
-    r32_9:{local:'Espana',visita:'2.J'}, r32_10:{local:'Suiza',visita:'Mejor 3. E/F/G/I/J'},
-    r32_11:{local:'Argentina',visita:'Cabo Verde'},r32_12:{local:'Australia',visita:'Egipto'},
-    r32_13:{local:'2.K',visita:'2.L'},
-    r32_14:{local:'2.D',visita:'2.G'},
-    r32_15:{local:'1.K',visita:'Mejor 3. D/E/I/J/L'},
-    r32_16:{local:'Inglaterra',visita:'Mejor 3. E/H/I/J/K'},
+    r32_1:{local:'1.A',visita:'2.B'}, r32_2:{local:'1.C',visita:'2.D'},
+    r32_3:{local:'1.E',visita:'2.F'}, r32_4:{local:'1.G',visita:'2.H'},
+    r32_5:{local:'1.I',visita:'2.J'}, r32_6:{local:'1.K',visita:'2.L'},
+    r32_7:{local:'1.B',visita:'2.A'}, r32_8:{local:'1.D',visita:'2.C'},
+    r32_9:{local:'1.F',visita:'2.E'}, r32_10:{local:'1.H',visita:'2.G'},
+    r32_11:{local:'1.J',visita:'2.I'},r32_12:{local:'1.L',visita:'2.K'},
+    r32_13:{local:'3er mejor 1',visita:'3er mejor 2'},
+    r32_14:{local:'3er mejor 3',visita:'3er mejor 4'},
+    r32_15:{local:'3er mejor 5',visita:'3er mejor 6'},
+    r32_16:{local:'3er mejor 7',visita:'3er mejor 8'},
     r16_1:{local:'G.32 1',visita:'G.32 2'},  r16_2:{local:'G.32 3',visita:'G.32 4'},
     r16_3:{local:'G.32 5',visita:'G.32 6'},  r16_4:{local:'G.32 7',visita:'G.32 8'},
     r16_5:{local:'G.32 9',visita:'G.32 10'}, r16_6:{local:'G.32 11',visita:'G.32 12'},
@@ -2617,18 +2617,32 @@ async function recalcularFase(faseActual, faseSiguienteIds) {
   const batch = writeBatch(db);
 
   if (faseActual === 'r32') {
-    // 16 ganadores → 8 partidos de octavos (1vs2, 3vs4, ...)
-    for (let i = 0; i < faseSiguienteIds.length; i++) {
-      const g1 = ganadorDe(ids[i*2]);
-      const g2 = ganadorDe(ids[i*2+1]);
-      if (!g1 && !g2) continue;
-      const local  = g1 || `G.32 ${i*2+1}`;
-      const visita = g2 || `G.32 ${i*2+2}`;
-      batch.set(doc(db,'partidos',faseSiguienteIds[i]), { local, visita }, { merge:true });
-      if (!resCache[faseSiguienteIds[i]]) resCache[faseSiguienteIds[i]] = {};
-      resCache[faseSiguienteIds[i]].local  = local;
-      resCache[faseSiguienteIds[i]].visita = visita;
-    }
+    // Cruces REALES del bracket FIFA 2026 (Anexo C) — NO son 1vs2,3vs4 consecutivo.
+    // r16_1=M89 r16_2=M90 r16_3=M91 r16_4=M92 r16_5=M93 r16_6=M94 r16_7=M95 r16_8=M96
+    const CRUCES_R32_A_R16 = {
+      r16_1: ['r32_2',  'r32_5'],   // Paraguay/Alemania  vs  Francia/Suecia
+      r16_2: ['r32_1',  'r32_3'],   // Canada/Sudafrica   vs  Marruecos/PBajos
+      r16_3: ['r32_4',  'r32_6'],   // Brasil/Japon       vs  Noruega/CMarfil
+      r16_4: ['r32_12', 'r32_8'],   // Mexico/Ecuador     vs  Inglaterra/RDCongo
+      r16_5: ['r32_13', 'r32_9'],   // Portugal/Croacia   vs  Espana/Austria
+      r16_6: ['r32_7',  'r32_16'],  // EEUU/Bosnia        vs  Belgica/Senegal
+      r16_7: ['r32_11', 'r32_14'],  // Argentina/CaboVerde vs Australia/Egipto
+      r16_8: ['r32_10', 'r32_15'],  // Suiza/Argelia      vs  Colombia/Ghana
+    };
+    faseSiguienteIds.forEach(id => {
+      const par = CRUCES_R32_A_R16[id];
+      if (!par) return;
+      const [idA, idB] = par;
+      const g1 = ganadorDe(idA);
+      const g2 = ganadorDe(idB);
+      if (!g1 && !g2) return;
+      const local  = g1 || `G.${idA}`;
+      const visita = g2 || `G.${idB}`;
+      batch.set(doc(db,'partidos',id), { local, visita }, { merge:true });
+      if (!resCache[id]) resCache[id] = {};
+      resCache[id].local  = local;
+      resCache[id].visita = visita;
+    });
   } else if (faseActual === 'octavos') {
     // 8 ganadores → 4 cuartos (1vs2, 3vs4, 5vs6, 7vs8)
     for (let i = 0; i < faseSiguienteIds.length; i++) {
@@ -2726,24 +2740,23 @@ async function recalcular32avos() {
 
   function tercero(i) { return mejores8[i]?.nombre || `3er mejor ${i+1}`; }
 
-  // Cruces reales FIFA 2026
   const CRUCES = {
-    r32_1:  ['Sudafrica',       'Canada'],
-    r32_2:  ['Alemania',        'Paraguay'],
-    r32_3:  ['Paises Bajos',    'Marruecos'],
-    r32_4:  ['Brasil',          'Japon'],
-    r32_5:  ['Francia',         'Suecia'],
-    r32_6:  ['Costa de Marfil', 'Noruega'],
-    r32_7:  ['Estados Unidos',  'Bosnia y Herzegovina'],
-    r32_8:  ['Belgica',         mejores8[0]?.nombre || 'Mejor 3. A/E/H/I/J'],
-    r32_9:  ['Espana',          resolverEquipo('J',1)],
-    r32_10: ['Suiza',           mejores8[1]?.nombre || 'Mejor 3. E/F/G/I/J'],
-    r32_11: ['Argentina',       'Cabo Verde'],
-    r32_12: ['Australia',       'Egipto'],
-    r32_13: [resolverEquipo('K',1), resolverEquipo('L',1)],
-    r32_14: [resolverEquipo('D',1), resolverEquipo('G',1)],
-    r32_15: [resolverEquipo('K',0), mejores8[2]?.nombre || 'Mejor 3. D/E/I/J/L'],
-    r32_16: ['Inglaterra',      mejores8[3]?.nombre || 'Mejor 3. E/H/I/J/K'],
+    r32_1:  [resolverEquipo('A',0), resolverEquipo('B',1)],
+    r32_2:  [resolverEquipo('C',0), resolverEquipo('D',1)],
+    r32_3:  [resolverEquipo('E',0), resolverEquipo('F',1)],
+    r32_4:  [resolverEquipo('G',0), resolverEquipo('H',1)],
+    r32_5:  [resolverEquipo('I',0), resolverEquipo('J',1)],
+    r32_6:  [resolverEquipo('K',0), resolverEquipo('L',1)],
+    r32_7:  [resolverEquipo('B',0), resolverEquipo('A',1)],
+    r32_8:  [resolverEquipo('D',0), resolverEquipo('C',1)],
+    r32_9:  [resolverEquipo('F',0), resolverEquipo('E',1)],
+    r32_10: [resolverEquipo('H',0), resolverEquipo('G',1)],
+    r32_11: [resolverEquipo('J',0), resolverEquipo('I',1)],
+    r32_12: [resolverEquipo('L',0), resolverEquipo('K',1)],
+    r32_13: [tercero(0), tercero(7)],
+    r32_14: [tercero(1), tercero(6)],
+    r32_15: [tercero(2), tercero(5)],
+    r32_16: [tercero(3), tercero(4)],
   };
 
   const batch = writeBatch(db);
@@ -3268,24 +3281,20 @@ window.ejecutarResetGrupo = async function() {
     }
 
     // 3) Recalcular y restaurar los 32 partidos de 32avos ─────────────────────
-    // Esquema fijo FIFA 2026 — cruces reales confirmados
+    // Esquema fijo FIFA 2026 para r32_1..r32_12
     const CRUCES_FIJOS = {
-      r32_1:  { local:'Sudafrica',       visita:'Canada' },
-      r32_2:  { local:'Alemania',        visita:'Paraguay' },
-      r32_3:  { local:'Paises Bajos',    visita:'Marruecos' },
-      r32_4:  { local:'Brasil',          visita:'Japon' },
-      r32_5:  { local:'Francia',         visita:'Suecia' },
-      r32_6:  { local:'Costa de Marfil', visita:'Noruega' },
-      r32_7:  { local:'Estados Unidos',  visita:'Bosnia y Herzegovina' },
-      r32_8:  { local:'Belgica',         visita:'Mejor 3. A/E/H/I/J' },
-      r32_9:  { local:'Espana',          visita:'2.J' },
-      r32_10: { local:'Suiza',           visita:'Mejor 3. E/F/G/I/J' },
-      r32_11: { local:'Argentina',       visita:'Cabo Verde' },
-      r32_12: { local:'Australia',       visita:'Egipto' },
-      r32_13: { local:'2.K',             visita:'2.L' },
-      r32_14: { local:'2.D',             visita:'2.G' },
-      r32_15: { local:'1.K',             visita:'Mejor 3. D/E/I/J/L' },
-      r32_16: { local:'Inglaterra',      visita:'Mejor 3. E/H/I/J/K' },
+      r32_1:  { local:'1.A', visita:'2.B' },
+      r32_2:  { local:'1.C', visita:'2.D' },
+      r32_3:  { local:'1.E', visita:'2.F' },
+      r32_4:  { local:'1.G', visita:'2.H' },
+      r32_5:  { local:'1.I', visita:'2.J' },
+      r32_6:  { local:'1.K', visita:'2.L' },
+      r32_7:  { local:'1.B', visita:'2.A' },
+      r32_8:  { local:'1.D', visita:'2.C' },
+      r32_9:  { local:'1.F', visita:'2.E' },
+      r32_10: { local:'1.H', visita:'2.G' },
+      r32_11: { local:'1.J', visita:'2.I' },
+      r32_12: { local:'1.L', visita:'2.K' },
     };
 
     // Mapa de grupo → partidos (FG_IDS_MAP)
@@ -3367,10 +3376,34 @@ window.ejecutarResetGrupo = async function() {
       r32_9:  ['F','E'], r32_10: ['H','G'], r32_11: ['J','I'],  r32_12: ['L','K'],
     };
 
-    // Escribir en Firestore todos los 32avos con cruces reales
+    const mejores8 = calcMejoresTerceros();
+    const crucesTerceros = asignarCrucesTerceros(mejores8);
+
+    // Escribir en Firestore todos los 32avos actualizados
     const batchR32 = writeBatch(db);
 
-    Object.entries(CRUCES_FIJOS).forEach(([id, {local: ln, visita: vn}]) => {
+    // Partidos 1-12: primer y segundo de grupos
+    Object.entries(GRUPOS_CRUCES).forEach(([id, [gl, gv]]) => {
+      const localNombre  = resolverEquipo(gl, 0);
+      const visitaNombre = resolverEquipo(gv, 1);
+      batchR32.set(doc(db, 'partidos', id), {
+        local:            localNombre,
+        visita:           visitaNombre,
+        resultado_local:  deleteField(),
+        resultado_visita: deleteField(),
+        actualizadoPor:   deleteField(),
+        actualizadoEn:    deleteField(),
+      }, { merge: true });
+      // Actualizar cache local
+      if (!resCache[id]) resCache[id] = {};
+      resCache[id].local  = localNombre;
+      resCache[id].visita = visitaNombre;
+      delete resCache[id].resultado_local;
+      delete resCache[id].resultado_visita;
+    });
+
+    // Partidos 13-16: mejores terceros
+    Object.entries(crucesTerceros).forEach(([id, {local: ln, visita: vn}]) => {
       batchR32.set(doc(db, 'partidos', id), {
         local:            ln,
         visita:           vn,
@@ -3387,7 +3420,7 @@ window.ejecutarResetGrupo = async function() {
     });
 
     // Resetear también apuestas de los 16 partidos r32 si tenían resultado
-    const r32Ids = Object.keys(CRUCES_FIJOS);
+    const r32Ids = [...Object.keys(GRUPOS_CRUCES), 'r32_13','r32_14','r32_15','r32_16'];
     for (const id of r32Ids) {
       const apSnap = await getDocs(query(collection(db, 'apuestas'), where('partidoId', '==', id)));
       if (apSnap.size > 0) {
@@ -4111,22 +4144,22 @@ const PARTIDOS_GRUPOS = [
 
 const PARTIDOS_ELIM = [
   // 32avos de Final — 1–8 jul
-  {id:'r32_1', fase:'32avos', local:'Sudafrica',          visita:'Canada',               fecha:'2026-06-28', hora:'20:00', estadio:'SoFi Stadium, Los Ángeles'},
-  {id:'r32_2', fase:'32avos', local:'Alemania',            visita:'Paraguay',             fecha:'2026-06-29', hora:'16:00', estadio:'Gillette Stadium, Boston'},
-  {id:'r32_3', fase:'32avos', local:'Paises Bajos',        visita:'Marruecos',            fecha:'2026-06-29', hora:'13:00', estadio:'Estadio BBVA, Monterrey'},
-  {id:'r32_4', fase:'32avos', local:'Brasil',              visita:'Japon',                fecha:'2026-06-29', hora:'20:00', estadio:'NRG Stadium, Houston'},
-  {id:'r32_5', fase:'32avos', local:'Francia',             visita:'Suecia',               fecha:'2026-06-30', hora:'20:00', estadio:'MetLife Stadium, Nueva York'},
-  {id:'r32_6', fase:'32avos', local:'Costa de Marfil',     visita:'Noruega',              fecha:'2026-06-30', hora:'16:00', estadio:'AT&T Stadium, Dallas'},
-  {id:'r32_7', fase:'32avos', local:'Estados Unidos',      visita:'Bosnia y Herzegovina', fecha:'2026-07-01', hora:'16:00', estadio:"Levi's Stadium, Santa Clara"},
-  {id:'r32_8', fase:'32avos', local:'Belgica',             visita:'Mejor 3. A/E/H/I/J',  fecha:'2026-07-01', hora:'20:00', estadio:'Lumen Field, Seattle'},
-  {id:'r32_9', fase:'32avos', local:'Espana',              visita:'2.J',                  fecha:'2026-07-02', hora:'20:00', estadio:'SoFi Stadium, Los Ángeles'},
-  {id:'r32_10',fase:'32avos', local:'Suiza',               visita:'Mejor 3. E/F/G/I/J',  fecha:'2026-07-02', hora:'16:00', estadio:'BC Place, Vancouver'},
-  {id:'r32_11',fase:'32avos', local:'Argentina',           visita:'Cabo Verde',           fecha:'2026-07-03', hora:'20:00', estadio:'Hard Rock Stadium, Miami'},
-  {id:'r32_12',fase:'32avos', local:'Australia',           visita:'Egipto',               fecha:'2026-07-03', hora:'16:00', estadio:'AT&T Stadium, Dallas'},
-  {id:'r32_13',fase:'32avos', local:'2.K',                 visita:'2.L',                  fecha:'2026-07-03', hora:'16:00', estadio:'BMO Field, Toronto'},
-  {id:'r32_14',fase:'32avos', local:'2.D',                 visita:'2.G',                  fecha:'2026-07-03', hora:'20:00', estadio:'Lincoln Financial Field, Filadelfia'},
-  {id:'r32_15',fase:'32avos', local:'1.K',                 visita:'Mejor 3. D/E/I/J/L',  fecha:'2026-07-04', hora:'16:00', estadio:'Arrowhead Stadium, Kansas City'},
-  {id:'r32_16',fase:'32avos', local:'Inglaterra',          visita:'Mejor 3. E/H/I/J/K',  fecha:'2026-07-04', hora:'20:00', estadio:'BC Place, Vancouver'},
+  {id:'r32_1', fase:'32avos', local:'1.A', visita:'2.B', fecha:'2026-07-01', hora:'16:00', estadio:'MetLife Stadium, Nueva York'},
+  {id:'r32_2', fase:'32avos', local:'1.C', visita:'2.D', fecha:'2026-07-01', hora:'20:00', estadio:'AT&T Stadium, Dallas'},
+  {id:'r32_3', fase:'32avos', local:'1.E', visita:'2.F', fecha:'2026-07-02', hora:'16:00', estadio:'SoFi Stadium, Los Ángeles'},
+  {id:'r32_4', fase:'32avos', local:'1.G', visita:'2.H', fecha:'2026-07-02', hora:'20:00', estadio:'Mercedes-Benz Stadium, Atlanta'},
+  {id:'r32_5', fase:'32avos', local:'1.I', visita:'2.J', fecha:'2026-07-03', hora:'16:00', estadio:'Gillette Stadium, Boston'},
+  {id:'r32_6', fase:'32avos', local:'1.K', visita:'2.L', fecha:'2026-07-03', hora:'20:00', estadio:'Arrowhead Stadium, Kansas City'},
+  {id:'r32_7', fase:'32avos', local:'1.B', visita:'2.A', fecha:'2026-07-04', hora:'16:00', estadio:'BC Place, Vancouver'},
+  {id:'r32_8', fase:'32avos', local:'1.D', visita:'2.C', fecha:'2026-07-04', hora:'20:00', estadio:'NRG Stadium, Houston'},
+  {id:'r32_9', fase:'32avos', local:'1.F', visita:'2.E', fecha:'2026-07-05', hora:'16:00', estadio:'BMO Field, Toronto'},
+  {id:'r32_10',fase:'32avos', local:'1.H', visita:'2.G', fecha:'2026-07-05', hora:'20:00', estadio:'Hard Rock Stadium, Miami'},
+  {id:'r32_11',fase:'32avos', local:'1.J', visita:'2.I', fecha:'2026-07-06', hora:'16:00', estadio:'Lumen Field, Seattle'},
+  {id:'r32_12',fase:'32avos', local:'1.L', visita:'2.K', fecha:'2026-07-06', hora:'20:00', estadio:'Lincoln Financial Field, Filadelfia'},
+  {id:'r32_13',fase:'32avos', local:'3er mejor 1', visita:'3er mejor 2', fecha:'2026-07-07', hora:'16:00', estadio:'AT&T Stadium, Dallas'},
+  {id:'r32_14',fase:'32avos', local:'3er mejor 3', visita:'3er mejor 4', fecha:'2026-07-07', hora:'20:00', estadio:'MetLife Stadium, Nueva York'},
+  {id:'r32_15',fase:'32avos', local:'3er mejor 5', visita:'3er mejor 6', fecha:'2026-07-08', hora:'16:00', estadio:'SoFi Stadium, Los Ángeles'},
+  {id:'r32_16',fase:'32avos', local:'3er mejor 7', visita:'3er mejor 8', fecha:'2026-07-08', hora:'20:00', estadio:'Mercedes-Benz Stadium, Atlanta'},
   // Octavos — 11–14 jul
   {id:'r16_1', fase:'octavos', local:'G.32 1',  visita:'G.32 2',  fecha:'2026-07-11', hora:'16:00', estadio:'MetLife Stadium, Nueva York'},
   {id:'r16_2', fase:'octavos', local:'G.32 3',  visita:'G.32 4',  fecha:'2026-07-11', hora:'20:00', estadio:'AT&T Stadium, Dallas'},
@@ -6579,11 +6612,7 @@ window.abrirDetalleJugador = async function(uid, nombre, grupoNombre, grupoId) {
     <button class="mdj-tab" data-g="${g}" onclick="mdjMostrarGrupo('${g}')"
       style="padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:${g===_mdjGrupoActivo?'var(--gold)':'var(--card2)'};color:${g===_mdjGrupoActivo?'#0a0e1a':'var(--text)'};font-size:0.78rem;font-weight:600;cursor:pointer;">
       ${g}
-    </button>`).join('') + `
-    <button class="mdj-tab" data-g="32avos" onclick="mdjMostrar32avos()"
-      style="padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:var(--card2);color:var(--gold);font-size:0.78rem;font-weight:600;cursor:pointer;">
-      32avos
-    </button>`;
+    </button>`).join('');
 
   mdjMostrarGrupo(_mdjGrupoActivo);
 };
@@ -7368,47 +7397,3 @@ window.descargarNewsletter = function() {
 </div>
 </body>
 </html>
-<script>
-window.mdjMostrar32avos = function() {
-  document.querySelectorAll('.mdj-tab').forEach(t => {
-    const is32 = t.dataset.g === '32avos';
-    t.style.background = is32 ? 'var(--gold)' : 'var(--card2)';
-    t.style.color = is32 ? '#0a0e1a' : 'var(--text)';
-  });
-  const apMap = window._mdjApMap;
-  const partidos = window._mdjPartidos;
-  const r32ids = ['r32_1','r32_2','r32_3','r32_4','r32_5','r32_6','r32_7','r32_8',
-                  'r32_9','r32_10','r32_11','r32_12','r32_13','r32_14','r32_15','r32_16'];
-  let html = '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1rem;letter-spacing:.05em;color:var(--gold);margin-bottom:10px;">32avos de Final</div>';
-  html += '<table style="width:100%;border-collapse:collapse;font-size:0.82rem;"><thead><tr style="color:var(--muted);font-size:0.72rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);"><th style="padding:6px 8px;text-align:left;">Fecha</th><th style="padding:6px 8px;text-align:left;">Local</th><th style="padding:6px 8px;text-align:center;">Resultado</th><th style="padding:6px 8px;text-align:right;">Visita</th><th style="padding:6px 8px;text-align:center;color:var(--gold);">Apuesta</th><th style="padding:6px 8px;text-align:center;">Pts</th></tr></thead><tbody>';
-  r32ids.forEach(function(id) {
-    var partido = partidos[id];
-    if (!partido) return;
-    var apuesta = apMap.get(id);
-    var tieneReal = partido.resultado_local != null;
-    var tieneApuesta = apuesta != null;
-    var pts = null;
-    if (tieneReal && tieneApuesta) {
-      pts = calcularPuntaje(
-        {local: partido.resultado_local, visita: partido.resultado_visita},
-        {local: apuesta.golesLocal, visita: apuesta.golesVisita}
-      );
-    }
-    var ptsColor = (pts===4||pts===2) ? 'var(--green)' : (pts===3||pts===1) ? 'var(--gold)' : 'var(--muted)';
-    var rowBg = (pts!=null && pts>0) ? 'background:rgba(34,197,94,0.04);' : '';
-    var fecha = (partido.fecha||'').replace('2026-','').replace('-','/');
-    var resHtml = tieneReal
-      ? '<span style="background:var(--card2);border-radius:6px;padding:2px 10px;font-family:\'Bebas Neue\',sans-serif;font-size:0.95rem;">' + partido.resultado_local + '-' + partido.resultado_visita + '</span>'
-      : '<span style="color:var(--muted);font-size:0.75rem;">-</span>';
-    var apHtml = tieneApuesta
-      ? '<span style="color:var(--gold);font-weight:700;">' + apuesta.golesLocal + '-' + apuesta.golesVisita + '</span>'
-      : '<span style="color:rgba(255,255,255,0.2);font-size:0.75rem;">sin apuesta</span>';
-    var ptsHtml = pts!=null
-      ? '<span style="font-weight:700;color:' + ptsColor + ';">' + pts + 'pts</span>'
-      : '-';
-    html += '<tr style="border-bottom:1px solid rgba(255,255,255,0.04);' + rowBg + '"><td style="padding:7px 8px;color:var(--muted);font-size:0.75rem;">' + fecha + '</td><td style="padding:7px 8px;font-weight:500;">' + partido.local + '</td><td style="padding:7px 8px;text-align:center;">' + resHtml + '</td><td style="padding:7px 8px;text-align:right;font-weight:500;">' + partido.visita + '</td><td style="padding:7px 8px;text-align:center;">' + apHtml + '</td><td style="padding:7px 8px;text-align:center;">' + ptsHtml + '</td></tr>';
-  });
-  html += '</tbody></table>';
-  document.getElementById('mdj-tabla').innerHTML = html;
-};
-</script>
