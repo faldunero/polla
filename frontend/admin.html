@@ -1587,6 +1587,11 @@ function calcularPuntaje(real, apuesta) {
   if(gr==='E'&&ga==='E') return 1;
   return 0;
 }
+// Expuesta en window: el modal de detalle de jugador vive en un <script> normal
+// más abajo (no module), y ese bloque no ve las funciones de este módulo
+// a menos que se expongan así explícitamente — mismo motivo por el que
+// window._mdjApMap / window._mdjPartidos ya se usan para los datos.
+window.calcularPuntaje = calcularPuntaje;
 
 // ── Auth ──────────────────────────────────────────────────────────────────
 window.loginGoogle = async () => {
@@ -6597,6 +6602,10 @@ window.abrirDetalleJugador = async function(uid, nombre, grupoNombre, grupoId) {
     <button class="mdj-tab" data-g="32avos" onclick="mdjMostrar32avos()"
       style="padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:var(--card2);color:var(--gold);font-size:0.78rem;font-weight:600;cursor:pointer;">
       32avos
+    </button>
+    <button class="mdj-tab" data-g="octavos" onclick="mdjMostrarOctavos()"
+      style="padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:var(--card2);color:var(--gold);font-size:0.78rem;font-weight:600;cursor:pointer;">
+      Octavos
     </button>`;
 
   mdjMostrarGrupo(_mdjGrupoActivo);
@@ -7425,4 +7434,47 @@ window.mdjMostrar32avos = function() {
   html += '</tbody></table>';
   document.getElementById('mdj-tabla').innerHTML = html;
 };
+
+window.mdjMostrarOctavos = function() {
+  document.querySelectorAll('.mdj-tab').forEach(t => {
+    const isOct = t.dataset.g === 'octavos';
+    t.style.background = isOct ? 'var(--gold)' : 'var(--card2)';
+    t.style.color = isOct ? '#0a0e1a' : 'var(--text)';
+  });
+  const apMap = window._mdjApMap;
+  const partidos = window._mdjPartidos;
+  const r16ids = ['r16_1','r16_2','r16_3','r16_4','r16_5','r16_6','r16_7','r16_8'];
+  let html = '<div style="font-family:\'Bebas Neue\',sans-serif;font-size:1rem;letter-spacing:.05em;color:var(--gold);margin-bottom:10px;">Octavos de Final</div>';
+  html += '<table style="width:100%;border-collapse:collapse;font-size:0.82rem;"><thead><tr style="color:var(--muted);font-size:0.72rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);"><th style="padding:6px 8px;text-align:left;">Fecha</th><th style="padding:6px 8px;text-align:left;">Local</th><th style="padding:6px 8px;text-align:center;">Resultado</th><th style="padding:6px 8px;text-align:right;">Visita</th><th style="padding:6px 8px;text-align:center;color:var(--gold);">Apuesta</th><th style="padding:6px 8px;text-align:center;">Pts</th></tr></thead><tbody>';
+  r16ids.forEach(function(id) {
+    var partido = partidos[id];
+    if (!partido) return;
+    var apuesta = apMap.get(id);
+    var tieneReal = partido.resultado_local != null;
+    var tieneApuesta = apuesta != null;
+    var pts = null;
+    if (tieneReal && tieneApuesta) {
+      pts = calcularPuntaje(
+        {local: partido.resultado_local, visita: partido.resultado_visita},
+        {local: apuesta.golesLocal, visita: apuesta.golesVisita}
+      );
+    }
+    var ptsColor = (pts===4||pts===2) ? 'var(--green)' : (pts===3||pts===1) ? 'var(--gold)' : 'var(--muted)';
+    var rowBg = (pts!=null && pts>0) ? 'background:rgba(34,197,94,0.04);' : '';
+    var fecha = (partido.fecha||'').replace('2026-','').replace('-','/');
+    var resHtml = tieneReal
+      ? '<span style="background:var(--card2);border-radius:6px;padding:2px 10px;font-family:\'Bebas Neue\',sans-serif;font-size:0.95rem;">' + partido.resultado_local + '-' + partido.resultado_visita + '</span>'
+      : '<span style="color:var(--muted);font-size:0.75rem;">-</span>';
+    var apHtml = tieneApuesta
+      ? '<span style="color:var(--gold);font-weight:700;">' + apuesta.golesLocal + '-' + apuesta.golesVisita + '</span>'
+      : '<span style="color:rgba(255,255,255,0.2);font-size:0.75rem;">sin apuesta</span>';
+    var ptsHtml = pts!=null
+      ? '<span style="font-weight:700;color:' + ptsColor + ';">' + pts + 'pts</span>'
+      : '-';
+    html += '<tr style="border-bottom:1px solid rgba(255,255,255,0.04);' + rowBg + '"><td style="padding:7px 8px;color:var(--muted);font-size:0.75rem;">' + fecha + '</td><td style="padding:7px 8px;font-weight:500;">' + partido.local + '</td><td style="padding:7px 8px;text-align:center;">' + resHtml + '</td><td style="padding:7px 8px;text-align:right;font-weight:500;">' + partido.visita + '</td><td style="padding:7px 8px;text-align:center;">' + apHtml + '</td><td style="padding:7px 8px;text-align:center;">' + ptsHtml + '</td></tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('mdj-tabla').innerHTML = html;
+};
+
 </script>
