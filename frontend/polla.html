@@ -1546,13 +1546,15 @@ const FG = FIXTURE_GRUPOS;
         <div class="card" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;padding:14px 16px;">
           <div>
             <label style="display:block;font-size:.7rem;color:var(--muted);margin-bottom:4px;">Fase</label>
-            <select id="aud-filtro-fase" onchange="auditoriaAplicarFiltros()">
+            <select id="aud-filtro-fase" onchange="auditoriaAplicarFiltros()"
+              style="background:var(--bg2,#0f1525);border:1px solid rgba(255,255,255,.1);color:var(--text,#e8eaf0);border-radius:8px;padding:7px 8px;font-size:.82rem;">
               ${fases.map(f => opt(f, f === 'todas' ? 'Todas' : (FASE_LABELS_AUD[f] || f), f === auditoriaFiltros.fase)).join('')}
             </select>
           </div>
           <div>
             <label style="display:block;font-size:.7rem;color:var(--muted);margin-bottom:4px;">Grupo</label>
-            <select id="aud-filtro-grupo" onchange="auditoriaAplicarFiltros()" ${auditoriaFiltros.fase !== 'grupos' && auditoriaFiltros.fase !== 'todas' ? 'disabled' : ''}>
+            <select id="aud-filtro-grupo" onchange="auditoriaAplicarFiltros()" ${auditoriaFiltros.fase !== 'grupos' && auditoriaFiltros.fase !== 'todas' ? 'disabled' : ''}
+              style="background:var(--bg2,#0f1525);border:1px solid rgba(255,255,255,.1);color:var(--text,#e8eaf0);border-radius:8px;padding:7px 8px;font-size:.82rem;">
               ${grupos.map(g => opt(g, g === 'todos' ? 'Todos' : `Grupo ${g}`, g === auditoriaFiltros.grupo)).join('')}
             </select>
           </div>
