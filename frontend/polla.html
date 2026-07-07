@@ -1524,6 +1524,7 @@ const FG = FIXTURE_GRUPOS;
         <div class="alert alert-info" style="margin-bottom:14px;">
           <i class="fas fa-user-shield"></i> Esta vista muestra únicamente tus propias apuestas — nadie más puede ver esto ni tú puedes ver las de otros participantes acá.
         </div>
+        <div id="aud-resumen"></div>
         <div class="card" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;padding:14px 16px;">
           <div>
             <label style="display:block;font-size:.7rem;color:var(--muted);margin-bottom:4px;">Fase</label>
@@ -1570,12 +1571,37 @@ const FG = FIXTURE_GRUPOS;
 
     function pintarAuditoria() {
       const wrap = document.getElementById('aud-tabla-wrap');
+      const resumenEl = document.getElementById('aud-resumen');
       if (!wrap) return;
 
       let filas = auditoriaData;
       if (auditoriaFiltros.fase !== 'todas') filas = filas.filter(r => r.faseId === auditoriaFiltros.fase);
       if (auditoriaFiltros.grupo !== 'todos') filas = filas.filter(r => r.grupo === auditoriaFiltros.grupo);
       if (auditoriaFiltros.fecha !== 'todas') filas = filas.filter(r => r.fecha === auditoriaFiltros.fecha);
+
+      // Dashboard resumen: ganador exacto (4), ganador (3), empate exacto (2), empate (1), perdidos (0)
+      if (resumenEl) {
+        const categorias = [
+          { pts: 4, label: 'Ganador exacto', color: 'var(--gold)' },
+          { pts: 3, label: 'Ganador',        color: '#22c55e' },
+          { pts: 2, label: 'Empate exacto',  color: '#60a5fa' },
+          { pts: 1, label: 'Empate',         color: '#a78bfa' },
+          { pts: 0, label: 'Perdidos',       color: 'var(--muted)' },
+        ];
+        const conteo = categorias.map(c => ({ ...c, count: filas.filter(r => r.pts === c.pts).length }));
+
+        resumenEl.innerHTML = `
+          <div class="card" style="display:flex;flex-wrap:wrap;margin-bottom:16px;overflow:hidden;padding:0;">
+            ${conteo.map((c, i) => `
+              <div style="flex:1;min-width:110px;text-align:center;padding:16px 10px;${i > 0 ? 'border-left:1px solid rgba(255,255,255,.07);' : ''}">
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:2.1rem;color:${c.color};line-height:1;">${c.pts}</div>
+                <div style="font-size:.66rem;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:.03em;">${c.label}</div>
+                <div style="font-size:.8rem;margin-top:4px;font-weight:600;">${c.count} ${c.count === 1 ? 'apuesta' : 'apuestas'}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
 
       if (!filas.length) {
         wrap.innerHTML = `<div class="empty-state"><i class="fas fa-magnifying-glass"></i><p>No hay partidos con esos filtros.</p></div>`;
