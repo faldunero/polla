@@ -6,6 +6,7 @@
   <title>La Polla 2026</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <style>
     :root{
@@ -1433,6 +1434,7 @@ const FG = FIXTURE_GRUPOS;
 
     let auditoriaData = [];
     let auditoriaFiltros = { fase: 'todas', grupo: 'todos', fecha: 'todas' };
+    let auditoriaFilasActuales = [];
 
     async function renderAuditoria() {
       const container = document.getElementById('auditoria-content');
@@ -1544,7 +1546,8 @@ const FG = FIXTURE_GRUPOS;
               ${fechas.map(f => opt(f, f === 'todas' ? 'Todas' : f, f === auditoriaFiltros.fecha)).join('')}
             </select>
           </div>
-          <div style="margin-left:auto;">
+          <div style="margin-left:auto;display:flex;gap:8px;">
+            <button class="btn btn-outline btn-sm" onclick="auditoriaExportarExcel()"><i class="fas fa-file-excel"></i> Exportar a Excel</button>
             <button class="btn btn-outline btn-sm" onclick="auditoriaResetFiltros()"><i class="fas fa-filter-circle-xmark"></i> Limpiar filtros</button>
           </div>
         </div>
@@ -1569,6 +1572,35 @@ const FG = FIXTURE_GRUPOS;
       pintarAuditoria();
     };
 
+    window.auditoriaExportarExcel = function() {
+      if (typeof XLSX === 'undefined') {
+        toast('No se pudo cargar el módulo de Excel, intenta recargar la página', 'error');
+        return;
+      }
+      if (!auditoriaFilasActuales.length) {
+        toast('No hay partidos para exportar con estos filtros', 'error');
+        return;
+      }
+
+      const filasExport = auditoriaFilasActuales.map(r => ({
+        'Fecha': r.fecha || '',
+        'Hora (Chile)': fmtHoraChile(r.hora, r.estadio) || '',
+        'Fase': r.faseLabel,
+        'Partido': `${r.local} vs ${r.visita}`,
+        'Resultado real': r.resReal || 'Pendiente',
+        'Mi apuesta': r.apuesta || 'Sin apuesta',
+        'Puntos': r.pts != null ? r.pts : '',
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(filasExport);
+      ws['!cols'] = [{ wch: 12 }, { wch: 12 }, { wch: 22 }, { wch: 28 }, { wch: 15 }, { wch: 15 }, { wch: 9 }];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Auditoria apuestas');
+
+      const nombreArchivo = `mis_apuestas_${(miParticipante?.nombre || 'auditoria').replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.xlsx`;
+      XLSX.writeFile(wb, nombreArchivo);
+    };
+
     function pintarAuditoria() {
       const wrap = document.getElementById('aud-tabla-wrap');
       const resumenEl = document.getElementById('aud-resumen');
@@ -1578,6 +1610,7 @@ const FG = FIXTURE_GRUPOS;
       if (auditoriaFiltros.fase !== 'todas') filas = filas.filter(r => r.faseId === auditoriaFiltros.fase);
       if (auditoriaFiltros.grupo !== 'todos') filas = filas.filter(r => r.grupo === auditoriaFiltros.grupo);
       if (auditoriaFiltros.fecha !== 'todas') filas = filas.filter(r => r.fecha === auditoriaFiltros.fecha);
+      auditoriaFilasActuales = filas;
 
       // Dashboard resumen: ganador exacto (4), ganador (3), empate exacto (2), empate (1), perdidos (0)
       if (resumenEl) {
@@ -1589,16 +1622,22 @@ const FG = FIXTURE_GRUPOS;
           { pts: 0, label: 'Perdidos',       color: 'var(--muted)' },
         ];
         const conteo = categorias.map(c => ({ ...c, count: filas.filter(r => r.pts === c.pts).length }));
+        const totalGeneral = conteo.reduce((s, c) => s + c.count * c.pts, 0);
 
         resumenEl.innerHTML = `
           <div class="card" style="display:flex;flex-wrap:wrap;margin-bottom:16px;overflow:hidden;padding:0;">
             ${conteo.map((c, i) => `
               <div style="flex:1;min-width:110px;text-align:center;padding:16px 10px;${i > 0 ? 'border-left:1px solid rgba(255,255,255,.07);' : ''}">
-                <div style="font-family:'Bebas Neue',sans-serif;font-size:2.1rem;color:${c.color};line-height:1;">${c.pts}</div>
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:2.1rem;color:${c.color};line-height:1;">${c.count}</div>
                 <div style="font-size:.66rem;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:.03em;">${c.label}</div>
-                <div style="font-size:.8rem;margin-top:4px;font-weight:600;">${c.count} ${c.count === 1 ? 'apuesta' : 'apuestas'}</div>
+                <div style="font-size:.8rem;margin-top:4px;font-weight:600;">${c.count * c.pts} pts</div>
               </div>
             `).join('')}
+            <div style="flex:1;min-width:110px;text-align:center;padding:16px 10px;border-left:1px solid rgba(255,255,255,.07);background:rgba(245,200,66,.06);">
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:2.1rem;color:var(--gold);line-height:1;">${totalGeneral}</div>
+              <div style="font-size:.66rem;color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:.03em;">Total</div>
+              <div style="font-size:.8rem;margin-top:4px;font-weight:600;">pts acumulados</div>
+            </div>
           </div>
         `;
       }
