@@ -1914,34 +1914,34 @@ async function renderResultadosAccordion() {
   // Aquí solo usamos los datos del fixture original como fallback de fecha/estadio,
   // y tomamos local/visita exclusivamente desde resCache.
   const ELIM_FIXTURE = {
-    r32_1: {local:'1.A',visita:'2.B',fecha:'2026-07-01',estadio:'MetLife Stadium, Nueva York'},
-    r32_2: {local:'1.C',visita:'2.D',fecha:'2026-07-01',estadio:'AT&T Stadium, Dallas'},
-    r32_3: {local:'1.E',visita:'2.F',fecha:'2026-07-02',estadio:'SoFi Stadium, Los Ángeles'},
-    r32_4: {local:'1.G',visita:'2.H',fecha:'2026-07-02',estadio:'Mercedes-Benz Stadium, Atlanta'},
-    r32_5: {local:'1.I',visita:'2.J',fecha:'2026-07-03',estadio:'Gillette Stadium, Boston'},
-    r32_6: {local:'1.K',visita:'2.L',fecha:'2026-07-03',estadio:'Arrowhead Stadium, Kansas City'},
-    r32_7: {local:'1.B',visita:'2.A',fecha:'2026-07-04',estadio:'BC Place, Vancouver'},
-    r32_8: {local:'1.D',visita:'2.C',fecha:'2026-07-04',estadio:'NRG Stadium, Houston'},
-    r32_9: {local:'1.F',visita:'2.E',fecha:'2026-07-05',estadio:'BMO Field, Toronto'},
-    r32_10:{local:'1.H',visita:'2.G',fecha:'2026-07-05',estadio:'Hard Rock Stadium, Miami'},
-    r32_11:{local:'1.J',visita:'2.I',fecha:'2026-07-06',estadio:'Lumen Field, Seattle'},
-    r32_12:{local:'1.L',visita:'2.K',fecha:'2026-07-06',estadio:'Lincoln Financial Field, Filadelfia'},
-    r32_13:{local:'3er mejor 1',visita:'3er mejor 2',fecha:'2026-07-07',estadio:'AT&T Stadium, Dallas'},
-    r32_14:{local:'3er mejor 3',visita:'3er mejor 4',fecha:'2026-07-07',estadio:'MetLife Stadium, Nueva York'},
-    r32_15:{local:'3er mejor 5',visita:'3er mejor 6',fecha:'2026-07-08',estadio:'SoFi Stadium, Los Ángeles'},
-    r32_16:{local:'3er mejor 7',visita:'3er mejor 8',fecha:'2026-07-08',estadio:'Mercedes-Benz Stadium, Atlanta'},
-    r16_1: {local:'G.32 1', visita:'G.32 2', fecha:'2026-07-11',estadio:'MetLife Stadium, Nueva York'},
-    r16_2: {local:'G.32 3', visita:'G.32 4', fecha:'2026-07-11',estadio:'AT&T Stadium, Dallas'},
-    r16_3: {local:'G.32 5', visita:'G.32 6', fecha:'2026-07-12',estadio:'SoFi Stadium, Los Ángeles'},
-    r16_4: {local:'G.32 7', visita:'G.32 8', fecha:'2026-07-12',estadio:'Mercedes-Benz Stadium, Atlanta'},
-    r16_5: {local:'G.32 9', visita:'G.32 10',fecha:'2026-07-13',estadio:'Gillette Stadium, Boston'},
-    r16_6: {local:'G.32 11',visita:'G.32 12',fecha:'2026-07-13',estadio:'Arrowhead Stadium, Kansas City'},
-    r16_7: {local:'G.32 13',visita:'G.32 14',fecha:'2026-07-14',estadio:'BC Place, Vancouver'},
-    r16_8: {local:'G.32 15',visita:'G.32 16',fecha:'2026-07-14',estadio:'NRG Stadium, Houston'},
-    qf1:   {local:'G.R16 1',visita:'G.R16 2',fecha:'2026-07-18',estadio:'MetLife Stadium, Nueva York'},
-    qf2:   {local:'G.R16 3',visita:'G.R16 4',fecha:'2026-07-18',estadio:'AT&T Stadium, Dallas'},
-    qf3:   {local:'G.R16 5',visita:'G.R16 6',fecha:'2026-07-19',estadio:'SoFi Stadium, Los Ángeles'},
-    qf4:   {local:'G.R16 7',visita:'G.R16 8',fecha:'2026-07-19',estadio:'Mercedes-Benz Stadium, Atlanta'},
+    r32_1: {local:'1.A',visita:'2.B',fecha:'2026-06-28',estadio:'SoFi Stadium, Los Ángeles'},
+    r32_2: {local:'1.C',visita:'2.D',fecha:'2026-06-29',estadio:'Gillette Stadium, Boston'},
+    r32_3: {local:'1.E',visita:'2.F',fecha:'2026-06-29',estadio:'Estadio BBVA, Monterrey'},
+    r32_4: {local:'1.G',visita:'2.H',fecha:'2026-06-29',estadio:'NRG Stadium, Houston'},
+    r32_5: {local:'1.I',visita:'2.J',fecha:'2026-06-30',estadio:'MetLife Stadium, Nueva York'},
+    r32_6: {local:'1.K',visita:'2.L',fecha:'2026-06-30',estadio:'AT&T Stadium, Dallas'},
+    r32_7: {local:'1.B',visita:'2.A',fecha:'2026-07-01',estadio:"Levi's Stadium, San Francisco"},
+    r32_8: {local:'1.D',visita:'2.C',fecha:'2026-07-01',estadio:'Mercedes-Benz Stadium, Atlanta'},
+    r32_9: {local:'1.F',visita:'2.E',fecha:'2026-07-02',estadio:'SoFi Stadium, Los Ángeles'},
+    r32_10:{local:'1.H',visita:'2.G',fecha:'2026-07-02',estadio:'BC Place, Vancouver'},
+    r32_11:{local:'1.J',visita:'2.I',fecha:'2026-07-03',estadio:'Hard Rock Stadium, Miami'},
+    r32_12:{local:'1.L',visita:'2.K',fecha:'2026-06-30',estadio:'Estadio Azteca, Ciudad de México'},
+    r32_13:{local:'3er mejor 1',visita:'3er mejor 2',fecha:'2026-07-02',estadio:'BMO Field, Toronto'},
+    r32_14:{local:'3er mejor 3',visita:'3er mejor 4',fecha:'2026-07-03',estadio:'AT&T Stadium, Dallas'},
+    r32_15:{local:'3er mejor 5',visita:'3er mejor 6',fecha:'2026-07-03',estadio:'Arrowhead Stadium, Kansas City'},
+    r32_16:{local:'3er mejor 7',visita:'3er mejor 8',fecha:'2026-07-01',estadio:'Lumen Field, Seattle'},
+    r16_1: {local:'G.32 1', visita:'G.32 2', fecha:'2026-07-04',estadio:'Lincoln Financial Field, Filadelfia'},
+    r16_2: {local:'G.32 3', visita:'G.32 4', fecha:'2026-07-04',estadio:'NRG Stadium, Houston'},
+    r16_3: {local:'G.32 5', visita:'G.32 6', fecha:'2026-07-05',estadio:'MetLife Stadium, Nueva York'},
+    r16_4: {local:'G.32 7', visita:'G.32 8', fecha:'2026-07-05',estadio:'Estadio Azteca, Ciudad de México'},
+    r16_5: {local:'G.32 9', visita:'G.32 10',fecha:'2026-07-06',estadio:'AT&T Stadium, Dallas'},
+    r16_6: {local:'G.32 11',visita:'G.32 12',fecha:'2026-07-06',estadio:'Lumen Field, Seattle'},
+    r16_7: {local:'G.32 13',visita:'G.32 14',fecha:'2026-07-07',estadio:'Mercedes-Benz Stadium, Atlanta'},
+    r16_8: {local:'G.32 15',visita:'G.32 16',fecha:'2026-07-07',estadio:'BC Place, Vancouver'},
+    qf1:   {local:'G.R16 1',visita:'G.R16 2',fecha:'2026-07-09',estadio:'Gillette Stadium, Boston'},
+    qf2:   {local:'G.R16 3',visita:'G.R16 4',fecha:'2026-07-11',estadio:'Hard Rock Stadium, Miami'},
+    qf3:   {local:'G.R16 5',visita:'G.R16 6',fecha:'2026-07-10',estadio:'SoFi Stadium, Los Ángeles'},
+    qf4:   {local:'G.R16 7',visita:'G.R16 8',fecha:'2026-07-11',estadio:'Arrowhead Stadium, Kansas City'},
     sf1:   {local:'G.CF 1', visita:'G.CF 2', fecha:'2026-07-22',estadio:'MetLife Stadium, Nueva York'},
     sf2:   {local:'G.CF 3', visita:'G.CF 4', fecha:'2026-07-23',estadio:'SoFi Stadium, Los Ángeles'},
     '3p':  {local:'Perd. SF 1',visita:'Perd. SF 2',fecha:'2026-07-25',estadio:'AT&T Stadium, Dallas'},
@@ -1965,9 +1965,9 @@ async function renderResultadosAccordion() {
     const tot  = todosIds.length;
     const ok   = comp === tot && tot > 0;
     const enCurso = faseActual === fase.id;
-    // Abrir si: es la fase actual, tiene datos en resCache, o tiene datos del simulador
+    // Abrir SOLO la fase vigente; el resto queda contraído (el usuario puede expandir manualmente con el chevron)
     const tieneData = todosIds.some(id => resCache[id] != null);
-    const abrir = enCurso || tieneData;
+    const abrir = enCurso;
 
     let badge = ok ? '<span class="fase-acc-badge completo">✓ Completa</span>'
       : enCurso ? '<span class="fase-acc-badge en-curso">🔴 En curso</span>'
