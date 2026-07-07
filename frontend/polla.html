@@ -1433,8 +1433,25 @@ const FG = FIXTURE_GRUPOS;
     };
 
     let auditoriaData = [];
-    let auditoriaFiltros = { fase: 'todas', grupo: 'todos', fecha: 'todas' };
+    let auditoriaFiltros = { fase: 'todas', grupo: 'todos', fechaDesde: '', fechaHasta: '' };
+    const MUNDIAL_FECHA_MIN = '2026-06-11';
+    const MUNDIAL_FECHA_MAX = '2026-07-19';
     let auditoriaFilasActuales = [];
+
+    // Algunos docs de grupos en Firestore guardan la fecha como "11 jun" en vez de ISO —
+    // normalizamos siempre a 'YYYY-MM-DD' para que el filtro de rango funcione parejo.
+    const MESES_ES_AUD = { ene:1, feb:2, mar:3, abr:4, may:5, jun:6, jul:7, ago:8, sep:9, oct:10, nov:11, dic:12 };
+    function normalizarFechaISO(f) {
+      if (!f) return '';
+      if (/^\d{4}-\d{2}-\d{2}$/.test(f)) return f;
+      const m = String(f).trim().match(/^(\d{1,2})\s+([a-záéíóú]{3,4})\.?$/i);
+      if (m) {
+        const dia = m[1].padStart(2, '0');
+        const mes = MESES_ES_AUD[m[2].toLowerCase().slice(0, 3)];
+        if (mes) return `2026-${String(mes).padStart(2, '0')}-${dia}`;
+      }
+      return f; // no se pudo normalizar — se muestra tal cual, mejor que perder el dato
+    }
 
     async function renderAuditoria() {
       const container = document.getElementById('auditoria-content');
@@ -1489,7 +1506,7 @@ const FG = FIXTURE_GRUPOS;
             faseId: m.faseId,
             faseLabel: m.faseLabel,
             grupo: m.grupo || null,
-            fecha: real.fecha || m.fecha || '',
+            fecha: normalizarFechaISO(real.fecha || m.fecha || ''),
             hora: real.hora || m.hora || '',
             estadio: real.estadio || m.estadio || '',
             local: real.local || m.local || '?',
@@ -1517,7 +1534,6 @@ const FG = FIXTURE_GRUPOS;
     function pintarFiltrosAuditoria() {
       const fases = ['todas', ...new Set(auditoriaData.map(r => r.faseId))];
       const grupos = ['todos', ...GRUPOS];
-      const fechas = ['todas', ...new Set(auditoriaData.map(r => r.fecha).filter(Boolean))];
 
       const opt = (val, label, selected) => `<option value="${val}" ${selected ? 'selected' : ''}>${label}</option>`;
 
@@ -1541,10 +1557,16 @@ const FG = FIXTURE_GRUPOS;
             </select>
           </div>
           <div>
-            <label style="display:block;font-size:.7rem;color:var(--muted);margin-bottom:4px;">Fecha</label>
-            <select id="aud-filtro-fecha" onchange="auditoriaAplicarFiltros()">
-              ${fechas.map(f => opt(f, f === 'todas' ? 'Todas' : f, f === auditoriaFiltros.fecha)).join('')}
-            </select>
+            <label style="display:block;font-size:.7rem;color:var(--muted);margin-bottom:4px;">Desde</label>
+            <input type="date" id="aud-filtro-fecha-desde" onchange="auditoriaAplicarFiltros()"
+              min="${MUNDIAL_FECHA_MIN}" max="${MUNDIAL_FECHA_MAX}" value="${auditoriaFiltros.fechaDesde}"
+              style="background:var(--bg2,#0f1525);border:1px solid rgba(255,255,255,.1);color:var(--text,#e8eaf0);border-radius:8px;padding:7px 8px;font-size:.82rem;">
+          </div>
+          <div>
+            <label style="display:block;font-size:.7rem;color:var(--muted);margin-bottom:4px;">Hasta</label>
+            <input type="date" id="aud-filtro-fecha-hasta" onchange="auditoriaAplicarFiltros()"
+              min="${MUNDIAL_FECHA_MIN}" max="${MUNDIAL_FECHA_MAX}" value="${auditoriaFiltros.fechaHasta}"
+              style="background:var(--bg2,#0f1525);border:1px solid rgba(255,255,255,.1);color:var(--text,#e8eaf0);border-radius:8px;padding:7px 8px;font-size:.82rem;">
           </div>
           <div style="margin-left:auto;display:flex;gap:8px;">
             <button class="btn btn-outline btn-sm" onclick="auditoriaExportarExcel()"><i class="fas fa-file-excel"></i> Exportar a Excel</button>
@@ -1559,15 +1581,20 @@ const FG = FIXTURE_GRUPOS;
     window.auditoriaAplicarFiltros = function() {
       auditoriaFiltros.fase = document.getElementById('aud-filtro-fase').value;
       auditoriaFiltros.grupo = document.getElementById('aud-filtro-grupo').value;
-      auditoriaFiltros.fecha = document.getElementById('aud-filtro-fecha').value;
+      auditoriaFiltros.fechaDesde = document.getElementById('aud-filtro-fecha-desde').value;
+      auditoriaFiltros.fechaHasta = document.getElementById('aud-filtro-fecha-hasta').value;
       // Si cambia la fase a algo que no es grupos/todas, resetea el filtro de grupo
       if (auditoriaFiltros.fase !== 'grupos' && auditoriaFiltros.fase !== 'todas') auditoriaFiltros.grupo = 'todos';
+      // No dejar que "desde" sea posterior a "hasta"
+      if (auditoriaFiltros.fechaDesde && auditoriaFiltros.fechaHasta && auditoriaFiltros.fechaDesde > auditoriaFiltros.fechaHasta) {
+        auditoriaFiltros.fechaHasta = auditoriaFiltros.fechaDesde;
+      }
       pintarFiltrosAuditoria();
       pintarAuditoria();
     };
 
     window.auditoriaResetFiltros = function() {
-      auditoriaFiltros = { fase: 'todas', grupo: 'todos', fecha: 'todas' };
+      auditoriaFiltros = { fase: 'todas', grupo: 'todos', fechaDesde: '', fechaHasta: '' };
       pintarFiltrosAuditoria();
       pintarAuditoria();
     };
@@ -1609,7 +1636,8 @@ const FG = FIXTURE_GRUPOS;
       let filas = auditoriaData;
       if (auditoriaFiltros.fase !== 'todas') filas = filas.filter(r => r.faseId === auditoriaFiltros.fase);
       if (auditoriaFiltros.grupo !== 'todos') filas = filas.filter(r => r.grupo === auditoriaFiltros.grupo);
-      if (auditoriaFiltros.fecha !== 'todas') filas = filas.filter(r => r.fecha === auditoriaFiltros.fecha);
+      if (auditoriaFiltros.fechaDesde) filas = filas.filter(r => r.fecha && r.fecha >= auditoriaFiltros.fechaDesde);
+      if (auditoriaFiltros.fechaHasta) filas = filas.filter(r => r.fecha && r.fecha <= auditoriaFiltros.fechaHasta);
       auditoriaFilasActuales = filas;
 
       // Dashboard resumen: ganador exacto (4), ganador (3), empate exacto (2), empate (1), perdidos (0)
