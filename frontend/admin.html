@@ -1624,13 +1624,16 @@ function auPartidosCanonicos() {
   const lista = [];
   Object.entries(FG).forEach(([grupo, partidosGrupo]) => {
     partidosGrupo.forEach(m => {
-      lista.push({ id: 'fg' + m.id, ordenFase: 0, faseLabel: `Fase de grupos · Grupo ${grupo}`, fgLocal: m.local, fgVisita: m.visita });
+      // El resultado real de los partidos de grupos vive en el doc SIN prefijo (ej. 'A1'),
+      // no en 'fgA1' (que puede ser un doc de prueba/simulado). El 'fg' + id sí es el que
+      // usan las apuestas de los usuarios (partidoId), así que se guarda aparte.
+      lista.push({ id: 'fg' + m.id, resId: m.id, ordenFase: 0, faseLabel: `Fase de grupos · Grupo ${grupo}`, fgLocal: m.local, fgVisita: m.visita });
     });
   });
   FASES_RESET.forEach((fase, idx) => {
     if (!fase.ids) return; // 'grupos' ya se cubrió arriba con FG
     fase.ids.forEach(id => {
-      lista.push({ id, ordenFase: idx, faseLabel: fase.label });
+      lista.push({ id, resId: id, ordenFase: idx, faseLabel: fase.label });
     });
   });
   return lista;
@@ -1756,7 +1759,7 @@ function auRenderPanel(porPartido) {
   for (const canon of partidosOrdenados) {
     if (canon.faseLabel !== faseActual) { cerrarFase(); faseActual = canon.faseLabel; }
 
-    const gp = partidosPorId[canon.id] || {};
+    const gp = partidosPorId[canon.resId] || {};
     const nombreLocal = gp.local || canon.fgLocal || '?';
     const nombreVisita = gp.visita || canon.fgVisita || '?';
 
@@ -1822,7 +1825,10 @@ window.auGuardarApuesta = async (partidoId, docIdsExistentes) => {
   const golesLocal = Math.max(0, parseInt(localVal, 10));
   const golesVisita = Math.max(0, parseInt(visitaVal, 10));
 
-  const partido = globalPartidos.find(x => x.id === partidoId);
+  // Para partidos de grupos el resultado real vive en el doc sin prefijo 'fg' (ej. 'A1'),
+  // no en el propio partidoId de la apuesta ('fgA1', que puede ser un doc de prueba).
+  const resId = partidoId.startsWith('fg') ? partidoId.slice(2) : partidoId;
+  const partido = globalPartidos.find(x => x.id === resId);
 
   const payload = {
     uid: p.uid,
