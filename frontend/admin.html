@@ -2491,16 +2491,16 @@ const FASES_ELIM_ADMIN = [
   ]},
   {id:'semis', label:'Semifinales', sublabel:'14–15 jul · 2 partidos', icon:'fas fa-star-half-stroke', iconClass:'fase-icon-semis',
    partidos:[
-    {id:'sf1', local:'G.CF 1', visita:'G.CF 2', fecha:'22 jul', estadio:'MetLife Stadium, Nueva York'},
-    {id:'sf2', local:'G.CF 3', visita:'G.CF 4', fecha:'23 jul', estadio:'SoFi Stadium, Los Ángeles'},
+    {id:'sf1', local:'G.CF 1', visita:'G.CF 2', fecha:'2026-07-14', estadio:'AT&T Stadium, Dallas'},
+    {id:'sf2', local:'G.CF 3', visita:'G.CF 4', fecha:'2026-07-15', estadio:'Mercedes-Benz Stadium, Atlanta'},
   ]},
   {id:'tercero', label:'Tercer Lugar', sublabel:'18 jul · AT&T Stadium', icon:'fas fa-medal', iconClass:'fase-icon-octavos',
    partidos:[
-    {id:'3p', local:'Perdedor SF 1', visita:'Perdedor SF 2', fecha:'25 jul', estadio:'AT&T Stadium, Dallas'},
+    {id:'3p', local:'Perdedor SF 1', visita:'Perdedor SF 2', fecha:'2026-07-18', estadio:'Hard Rock Stadium, Miami'},
   ]},
   {id:'final', label:'Gran Final 🏆', sublabel:'19 jul · MetLife Stadium, Nueva York', icon:'fas fa-crown', iconClass:'fase-icon-final',
    partidos:[
-    {id:'fin', local:'Ganador SF 1', visita:'Ganador SF 2', fecha:'26 jul', estadio:'MetLife Stadium, Nueva York'},
+    {id:'fin', local:'Ganador SF 1', visita:'Ganador SF 2', fecha:'2026-07-19', estadio:'MetLife Stadium, Nueva York'},
   ]},
 ];
 
@@ -4456,12 +4456,12 @@ const PARTIDOS_ELIM = [
   {id:'qf3', fase:'cuartos', local:'G.R16 5', visita:'G.R16 6', fecha:'2026-07-10', hora:'12:00', estadio:'SoFi Stadium, Los Ángeles'},
   {id:'qf4', fase:'cuartos', local:'G.R16 7', visita:'G.R16 8', fecha:'2026-07-11', hora:'20:00', estadio:'Arrowhead Stadium, Kansas City'},
   // Semis — 22–23 jul
-  {id:'sf1', fase:'semis', local:'G.CF 1', visita:'G.CF 2', fecha:'2026-07-22', hora:'20:00', estadio:'MetLife Stadium, Nueva York'},
-  {id:'sf2', fase:'semis', local:'G.CF 3', visita:'G.CF 4', fecha:'2026-07-23', hora:'20:00', estadio:'SoFi Stadium, Los Ángeles'},
+  {id:'sf1', fase:'semis', local:'G.CF 1', visita:'G.CF 2', fecha:'2026-07-14', hora:'14:00', estadio:'AT&T Stadium, Dallas'},
+  {id:'sf2', fase:'semis', local:'G.CF 3', visita:'G.CF 4', fecha:'2026-07-15', hora:'15:00', estadio:'Mercedes-Benz Stadium, Atlanta'},
   // Tercer lugar — 25 jul
-  {id:'3p', fase:'tercero', local:'Perdedor SF 1', visita:'Perdedor SF 2', fecha:'2026-07-25', hora:'16:00', estadio:'AT&T Stadium, Dallas'},
+  {id:'3p', fase:'tercero', local:'Perdedor SF 1', visita:'Perdedor SF 2', fecha:'2026-07-18', hora:'17:00', estadio:'Hard Rock Stadium, Miami'},
   // Final — 26 jul
-  {id:'fin', fase:'final', local:'Ganador SF 1', visita:'Ganador SF 2', fecha:'2026-07-26', hora:'20:00', estadio:'MetLife Stadium, Nueva York'},
+  {id:'fin', fase:'final', local:'Ganador SF 1', visita:'Ganador SF 2', fecha:'2026-07-19', hora:'15:00', estadio:'MetLife Stadium, Nueva York'},
 ];
 function ilog(msg, cls='') {
   const el = document.getElementById('import-log');
@@ -5697,8 +5697,8 @@ window.simAvanzar = function(){
     // Bracket fijo: cf_1vsf_2 → semi1, cf_3vscf_4 → semi2
     const cf=simPartidosFase('cuartos');
     SIM.elim.push(
-      {id:'sf1',local:simGanador(cf[0])||'CF1',visita:simGanador(cf[1])||'CF2',fecha:'22 jul',estadio:'MetLife, Nueva York',resultado:null,fase:'semis'},
-      {id:'sf2',local:simGanador(cf[2])||'CF3',visita:simGanador(cf[3])||'CF4',fecha:'23 jul',estadio:'SoFi, Los Ángeles',resultado:null,fase:'semis'},
+      {id:'sf1',local:simGanador(cf[0])||'CF1',visita:simGanador(cf[1])||'CF2',fecha:'2026-07-14',estadio:'AT&T Stadium, Dallas',resultado:null,fase:'semis'},
+      {id:'sf2',local:simGanador(cf[2])||'CF3',visita:simGanador(cf[3])||'CF4',fecha:'2026-07-15',estadio:'Mercedes-Benz Stadium, Atlanta',resultado:null,fase:'semis'},
     );
     btn.innerHTML='<i class="fas fa-forward"></i> Simular Semifinales';
     simRenderAll(); return;
@@ -5717,7 +5717,7 @@ window.simAvanzar = function(){
                       : simRnd(0,1)===0 ? sf[1].visita : sf[1].local;
     SIM.elim.push(
       {id:'t3p',local:perdedorSF1,visita:perdedorSF2,fecha:'25 jul',estadio:'AT&T, Dallas',resultado:null,fase:'tercero'},
-      {id:'fin',local:simGanador(sf[0])||'SF1',visita:simGanador(sf[1])||'SF2',fecha:'26 jul',estadio:'MetLife, Nueva York',resultado:null,fase:'final'},
+      {id:'fin',local:simGanador(sf[0])||'SF1',visita:simGanador(sf[1])||'SF2',fecha:'2026-07-19',estadio:'MetLife Stadium, Nueva York',resultado:null,fase:'final'},
     );
     btn.innerHTML='<i class="fas fa-forward"></i> Simular Final + 3er Lugar';
     simRenderAll(); return;
