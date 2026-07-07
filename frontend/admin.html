@@ -1617,16 +1617,23 @@ function calcularPuntaje(real, apuesta) {
 let auParticipanteActual = null;   // { uid, nombre, email, grupoId, grupoNombre, ... }
 let auTimeoutBusqueda = null;
 
-function auNombreFase(p) {
-  if (p.grupo) return `Fase de grupos · Grupo ${p.grupo}`;
-  const map = { '32avos':'32avos', 'octavos':'Octavos de final', 'cuartos':'Cuartos de final', 'semis':'Semifinales', 'tercero':'Tercer puesto', 'final':'Final' };
-  return map[p.fase] || p.fase || 'Otra fase';
-}
-
-function auOrdenFase(p) {
-  if (p.grupo) return 0;
-  const orden = { '32avos':1, 'octavos':2, 'cuartos':3, 'semis':4, 'tercero':5, 'final':6 };
-  return orden[p.fase] ?? 9;
+// Lista canónica de partidos oficiales (ignora documentos huérfanos/legacy en 'partidos'
+// como partido_XX o pXX). Reusa FG y FASES_RESET, que son la fuente de verdad ya usada
+// en el resto del panel (Resultados, Simulador, etc.).
+function auPartidosCanonicos() {
+  const lista = [];
+  Object.entries(FG).forEach(([grupo, partidosGrupo]) => {
+    partidosGrupo.forEach(m => {
+      lista.push({ id: 'fg' + m.id, ordenFase: 0, faseLabel: `Fase de grupos · Grupo ${grupo}`, fgLocal: m.local, fgVisita: m.visita });
+    });
+  });
+  FASES_RESET.forEach((fase, idx) => {
+    if (!fase.ids) return; // 'grupos' ya se cubrió arriba con FG
+    fase.ids.forEach(id => {
+      lista.push({ id, ordenFase: idx, faseLabel: fase.label });
+    });
+  });
+  return lista;
 }
 
 // Normaliza igual que polla.html: fgXn <-> Xn se consideran el mismo partido
@@ -1709,9 +1716,13 @@ function auRenderPanel(porPartido) {
     </div>
   `;
 
-  // Agrupar los partidos del fixture por fase, mostrando SOLO los que aplican a este participante's grupo o son eliminatorias
-  const grupoParticipante = p.grupoId; // grupos son por app-grupo, pero partidos de grupo son globales (mundial), no confundir
-  const partidosOrdenados = [...globalPartidos].sort((a, b) => auOrdenFase(a) - auOrdenFase(b) || (a.num || '').localeCompare(b.num || ''));
+  // Partidos oficiales (fixture canónico), mezclados con los datos reales de Firestore
+  // (resultado_local/visita siempre vienen de Firestore; local/visita de grupos vienen
+  // del fixture estático ya que esos docs de Firestore no los duplican).
+  const partidosPorId = {};
+  globalPartidos.forEach(gp => { partidosPorId[gp.id] = gp; });
+
+  const partidosOrdenados = auPartidosCanonicos().sort((a, b) => a.ordenFase - b.ordenFase);
 
   let fasesHtml = '';
   let faseActual = null;
@@ -1742,23 +1753,26 @@ function auRenderPanel(porPartido) {
     }
   }
 
-  for (const partido of partidosOrdenados) {
-    const nombreFase = auNombreFase(partido);
-    if (nombreFase !== faseActual) { cerrarFase(); faseActual = nombreFase; }
+  for (const canon of partidosOrdenados) {
+    if (canon.faseLabel !== faseActual) { cerrarFase(); faseActual = canon.faseLabel; }
 
-    const key = auNormId(partido.id);
+    const gp = partidosPorId[canon.id] || {};
+    const nombreLocal = gp.local || canon.fgLocal || '?';
+    const nombreVisita = gp.visita || canon.fgVisita || '?';
+
+    const key = auNormId(canon.id);
     const docs = porPartido[key] || [];
     const principal = docs[0]; // si hay duplicados, el primero se muestra editable; el resto se lista para borrar
     const extra = docs.slice(1);
 
-    const resultadoReal = (partido.resultado_local != null && partido.resultado_visita != null)
-      ? `${partido.resultado_local} - ${partido.resultado_visita}`
+    const resultadoReal = (gp.resultado_local != null && gp.resultado_visita != null)
+      ? `${gp.resultado_local} - ${gp.resultado_visita}`
       : `<span style="color:var(--muted);">pendiente</span>`;
 
     let puntos = '—';
-    if (principal && partido.resultado_local != null && partido.resultado_visita != null) {
+    if (principal && gp.resultado_local != null && gp.resultado_visita != null) {
       puntos = calcularPuntaje(
-        { local: partido.resultado_local, visita: partido.resultado_visita },
+        { local: gp.resultado_local, visita: gp.resultado_visita },
         { local: principal.golesLocal, visita: principal.golesVisita }
       );
     }
@@ -1768,13 +1782,13 @@ function auRenderPanel(porPartido) {
     if (docs.length > 1) estadoBadges += ` <span class="badge badge-red">${docs.length} docs</span>`;
     if (principal && !estadoBadges) estadoBadges = `<span class="badge badge-green">OK</span>`;
 
-    const rowId = `au-row-${partido.id}`;
+    const rowId = `au-row-${canon.id}`;
 
     filasFase += `
       <tr id="${rowId}" style="border-top:1px solid var(--border);">
         <td style="padding:9px 12px;">
-          <div style="font-weight:600;">${partido.local || '?'} vs ${partido.visita || '?'}</div>
-          <div style="color:var(--muted);font-size:0.72rem;">${partido.id}${partido.num ? ' · ' + partido.num : ''}</div>
+          <div style="font-weight:600;">${nombreLocal} vs ${nombreVisita}</div>
+          <div style="color:var(--muted);font-size:0.72rem;">${canon.id}${gp.num ? ' · ' + gp.num : ''}</div>
         </td>
         <td style="text-align:center;padding:9px 12px;">${resultadoReal}</td>
         <td style="text-align:center;padding:9px 12px;">
@@ -1785,8 +1799,8 @@ function auRenderPanel(porPartido) {
         <td style="text-align:center;padding:9px 12px;font-weight:700;">${puntos}</td>
         <td style="text-align:center;padding:9px 12px;">${estadoBadges}</td>
         <td style="text-align:center;padding:9px 12px;white-space:nowrap;">
-          <button class="btn btn-gold btn-sm" style="padding:5px 10px;" onclick='auGuardarApuesta(${JSON.stringify(partido.id)}, ${JSON.stringify((docs.map(d=>d.docId)))})'><i class="fas fa-save"></i></button>
-          ${extra.length ? `<button class="btn btn-outline btn-sm" style="padding:5px 8px;color:var(--red);border-color:rgba(239,68,68,0.3);" onclick='auEliminarDuplicados(${JSON.stringify(partido.id)}, ${JSON.stringify(extra.map(d=>d.docId))})' title="Elimina los ${extra.length} documento(s) duplicado(s), dejando solo el que se ve arriba"><i class="fas fa-broom"></i></button>` : ''}
+          <button class="btn btn-gold btn-sm" style="padding:5px 10px;" onclick='auGuardarApuesta(${JSON.stringify(canon.id)}, ${JSON.stringify((docs.map(d=>d.docId)))})'><i class="fas fa-save"></i></button>
+          ${extra.length ? `<button class="btn btn-outline btn-sm" style="padding:5px 8px;color:var(--red);border-color:rgba(239,68,68,0.3);" onclick='auEliminarDuplicados(${JSON.stringify(canon.id)}, ${JSON.stringify(extra.map(d=>d.docId))})' title="Elimina los ${extra.length} documento(s) duplicado(s), dejando solo el que se ve arriba"><i class="fas fa-broom"></i></button>` : ''}
         </td>
       </tr>`;
   }
