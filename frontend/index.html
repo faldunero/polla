@@ -1672,16 +1672,18 @@ const FASES_ELIM = [
 // Determina qué fase está "en curso" para abrir por defecto
 function detectarFaseActual(resCache) {
   const ahora = new Date();
-  const gruposStart = new Date('2026-06-12');
+  const gruposStart = new Date('2026-06-11');
   const gruposEnd   = new Date('2026-06-27');
-  const octEnd      = new Date('2026-07-06');
-  const cfEnd       = new Date('2026-07-12');
-  const sfEnd       = new Date('2026-07-17');
-  const tercEnd     = new Date('2026-07-19');
-  const finEnd      = new Date('2026-07-20');
+  const r32End      = new Date('2026-07-03');
+  const octEnd      = new Date('2026-07-07');
+  const cfEnd       = new Date('2026-07-11');
+  const sfEnd       = new Date('2026-07-15');
+  const tercEnd     = new Date('2026-07-18');
+  const finEnd      = new Date('2026-07-19');
 
   if (ahora < gruposStart) return 'grupos';
   if (ahora <= gruposEnd)  return 'grupos';
+  if (ahora <= r32End)     return 'r32avos';
   if (ahora <= octEnd)     return 'octavos';
   if (ahora <= cfEnd)      return 'cuartos';
   if (ahora <= sfEnd)      return 'semis';
