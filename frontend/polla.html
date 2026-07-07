@@ -457,6 +457,7 @@
     <div class="tabs">
       <button class="tab active" data-tab="grupos">🏆 Grupos</button>
       <button class="tab" data-tab="apuestas">📋 Mis Apuestas</button>
+      <button class="tab" data-tab="auditoria">🔍 Auditoría</button>
       <button class="tab" data-tab="ranking">🥇 Ranking</button>
       <button class="tab" data-tab="mundial">⚽ Mundial</button>
     </div>
@@ -472,6 +473,10 @@
         <div id="apuestas-content"></div>
       </div>
 
+      <div id="tab-auditoria" class="page">
+        <div id="auditoria-content"></div>
+      </div>
+
       <div id="tab-ranking" class="page">
         <div id="ranking-content"></div>
       </div>
@@ -485,7 +490,7 @@
   <div id="toast"></div>
 
   <script type="module">
-    import { calcularPuntajePolla, FIXTURE_MAP, FIXTURE_GRUPOS, GRUPOS } from './fifa2026.js';
+    import { calcularPuntajePolla, FIXTURE_MAP, FIXTURE_GRUPOS, GRUPOS, PARTIDOS_GRUPOS_FLAT, PARTIDOS_ELIM_FLAT } from './fifa2026.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
     import {
@@ -830,6 +835,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
         document.getElementById('tab-' + tab).classList.add('active');
 
         if (tab === 'apuestas') await renderApuestas();
+        if (tab === 'auditoria') await renderAuditoria();
         if (tab === 'ranking') await renderRanking();
         if (tab === 'mundial') await renderMundial();
       });
@@ -1378,6 +1384,202 @@ const FG = FIXTURE_GRUPOS;
       } catch (e) {
         toast(e.message, 'error');
       }
+    }
+
+    // ── AUDITORÍA: historial completo de MIS apuestas (solo lectura, solo propio uid) ──
+    const FASE_LABELS_AUD = {
+      grupos: 'Fase de grupos', r32avos: '32avos de Final', octavos: 'Octavos de Final',
+      cuartos: 'Cuartos de Final', semis: 'Semifinales', tercero: 'Tercer Lugar', final: 'Gran Final',
+    };
+
+    let auditoriaData = [];
+    let auditoriaFiltros = { fase: 'todas', grupo: 'todos', fecha: 'todas' };
+
+    async function renderAuditoria() {
+      const container = document.getElementById('auditoria-content');
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Cargando tu historial...</p></div>';
+
+      try {
+        await cargarPartidos(); // refresca globalPartidos (ya filtra !simulado)
+
+        // Mapa de resultados reales — mismo blindaje que el resto de la app
+        const resById = {};
+        globalPartidos.forEach(p => {
+          setPartidoSeguro(resById, p.id, p);
+          setPartidoSeguro(resById, 'fg' + p.id, p);
+          if (p.id.startsWith('fg')) setPartidoSeguro(resById, p.id.slice(2), p);
+        });
+
+        // Fixture canónico completo (104 partidos oficiales, ignora huérfanos/legacy)
+        const canonico = [
+          ...PARTIDOS_GRUPOS_FLAT.map(m => ({ ...m, faseId: 'grupos', faseLabel: `${FASE_LABELS_AUD.grupos} · Grupo ${m.grupo}` })),
+          ...PARTIDOS_ELIM_FLAT.map(m => ({ ...m, faseId: m.fase, faseLabel: FASE_LABELS_AUD[m.fase] || m.fase })),
+        ];
+
+        // SOLO mis apuestas — el query ya está scopeado al uid propio, no hay forma de ver las de otro
+        const apSnap = await getDocs(query(collection(db, 'apuestas'), where('uid', '==', currentUser.uid)));
+        const normId = id => id?.startsWith('fg') ? id.slice(2) : id;
+        const misApuestas = {};
+        apSnap.forEach(d => {
+          const a = d.data();
+          const key = normId(a.partidoId);
+          const existing = misApuestas[key];
+          if (!existing) misApuestas[key] = a;
+          else {
+            const tN = a.actualizadoEn?.seconds || a.creadoEn?.seconds || 0;
+            const tE = existing.actualizadoEn?.seconds || existing.creadoEn?.seconds || 0;
+            if (tN > tE) misApuestas[key] = a;
+          }
+        });
+
+        auditoriaData = canonico.map(m => {
+          const key = normId(m.id);
+          const real = resById[m.id] || resById[key] || {};
+          const apuesta = misApuestas[key] || null;
+          const tieneReal = real.resultado_local != null && real.resultado_visita != null;
+          const pts = (tieneReal && apuesta)
+            ? (calcularPuntajePolla(
+                { local: real.resultado_local, visita: real.resultado_visita },
+                { local: apuesta.golesLocal, visita: apuesta.golesVisita }
+              ) ?? 0)
+            : null;
+          return {
+            id: m.id,
+            faseId: m.faseId,
+            faseLabel: m.faseLabel,
+            grupo: m.grupo || null,
+            fecha: real.fecha || m.fecha || '',
+            hora: real.hora || m.hora || '',
+            estadio: real.estadio || m.estadio || '',
+            local: real.local || m.local || '?',
+            visita: real.visita || m.visita || '?',
+            resReal: tieneReal ? `${real.resultado_local} - ${real.resultado_visita}` : null,
+            apuesta: apuesta ? `${apuesta.golesLocal} - ${apuesta.golesVisita}` : null,
+            pts,
+          };
+        });
+
+        // Ordenar por fecha (las que no tienen fecha parseable van al final)
+        auditoriaData.sort((a, b) => {
+          const da = Date.parse(a.fecha) || Infinity;
+          const db_ = Date.parse(b.fecha) || Infinity;
+          return da - db_;
+        });
+
+        pintarFiltrosAuditoria();
+        pintarAuditoria();
+      } catch (e) {
+        container.innerHTML = `<div class="alert alert-error">Error al cargar tu historial: ${e.message}</div>`;
+      }
+    }
+
+    function pintarFiltrosAuditoria() {
+      const fases = ['todas', ...new Set(auditoriaData.map(r => r.faseId))];
+      const grupos = ['todos', ...GRUPOS];
+      const fechas = ['todas', ...new Set(auditoriaData.map(r => r.fecha).filter(Boolean))];
+
+      const opt = (val, label, selected) => `<option value="${val}" ${selected ? 'selected' : ''}>${label}</option>`;
+
+      const html = `
+        <div class="section-header"><h2>Auditoría de mis apuestas</h2></div>
+        <div class="alert alert-info" style="margin-bottom:14px;">
+          <i class="fas fa-user-shield"></i> Esta vista muestra únicamente tus propias apuestas — nadie más puede ver esto ni tú puedes ver las de otros participantes acá.
+        </div>
+        <div class="card" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;padding:14px 16px;">
+          <div>
+            <label style="display:block;font-size:.7rem;color:var(--muted);margin-bottom:4px;">Fase</label>
+            <select id="aud-filtro-fase" onchange="auditoriaAplicarFiltros()">
+              ${fases.map(f => opt(f, f === 'todas' ? 'Todas' : (FASE_LABELS_AUD[f] || f), f === auditoriaFiltros.fase)).join('')}
+            </select>
+          </div>
+          <div>
+            <label style="display:block;font-size:.7rem;color:var(--muted);margin-bottom:4px;">Grupo</label>
+            <select id="aud-filtro-grupo" onchange="auditoriaAplicarFiltros()" ${auditoriaFiltros.fase !== 'grupos' && auditoriaFiltros.fase !== 'todas' ? 'disabled' : ''}>
+              ${grupos.map(g => opt(g, g === 'todos' ? 'Todos' : `Grupo ${g}`, g === auditoriaFiltros.grupo)).join('')}
+            </select>
+          </div>
+          <div>
+            <label style="display:block;font-size:.7rem;color:var(--muted);margin-bottom:4px;">Fecha</label>
+            <select id="aud-filtro-fecha" onchange="auditoriaAplicarFiltros()">
+              ${fechas.map(f => opt(f, f === 'todas' ? 'Todas' : f, f === auditoriaFiltros.fecha)).join('')}
+            </select>
+          </div>
+          <div style="margin-left:auto;">
+            <button class="btn btn-outline btn-sm" onclick="auditoriaResetFiltros()"><i class="fas fa-filter-circle-xmark"></i> Limpiar filtros</button>
+          </div>
+        </div>
+        <div id="aud-tabla-wrap"></div>
+      `;
+      document.getElementById('auditoria-content').innerHTML = html;
+    }
+
+    window.auditoriaAplicarFiltros = function() {
+      auditoriaFiltros.fase = document.getElementById('aud-filtro-fase').value;
+      auditoriaFiltros.grupo = document.getElementById('aud-filtro-grupo').value;
+      auditoriaFiltros.fecha = document.getElementById('aud-filtro-fecha').value;
+      // Si cambia la fase a algo que no es grupos/todas, resetea el filtro de grupo
+      if (auditoriaFiltros.fase !== 'grupos' && auditoriaFiltros.fase !== 'todas') auditoriaFiltros.grupo = 'todos';
+      pintarFiltrosAuditoria();
+      pintarAuditoria();
+    };
+
+    window.auditoriaResetFiltros = function() {
+      auditoriaFiltros = { fase: 'todas', grupo: 'todos', fecha: 'todas' };
+      pintarFiltrosAuditoria();
+      pintarAuditoria();
+    };
+
+    function pintarAuditoria() {
+      const wrap = document.getElementById('aud-tabla-wrap');
+      if (!wrap) return;
+
+      let filas = auditoriaData;
+      if (auditoriaFiltros.fase !== 'todas') filas = filas.filter(r => r.faseId === auditoriaFiltros.fase);
+      if (auditoriaFiltros.grupo !== 'todos') filas = filas.filter(r => r.grupo === auditoriaFiltros.grupo);
+      if (auditoriaFiltros.fecha !== 'todas') filas = filas.filter(r => r.fecha === auditoriaFiltros.fecha);
+
+      if (!filas.length) {
+        wrap.innerHTML = `<div class="empty-state"><i class="fas fa-magnifying-glass"></i><p>No hay partidos con esos filtros.</p></div>`;
+        return;
+      }
+
+      const totalPts = filas.reduce((s, r) => s + (r.pts || 0), 0);
+      const jugados = filas.filter(r => r.pts != null).length;
+
+      let html = `
+        <div style="margin-bottom:10px;color:var(--muted);font-size:.85rem;">
+          ${filas.length} partido(s) · ${jugados} con resultado · <strong style="color:var(--gold);">${totalPts} pts</strong> en este filtro
+        </div>
+        <table class="ranking-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Hora</th>
+              <th>Fase</th>
+              <th>Partido</th>
+              <th style="text-align:center;">Resultado real</th>
+              <th style="text-align:center;">Mi apuesta</th>
+              <th style="text-align:center;">Pts</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+      filas.forEach(r => {
+        const horaChile = fmtHoraChile(r.hora, r.estadio);
+        html += `
+          <tr>
+            <td>${r.fecha || '—'}</td>
+            <td>${horaChile || '—'}</td>
+            <td style="font-size:.8rem;color:var(--muted);">${r.faseLabel}</td>
+            <td>${r.local} vs ${r.visita}</td>
+            <td style="text-align:center;">${r.resReal || '<span style="color:var(--muted);">pendiente</span>'}</td>
+            <td style="text-align:center;">${r.apuesta || '<span style="color:var(--muted);">sin apuesta</span>'}</td>
+            <td style="text-align:center;font-weight:700;color:${r.pts != null ? 'var(--gold)' : 'var(--muted)'};">${r.pts != null ? r.pts : '—'}</td>
+          </tr>`;
+      });
+
+      html += `</tbody></table>`;
+      wrap.innerHTML = html;
     }
 
     async function renderRanking() {
