@@ -744,16 +744,14 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
     }
 
     // Modal de aviso sobre correcciones de base de datos.
-    // Se muestra una vez por sesión de navegador (sessionStorage) y se puede cerrar;
-    // vuelve a aparecer si se abre una sesión nueva (nueva pestaña/ventana) aunque el login siga activo.
+    // Se muestra siempre que se inicia sesión o se refresca la página; se puede cerrar
+    // para esa vista, pero no se recuerda entre logins/refrescos (a propósito).
     window.mostrarDisclaimerBD = function() {
-      if (sessionStorage.getItem('disclaimerBD_visto') === '1') return;
       const overlay = document.getElementById('disclaimer-bd-overlay');
       if (overlay) overlay.style.display = 'flex';
     };
 
     window.cerrarDisclaimerBD = function() {
-      sessionStorage.setItem('disclaimerBD_visto', '1');
       const overlay = document.getElementById('disclaimer-bd-overlay');
       if (overlay) overlay.style.display = 'none';
     };
