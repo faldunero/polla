@@ -489,6 +489,29 @@
 
   <div id="toast"></div>
 
+  <div id="disclaimer-bd-overlay" style="display:none;position:fixed;inset:0;background:rgba(5,7,15,.75);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:var(--card,#141b2d);border:1px solid rgba(255,255,255,.08);border-radius:16px;max-width:520px;width:100%;padding:26px 26px 22px;box-shadow:0 20px 60px rgba(0,0,0,.5);">
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;">
+        <i class="fas fa-circle-info" style="color:#60a5fa;font-size:1.4rem;margin-top:2px;"></i>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.03em;">Aviso sobre datos de apuestas</div>
+      </div>
+      <div style="font-size:.88rem;line-height:1.55;color:var(--text,#e8eaf0);">
+        <p style="margin:0 0 10px;">
+          Hemos estado corrigiendo inconsistencias detectadas en la base de datos (apuestas duplicadas y otros problemas técnicos). Esta corrección se hizo de forma sistemática, revisando los registros existentes de cada partido.
+        </p>
+        <p style="margin:0 0 10px;">
+          Por eso, en algunas apuestas la <strong>fecha de última actualización</strong> puede no coincidir con la fecha en que la ingresaste originalmente — esto es esperable y no cambia el valor de tu apuesta.
+        </p>
+        <p style="margin:0;">
+          Si notas alguna diferencia entre el marcador que ingresaste y el que ves reflejado en el sistema, por favor <strong>avísanos</strong> para revisarlo.
+        </p>
+      </div>
+      <div style="text-align:right;margin-top:20px;">
+        <button class="btn btn-gold" onclick="cerrarDisclaimerBD()">Entendido</button>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { calcularPuntajePolla, FIXTURE_MAP, FIXTURE_GRUPOS, GRUPOS, PARTIDOS_GRUPOS_FLAT, PARTIDOS_ELIM_FLAT } from './fifa2026.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -719,6 +742,21 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
       map[key] = val;
     }
 
+    // Modal de aviso sobre correcciones de base de datos.
+    // Se muestra una vez por sesión de navegador (sessionStorage) y se puede cerrar;
+    // vuelve a aparecer si se abre una sesión nueva (nueva pestaña/ventana) aunque el login siga activo.
+    window.mostrarDisclaimerBD = function() {
+      if (sessionStorage.getItem('disclaimerBD_visto') === '1') return;
+      const overlay = document.getElementById('disclaimer-bd-overlay');
+      if (overlay) overlay.style.display = 'flex';
+    };
+
+    window.cerrarDisclaimerBD = function() {
+      sessionStorage.setItem('disclaimerBD_visto', '1');
+      const overlay = document.getElementById('disclaimer-bd-overlay');
+      if (overlay) overlay.style.display = 'none';
+    };
+
     function calcularPuntaje(real, apuesta) {
       return calcularPuntajePolla(
         { local: real.local,            visita: real.visita },
@@ -815,6 +853,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
           appIniciada = true;
           await initApp();
         }
+        mostrarDisclaimerBD();
       } else {
         currentUser = null;
         miParticipante = null;
