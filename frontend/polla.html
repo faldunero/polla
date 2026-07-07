@@ -705,6 +705,15 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/fireba
       return `${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}${sigDia?' (+1d)':''}`;
     }
 
+    // Nunca dejar que un doc sin datos reales (ej. un resto vacío del Simulador)
+    // pise una entrada que sí tiene resultado/equipos cargados.
+    function setPartidoSeguro(map, key, val) {
+      const actual = map[key];
+      const tieneDatos = v => v && (v.resultado_local != null || v.local != null || v.visita != null);
+      if (actual && tieneDatos(actual) && !tieneDatos(val)) return;
+      map[key] = val;
+    }
+
     function calcularPuntaje(real, apuesta) {
       return calcularPuntajePolla(
         { local: real.local,            visita: real.visita },
@@ -1063,11 +1072,11 @@ const FG = FIXTURE_GRUPOS;
       // Enriquecer fixture con resultados reales de Firestore
       const firestoreById = {};
       globalPartidos.forEach(m => {
-        firestoreById[m.id] = m;
+        setPartidoSeguro(firestoreById, m.id, m);
         // Mapear con prefijo fg (apuestas nuevas)
-        firestoreById['fg' + m.id] = m;
+        setPartidoSeguro(firestoreById, 'fg' + m.id, m);
         // Mapear sin prefijo fg (apuestas antiguas)
-        if (m.id.startsWith('fg')) firestoreById[m.id.slice(2)] = m;
+        if (m.id.startsWith('fg')) setPartidoSeguro(firestoreById, m.id.slice(2), m);
       });
 
       // Fases eliminatorias
@@ -1398,17 +1407,14 @@ const FG = FIXTURE_GRUPOS;
 
         // 2) Siempre recargar partidos frescos desde Firestore
         await cargarPartidos();
-        const chkA1 = globalPartidos.find(p => p.id === 'A1');
-        console.log('DEBUG A1 despues de cargar:', JSON.stringify(chkA1));
-
         // Mapa rápido de partido por id
         const partidoById = {};
         globalPartidos.forEach(p => {
-          partidoById[p.id] = p;
+          setPartidoSeguro(partidoById, p.id, p);
           // Mapear con prefijo fg (apuestas nuevas: fgA1)
-          partidoById['fg' + p.id] = p;
+          setPartidoSeguro(partidoById, 'fg' + p.id, p);
           // Mapear sin prefijo fg (apuestas antiguas: A1)
-          if (p.id.startsWith('fg')) partidoById[p.id.slice(2)] = p;
+          if (p.id.startsWith('fg')) setPartidoSeguro(partidoById, p.id.slice(2), p);
         });
 
         // 3) Todas las apuestas del grupo
@@ -1435,8 +1441,6 @@ const FG = FIXTURE_GRUPOS;
           };
         });
 
-        console.log('DEBUG apuestas total:', apuestasSnap.size);
-        console.log('DEBUG partidoById keys sample:', Object.keys(partidoById).slice(0,5));
         // Deduplicar: por uid+partidoId (normalizando fgA1 == A1)
         const normId = id => id?.startsWith('fg') ? id.slice(2) : id;
         const apuestasUnicas = new Map();
@@ -1459,10 +1463,6 @@ const FG = FIXTURE_GRUPOS;
           if (!acumulado[uid]) return;
 
           const partido = partidoById[a.partidoId];
-          if (a.partidoId === 'fgA1') console.log('DEBUG fgA1 partido:', JSON.stringify(partido));
-          if (!partido) console.log('DEBUG sin partido para:', a.partidoId);
-          else if (partido.resultado_local == null) console.log('DEBUG sin resultado para:', a.partidoId);
-          else console.log('DEBUG partido encontrado:', a.partidoId, partido.resultado_local);
           acumulado[uid].apostados++;
 
           if (!partido || partido.resultado_local == null) return; // partido sin resultado aún

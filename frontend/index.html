@@ -906,6 +906,15 @@ function fmtTime(t){
 }
 function getVal(obj,keys){ for(const k of keys){ if(obj[k]!=null&&obj[k]!=='') return obj[k]; } return '—'; }
 
+// Nunca dejar que un doc sin datos reales (ej. un resto vacío del Simulador)
+// pise una entrada que sí tiene resultado/equipos cargados.
+function setPartidoSeguro(map, key, val) {
+  const actual = map[key];
+  const tieneDatos = v => v && (v.resultado_local != null || v.local != null || v.visita != null);
+  if (actual && tieneDatos(actual) && !tieneDatos(val)) return;
+  map[key] = val;
+}
+
 // Grupos
 function renderGrupos(){
   const w = document.getElementById('grupos-wrapper');
@@ -916,9 +925,9 @@ function renderGrupos(){
   const porGrupo = {};
   const firestoreById = {};
   globalData.partidos.filter(m => !m.simulado).forEach(m => {
-    firestoreById[m.id] = m;
-    firestoreById['fg' + m.id] = m;
-    if (m.id.startsWith('fg')) firestoreById[m.id.slice(2)] = m;
+    setPartidoSeguro(firestoreById, m.id, m);
+    setPartidoSeguro(firestoreById, 'fg' + m.id, m);
+    if (m.id.startsWith('fg')) setPartidoSeguro(firestoreById, m.id.slice(2), m);
   });
 
   Object.keys(FG).forEach(g => {
@@ -1509,9 +1518,9 @@ window._showTabla = async function(g){
 
   const firestoreById={};
   globalData.partidos.filter(m=>!m.simulado).forEach(m=>{
-    firestoreById[m.id]=m;
-    firestoreById['fg'+m.id]=m;
-    if(m.id.startsWith('fg')) firestoreById[m.id.slice(2)]=m;
+    setPartidoSeguro(firestoreById, m.id, m);
+    setPartidoSeguro(firestoreById, 'fg'+m.id, m);
+    if(m.id.startsWith('fg')) setPartidoSeguro(firestoreById, m.id.slice(2), m);
   });
 
   document.getElementById('tabla-modal-body').innerHTML=_renderTabla(g, firestoreById);
@@ -1830,9 +1839,9 @@ async function renderResultadosAccordion() {
     snap.docs.forEach(d => {
       if (d.data().simulado) return; // ignorar partidos del simulador
       const data = {id: d.id, ...d.data()};
-      resCache[d.id] = data;                        // A1
-      resCache['fg' + d.id] = data;                 // fgA1
-      if (d.id.startsWith('fg')) resCache[d.id.slice(2)] = data; // sin prefijo
+      setPartidoSeguro(resCache, d.id, data);                        // A1
+      setPartidoSeguro(resCache, 'fg' + d.id, data);                 // fgA1
+      if (d.id.startsWith('fg')) setPartidoSeguro(resCache, d.id.slice(2), data); // sin prefijo
     });
   } catch(e) { console.warn('No se pudo cargar resultados de Firestore:', e.message); }
 
@@ -2419,9 +2428,9 @@ async function mostrarModalHoy() {
     snap.docs.forEach(d => {
       if (d.data().simulado) return;
       const data = { id: d.id, ...d.data() };
-      resCache[d.id] = data;
-      resCache['fg' + d.id] = data;
-      if (d.id.startsWith('fg')) resCache[d.id.slice(2)] = data;
+      setPartidoSeguro(resCache, d.id, data);
+      setPartidoSeguro(resCache, 'fg' + d.id, data);
+      if (d.id.startsWith('fg')) setPartidoSeguro(resCache, d.id.slice(2), data);
     });
   }).catch(() => {});
 
