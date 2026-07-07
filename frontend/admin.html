@@ -1629,6 +1629,9 @@ function auOrdenFase(p) {
   return orden[p.fase] ?? 9;
 }
 
+// Normaliza igual que polla.html: fgXn <-> Xn se consideran el mismo partido
+const auNormId = id => (id || '').startsWith('fg') ? id.slice(2) : id;
+
 window.auBuscarParticipantes = () => {
   clearTimeout(auTimeoutBusqueda);
   auTimeoutBusqueda = setTimeout(async () => {
@@ -1671,13 +1674,10 @@ window.auSeleccionarParticipante = async (uid) => {
   const apSnap = await getDocs(query(collection(db, 'apuestas'), where('uid', '==', uid)));
   const todosLosDocs = apSnap.docs.map(d => ({ docId: d.id, ...d.data() }));
 
-  // Normalizar igual que polla.html: fgXn <-> Xn se consideran el mismo partido
-  const normId = id => (id || '').startsWith('fg') ? id.slice(2) : id;
-
   // Agrupar por partido normalizado para detectar duplicados
   const porPartido = {};
   todosLosDocs.forEach(d => {
-    const key = normId(d.partidoId);
+    const key = auNormId(d.partidoId);
     if (!porPartido[key]) porPartido[key] = [];
     porPartido[key].push(d);
   });
@@ -1694,7 +1694,6 @@ function auRenderPanel(porPartido) {
 
   const totalDocs = Object.values(porPartido).reduce((s, arr) => s + arr.length, 0);
   const partidosConDuplicado = Object.entries(porPartido).filter(([, arr]) => arr.length > 1);
-  const partidosConIdRaro = Object.values(porPartido).flat().filter(d => d.docId !== `${d.uid}_${d.partidoId}`);
 
   document.getElementById('au-resumen').innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
@@ -1705,7 +1704,6 @@ function auRenderPanel(porPartido) {
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <span class="badge badge-muted">${totalDocs} documentos de apuesta</span>
         ${partidosConDuplicado.length ? `<span class="badge badge-red"><i class="fas fa-triangle-exclamation"></i> ${partidosConDuplicado.length} partido(s) con duplicados</span>` : ''}
-        ${partidosConIdRaro.length ? `<span class="badge badge-yellow"><i class="fas fa-fingerprint"></i> ${partidosConIdRaro.length} doc(s) con ID no estándar</span>` : ''}
         <button class="btn btn-outline btn-sm" onclick="auSeleccionarParticipante('${p.uid}')"><i class="fas fa-rotate"></i> Recargar</button>
       </div>
     </div>
@@ -1748,7 +1746,7 @@ function auRenderPanel(porPartido) {
     const nombreFase = auNombreFase(partido);
     if (nombreFase !== faseActual) { cerrarFase(); faseActual = nombreFase; }
 
-    const key = normId(partido.id);
+    const key = auNormId(partido.id);
     const docs = porPartido[key] || [];
     const principal = docs[0]; // si hay duplicados, el primero se muestra editable; el resto se lista para borrar
     const extra = docs.slice(1);
@@ -1765,13 +1763,9 @@ function auRenderPanel(porPartido) {
       );
     }
 
-    const idEstandar = principal ? `${p.uid}_${partido.id}` : `${p.uid}_${partido.id}`;
-    const esIdRaro = principal && principal.docId !== idEstandar;
-
     let estadoBadges = '';
     if (!principal) estadoBadges += `<span class="badge badge-red">Sin apuesta</span>`;
     if (docs.length > 1) estadoBadges += ` <span class="badge badge-red">${docs.length} docs</span>`;
-    if (esIdRaro) estadoBadges += ` <span class="badge badge-yellow">ID no estándar</span>`;
     if (principal && !estadoBadges) estadoBadges = `<span class="badge badge-green">OK</span>`;
 
     const rowId = `au-row-${partido.id}`;
@@ -1815,7 +1809,6 @@ window.auGuardarApuesta = async (partidoId, docIdsExistentes) => {
   const golesVisita = Math.max(0, parseInt(visitaVal, 10));
 
   const partido = globalPartidos.find(x => x.id === partidoId);
-  const idEstandar = `${p.uid}_${partidoId}`;
 
   const payload = {
     uid: p.uid,
@@ -1836,13 +1829,18 @@ window.auGuardarApuesta = async (partidoId, docIdsExistentes) => {
     );
   }
 
+  // Igual que polla.html: si ya existe un documento para este partido, se actualiza en su mismo ID;
+  // si no existe ninguno, se crea uno nuevo con ID automático (comportamiento normal de la app).
+  const docIdsPrevios = (docIdsExistentes || []).filter(Boolean);
+  const docIdPrincipal = docIdsPrevios[0];
+  const docsAEliminar = docIdsPrevios.slice(1); // duplicados extra, si los había
+
   try {
     const batch = writeBatch(db);
-    batch.set(doc(db, 'apuestas', idEstandar), payload, { merge: true });
-    // Si el/los doc(s) existentes no son el estándar, se eliminan para no dejar basura duplicada
-    (docIdsExistentes || []).forEach(oldId => {
-      if (oldId && oldId !== idEstandar) batch.delete(doc(db, 'apuestas', oldId));
-    });
+    const ref = docIdPrincipal ? doc(db, 'apuestas', docIdPrincipal) : doc(collection(db, 'apuestas'));
+    if (!docIdPrincipal) payload.creadoEn = serverTimestamp();
+    batch.set(ref, payload, { merge: true });
+    docsAEliminar.forEach(oldId => batch.delete(doc(db, 'apuestas', oldId)));
     await batch.commit();
     toast('Apuesta guardada correctamente', 'success');
     auSeleccionarParticipante(p.uid); // recargar vista
