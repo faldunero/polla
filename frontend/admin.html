@@ -2938,14 +2938,14 @@ async function recalcularFase(faseActual, faseSiguienteIds) {
       resCache[faseSiguienteIds[i]].visita = visita;
     }
   } else if (faseActual === 'cuartos') {
-    // 4 ganadores → sf1 (qf1 vs qf2), sf2 (qf3 vs qf4)
-    // 2 perdedores → 3p
-    const g = ids.map(ganadorDe);
-    const p = ids.map(perdedorDe);
+    // Bracket real del Mundial 2026: sf1 = qf1 vs qf3, sf2 = qf2 vs qf4
+    // (cruzado, NO adyacente — ver cruce oficial FIFA de cuartos a semis).
+    // El 3er lugar NO se llena aquí: se define recién con los perdedores
+    // de semis (ver rama faseActual === 'semis' más abajo).
+    const g = ids.map(ganadorDe); // g[0]=qf1, g[1]=qf2, g[2]=qf3, g[3]=qf4
     const cruces = {
-      sf1: [g[0]||'G.CF 1', g[1]||'G.CF 2'],
-      sf2: [g[2]||'G.CF 3', g[3]||'G.CF 4'],
-      '3p': [p[0]||'Perd. CF 1', p[1]||'Perd. CF 2'], // se actualizará con perdedores de semis
+      sf1: [g[0]||'G.CF 1', g[2]||'G.CF 3'],
+      sf2: [g[1]||'G.CF 2', g[3]||'G.CF 4'],
     };
     faseSiguienteIds.forEach(id => {
       if (!cruces[id]) return;
